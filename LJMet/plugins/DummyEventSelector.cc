@@ -85,7 +85,7 @@ void DummyEventSelector::BeginJob( std::map<std::string, edm::ParameterSet const
   
     std::cout << mLegend << "initializing Dummy selection" << std::endl;
 
-    bFirstEntry = true;
+    bFirstEntry = true; //in case anything needs a first entry bool.
     
     //See "PhysicsTools/SelectorUtils/interface/EventSelector.h"
     push_back("No selection");  
@@ -103,12 +103,10 @@ void DummyEventSelector::BeginJob( std::map<std::string, edm::ParameterSet const
 
 bool DummyEventSelector::operator()( edm::EventBase const & event, pat::strbitset & ret)
 {
-
-	std::cout<< " " <<std::endl; // DEBUG - rizki
-	std::cout<< "=====================================" <<std::endl; 
+	std::cout << "Processing Event in DummyEventSelector::operator()" << std::endl;
+	std::cout << "=====================================" <<std::endl; 
 	std::cout << "Event = " << event.id().event() << ", Lumi Block = " << event.id().luminosityBlock() << std::endl;
-	std::cout<< "=====================================" <<std::endl; 
-	std::cout<< " " <<std::endl; // DEBUG - rizki
+	std::cout << "=====================================" <<std::endl; 
 
     while(1){ // standard infinite while loop trick to avoid nested ifs
     

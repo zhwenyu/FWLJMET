@@ -149,6 +149,7 @@ LJMet::~LJMet()
 void
 LJMet::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
+	std::cout << " " <<std::endl;
 	std::cout << "Processing Event in FWLJMet::analyze" << std::endl;
 	        
 	//
@@ -179,12 +180,10 @@ LJMet::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 		theSelector->AnalyzeEvent(iEvent, ec);
 		
 		
-		
 		//
 		//_____ Run private end-of-event methods ___________________
 		//
 		factory->RunEndEvent(iEvent, ec);
-		
 		
 		
 		//
@@ -216,7 +215,7 @@ LJMet::beginJob()
 void 
 LJMet::endJob() 
 {
-
+	std::cout << " " <<std::endl;
     std::cout << "[FWLJMet] : " << "Selection" << std::endl;
     theSelector->print(std::cout);
     
