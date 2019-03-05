@@ -76,6 +76,6 @@ process.skimMiniAOD = cms.EDFilter(
 # Configure a path and endpath to run the producer and output modules
 process.p = cms.Path(
 	process.ljmet *
-#     process.skimMiniAOD
+    process.skimMiniAOD
 )
 #process.ep = cms.EndPath(process.out)

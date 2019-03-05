@@ -30,6 +30,8 @@
 
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 
+#include "PhysicsTools/SelectorUtils/interface/strbitset.h"
+
 
 #include "TTree.h"
 
@@ -38,8 +40,8 @@
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
 
 #include "FWLJMET/LJMet/interface/LjmetEventContent.h"
-// #include "FWLJMET/LJMet/interface/LjmetFactory.h"
-// #include "FWLJMET/LJMet/interface/BaseEventSelector.h"
+#include "FWLJMET/LJMet/interface/LjmetFactory.h"
+#include "FWLJMET/LJMet/interface/BaseEventSelector.h"
 
 
 //
@@ -91,7 +93,7 @@ LJMet::LJMet(const edm::ParameterSet& iConfig)
    edm::Service<TFileService> fs;  
    
    // output tree
-   std::cout << "FWLJMet : " << "Creating output tree" << std::endl;
+   std::cout << "[FWLJMet] : " << "Creating output tree" << std::endl;
    std::string const _treename = "ljmet";
    _tree = fs->make<TTree>(_treename.c_str(), _treename.c_str(), 64000000);
 
@@ -115,17 +117,94 @@ LJMet::~LJMet()
 void
 LJMet::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
-   
-   std::cout << "Processing Event in FWLJMet::analyze" << std::endl;
-   
-   // internal LJMet event content
-   LjmetEventContent ec;
-   ec.SetTree(_tree);
+	std::cout << "Processing Event in FWLJMet::analyze" << std::endl;
 
-   //_tree->Fill();
-   ec.Fill();
-   
+    // harvest all parameter sets from config file
+    // mPar currently not initialized
+    std::map<std::string, edm::ParameterSet const> mPar;
+	
+	// internal LJMet event content
+	LjmetEventContent ec;
+	ec.SetTree(_tree);
+	
+	// The factory for event selector and calculator plugins
+	LjmetFactory * factory = LjmetFactory::GetInstance();
+	
+	// choose event selector
+	std::cout << "[FWLJMet] : " << "instantiating the event selector" << std::endl;
+    std::string selection = "DummySelector";
+    BaseEventSelector * theSelector = 0;
+    theSelector = factory->GetEventSelector(selection);
+    
+    // sanity check histograms from the selector
+    theSelector->SetEventContent(&ec);
+    theSelector->Init();
+ 
+    theSelector->BeginJob(mPar);
+        
+    // send config parameters to calculators
+    factory->SetAllCalcConfig(mPar);
 
+    // Run BeginJob() for calculators
+    factory->BeginJobAllCalc();
+    
+	//
+	//_____ Run private begin-of-event methods ___________________
+	//
+	factory->RunBeginEvent(iEvent, ec);
+	
+	
+	
+	// run producers
+	factory->RunAllProducers(iEvent, theSelector);
+	
+	// event selection
+	pat::strbitset ret = theSelector->getBitTemplate();
+	bool passed = (*theSelector)( iEvent, ret );
+	
+	
+	if ( passed ) {
+		
+		//
+		//_____ Run all variable calculators now ___________________
+		//
+		factory->RunAllCalculators(iEvent, theSelector, ec);
+		
+		
+		//
+		//_____ Run selector-specific code if any___________________
+		//
+		theSelector->AnalyzeEvent(iEvent, ec);
+		
+		
+		
+		//
+		//_____ Run private end-of-event methods ___________________
+		//
+		factory->RunEndEvent(iEvent, ec);
+		
+		
+		
+		//
+		//_____Fill output file ____________________________________
+		//
+		ec.Fill();
+
+	} // end if statement for final cut requirements
+   
+    std::cout << "[FWLJMet] : " << "Selection" << std::endl;
+    theSelector->print(std::cout);
+    
+        
+    // Run EndJob() for calculators
+    factory->EndJobAllCalc();
+        
+    
+    // EndJob() for the selector
+    theSelector->EndJob();
+    
+    
+    delete theSelector;
 }
 
 
