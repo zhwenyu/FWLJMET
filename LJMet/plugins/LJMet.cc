@@ -201,7 +201,8 @@ void
 LJMet::beginJob()
 {
  
-    theSelector->BeginJob(mPar);
+    //theSelector->BeginJob(mPar);
+    theSelector->BeginJob(mPar,consumesCollector());
         
     // send config parameters to calculators
     factory->SetAllCalcConfig(mPar);

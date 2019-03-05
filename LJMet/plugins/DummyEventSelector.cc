@@ -14,6 +14,7 @@ public:
   
     // executes before loop over events
     virtual void BeginJob(std::map<std::string, edm::ParameterSet const > par);
+    virtual void BeginJob(std::map<std::string, edm::ParameterSet const > par, edm::ConsumesCollector && iC);
 
     // main method where the cuts are applied
     virtual bool operator()( edm::EventBase const & event, pat::strbitset & ret);

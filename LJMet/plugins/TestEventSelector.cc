@@ -18,6 +18,7 @@ public:
 
     // executes before loop over events
     virtual void BeginJob(std::map<std::string, edm::ParameterSet const > par);
+    virtual void BeginJob(std::map<std::string, edm::ParameterSet const > par, edm::ConsumesCollector && iC);
 
     // main method where the cuts are applied
     virtual bool operator()( edm::EventBase const & event, pat::strbitset & ret);
@@ -59,7 +60,7 @@ TestEventSelector::~TestEventSelector()
 {
 }
 
-void TestEventSelector::BeginJob( std::map<std::string, edm::ParameterSet const> par)
+void TestEventSelector::BeginJob( std::map<std::string, edm::ParameterSet const> par, edm::ConsumesCollector && iC)
 {
     std::cout << mLegend << "initializing Test selection" << std::endl;
 
@@ -67,7 +68,7 @@ void TestEventSelector::BeginJob( std::map<std::string, edm::ParameterSet const>
 
     BaseEventSelector::BeginJob(par);
 
-    triggersToken		= consumes<edm::TriggerResults>("TriggerResults","","HLT");
+    triggersToken		= iC.consumes<edm::TriggerResults>(edm::InputTag("TriggerResults::HLT"));
     //vTargetTrigs			= iConfig.getParameter<std::vector<std::string>>("HLTpaths");
     vTargetTrigs.push_back("HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v");
     vTargetTrigs.push_back("HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_DZ_v");
