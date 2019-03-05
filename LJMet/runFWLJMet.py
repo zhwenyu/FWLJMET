@@ -35,7 +35,7 @@ process.ljmet = cms.EDAnalyzer('LJMet'
 )
 
 
-#added by rizki
+#added by rizki - this part is not necessary for FWLJMET !
 process.skimMiniAOD = cms.EDFilter(
 	"SkimMiniAOD",
 	debug					= cms.bool(True),
@@ -75,7 +75,7 @@ process.skimMiniAOD = cms.EDFilter(
 
 # Configure a path and endpath to run the producer and output modules
 process.p = cms.Path(
-	process.ljmet *
-    process.skimMiniAOD
+	process.ljmet
+#     *process.skimMiniAOD - this is not necessary for FWLJMET !
 )
 #process.ep = cms.EndPath(process.out)

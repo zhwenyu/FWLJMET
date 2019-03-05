@@ -5,10 +5,10 @@
 // 
 /**\class LJMet LJMet.cc FWLJMET/LJMet/plugins/LJMet.cc
 
- Description: [one line class summary]
+ Description: [Full Framework LJMET]
 
  Implementation:
-     [Notes on implementation]
+     [Much of what has been implemented here is based on https://github.com/cms-ljmet/Ljmet-Com/blob/CMSSW_9_4_X/bin/ljmet.cc ]
 */
 //
 // Original Author:  Rizki Syarif
@@ -69,8 +69,19 @@ class LJMet : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
 
       // ----------member data ---------------------------
       
-      TTree * _tree;
-
+      TTree * _tree;    
+      
+      // harvest all parameter sets from config file
+      std::map<std::string, edm::ParameterSet const> mPar;
+      
+      // internal LJMet event content
+      LjmetEventContent ec;
+      
+      // The factory for event selector and calculator plugins
+      LjmetFactory * factory;
+      
+      // choose event selector
+      BaseEventSelector * theSelector = 0;      
 };
 
 //
@@ -96,6 +107,21 @@ LJMet::LJMet(const edm::ParameterSet& iConfig)
    std::cout << "[FWLJMet] : " << "Creating output tree" << std::endl;
    std::string const _treename = "ljmet";
    _tree = fs->make<TTree>(_treename.c_str(), _treename.c_str(), 64000000);
+   
+   // internal LJMet event content
+   ec.SetTree(_tree);
+   
+   // The factory for event selector and calculator plugins
+   factory = LjmetFactory::GetInstance();
+   
+   // choose event selector
+   std::cout << "[FWLJMet] : " << "instantiating the event selector" << std::endl;
+   std::string selection = "DummySelector";
+   theSelector = factory->GetEventSelector(selection);
+   
+   // sanity check histograms from the selector
+   theSelector->SetEventContent(&ec);
+   theSelector->Init();
 
 }
 
@@ -105,6 +131,12 @@ LJMet::~LJMet()
  
    // do anything here that needs to be done at desctruction time
    // (e.g. close files, deallocate resources etc.)
+    
+    delete theSelector;
+    
+    delete factory;
+    
+    delete _tree;
 
 }
 
@@ -118,41 +150,11 @@ void
 LJMet::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
 	std::cout << "Processing Event in FWLJMet::analyze" << std::endl;
-
-    // harvest all parameter sets from config file
-    // mPar currently not initialized
-    std::map<std::string, edm::ParameterSet const> mPar;
-	
-	// internal LJMet event content
-	LjmetEventContent ec;
-	ec.SetTree(_tree);
-	
-	// The factory for event selector and calculator plugins
-	LjmetFactory * factory = LjmetFactory::GetInstance();
-	
-	// choose event selector
-	std::cout << "[FWLJMet] : " << "instantiating the event selector" << std::endl;
-    std::string selection = "DummySelector";
-    BaseEventSelector * theSelector = 0;
-    theSelector = factory->GetEventSelector(selection);
-    
-    // sanity check histograms from the selector
-    theSelector->SetEventContent(&ec);
-    theSelector->Init();
- 
-    theSelector->BeginJob(mPar);
-        
-    // send config parameters to calculators
-    factory->SetAllCalcConfig(mPar);
-
-    // Run BeginJob() for calculators
-    factory->BeginJobAllCalc();
-    
+	        
 	//
 	//_____ Run private begin-of-event methods ___________________
 	//
 	factory->RunBeginEvent(iEvent, ec);
-	
 	
 	
 	// run producers
@@ -192,6 +194,29 @@ LJMet::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 
 	} // end if statement for final cut requirements
    
+}
+
+
+// ------------ method called once each job just before starting event loop  ------------
+void 
+LJMet::beginJob()
+{
+ 
+    theSelector->BeginJob(mPar);
+        
+    // send config parameters to calculators
+    factory->SetAllCalcConfig(mPar);
+
+    // Run BeginJob() for calculators
+    factory->BeginJobAllCalc();
+
+}
+
+// ------------ method called once each job just after ending the event loop  ------------
+void 
+LJMet::endJob() 
+{
+
     std::cout << "[FWLJMet] : " << "Selection" << std::endl;
     theSelector->print(std::cout);
     
@@ -203,21 +228,6 @@ LJMet::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     // EndJob() for the selector
     theSelector->EndJob();
     
-    
-    delete theSelector;
-}
-
-
-// ------------ method called once each job just before starting event loop  ------------
-void 
-LJMet::beginJob()
-{
-}
-
-// ------------ method called once each job just after ending the event loop  ------------
-void 
-LJMet::endJob() 
-{
 }
 
 // ------------ method fills 'descriptions' with the allowed parameters for the module  ------------
