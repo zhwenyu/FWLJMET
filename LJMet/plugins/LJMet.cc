@@ -116,7 +116,7 @@ LJMet::LJMet(const edm::ParameterSet& iConfig)
    
    // choose event selector
    std::cout << "[FWLJMet] : " << "instantiating the event selector" << std::endl;
-   std::string selection = "DummySelector";
+   std::string selection = "TestSelector";//"DummySelector";
    theSelector = factory->GetEventSelector(selection);
    
    // sanity check histograms from the selector
