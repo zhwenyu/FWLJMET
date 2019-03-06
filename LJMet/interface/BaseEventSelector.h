@@ -34,9 +34,6 @@
 
 #include "FWCore/Framework/interface/ConsumesCollector.h"
 
-struct MVAElectronVars {
-  Float_t see, spp, circularity, R9, etawidth, phiwidth, HoE, PreShowerOverRaw, kfhits, kfchi2, gsfchi2, fbrem, convVtxFitProbability, EoP, eleEoPout, IoEmIoP, deta, dphi, detacalo, gsfhits, expectedMissingInnerHits, pt, isBarrel, isEndcap, SCeta, eClass, pfRelIso, expectedInnerHits, vtxconv, mcEventWeight, mcCBmatchingCategory, rho, pfPhotonIso, pfChargedHadIso, pfNeutralHadIso;
-};
 
 class BaseEventSelector : public Selector<edm::Event> {
     //

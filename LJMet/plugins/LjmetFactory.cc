@@ -73,7 +73,7 @@ BaseEventSelector * LjmetFactory::GetEventSelector(std::string name)
     return theSelector;
 }
 
-void LjmetFactory::RunAllCalculators(edm::EventBase const & event, BaseEventSelector * selector, LjmetEventContent & ec)
+void LjmetFactory::RunAllCalculators(edm::Event const & event, BaseEventSelector * selector, LjmetEventContent & ec)
 {
     // Loop over all registered calculators and compute
     // implemented variables
