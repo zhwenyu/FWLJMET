@@ -52,8 +52,6 @@ protected:
 
     bool TriggerSelection(edm::Event const & event);
     bool LeptonsSelection(edm::Event const & event);
-    
-    
 
 
 private:
@@ -75,18 +73,18 @@ TestEventSelector::~TestEventSelector()
 
 void TestEventSelector::BeginJob( const edm::ParameterSet& iConfig, edm::ConsumesCollector && iC)
 {
-		
+
     std::cout << mLegend << "initializing Test selection" << std::endl;
 
     BaseEventSelector::BeginJob(iConfig,(edm::ConsumesCollector &&)iC);
-	const edm::ParameterSet& selectorConfig = iConfig.getParameterSet("test_selector") ;
+    const edm::ParameterSet& selectorConfig = iConfig.getParameterSet("test_selector") ;
 
     debug = selectorConfig.getParameter<bool>("debug");
 
     triggersToken       = iC.consumes<edm::TriggerResults>(selectorConfig.getParameter<edm::InputTag>("HLTcollection"));
     muonsToken          = iC.consumes<pat::MuonCollection>(selectorConfig.getParameter<edm::InputTag>("muonsCollection"));;
     electronsToken      = iC.consumes<pat::ElectronCollection>(selectorConfig.getParameter<edm::InputTag>("electronsCollection"));
-	
+
     vTargetTrigs        = selectorConfig.getParameter<std::vector<std::string>>("HLTtargets");
 
     minLeptons = selectorConfig.getParameter<int>("minLeptons");
@@ -166,11 +164,11 @@ bool TestEventSelector::TriggerSelection(edm::Event const & event)
 {
     bool passTrig = false;
 
-	if(debug) std::cout << std::endl;
-	if(debug)std::cout << "\t" <<"TriggerSelection:"<< std::endl;
-	if(debug) std::cout << std::endl;
+    if(debug) std::cout << std::endl;
+    if(debug)std::cout << "\t" <<"TriggerSelection:"<< std::endl;
+    if(debug) std::cout << std::endl;
 
-	edm::Handle< edm::TriggerResults > triggersHandle;
+    edm::Handle< edm::TriggerResults > triggersHandle;
     event.getByToken(triggersToken,triggersHandle);
     //event.getByLabel("TriggerResults::HLT", triggersHandle);
     const edm::TriggerNames trigNames = event.triggerNames(*triggersHandle);
@@ -203,7 +201,7 @@ bool TestEventSelector::LeptonsSelection(edm::Event const & event)
 	event.getByToken(muonsToken, muonsHandle);
 	unsigned int iMu = 0; // index in input dataset
 	unsigned int nSelMu = 0; //num of selected muons
-    mvSelMuons.clear();
+	mvSelMuons.clear();
 	for (std::vector<pat::Muon>::const_iterator _imu = muonsHandle->begin(); _imu != muonsHandle->end(); _imu++){
 		iMu = _imu - muonsHandle->begin();
 
@@ -224,7 +222,7 @@ bool TestEventSelector::LeptonsSelection(edm::Event const & event)
 	event.getByToken(electronsToken, electronsHandle);
 	unsigned int iEl = 0; // index in input dataset
 	unsigned int nSelEl = 0; //num of selected muons
-    mvSelElectrons.clear();
+	mvSelElectrons.clear();
 	for (std::vector<pat::Electron>::const_iterator _iel = electronsHandle->begin(); _iel != electronsHandle->end(); _iel++){
 		iEl = _iel - electronsHandle->begin();
 
@@ -247,5 +245,5 @@ bool TestEventSelector::LeptonsSelection(edm::Event const & event)
 		if(debug)std::cout << "\t" << "Has "<< minLeptons << " leptons that passes selection ! "<< std::endl;
 	}
 
-    return pass;
+	return pass;
 }
