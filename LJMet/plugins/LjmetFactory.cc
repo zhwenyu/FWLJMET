@@ -73,7 +73,7 @@ BaseEventSelector * LjmetFactory::GetEventSelector(std::string name)
     return theSelector;
 }
 
-void LjmetFactory::RunAllCalculators(edm::EventBase const & event, BaseEventSelector * selector, LjmetEventContent & ec)
+void LjmetFactory::RunAllCalculators(edm::Event const & event, BaseEventSelector * selector, LjmetEventContent & ec)
 {
     // Loop over all registered calculators and compute
     // implemented variables
@@ -116,11 +116,11 @@ void LjmetFactory::SetExcludedCalcs( std::vector<std::string> vExcl )
     }
 }
 
-void LjmetFactory::BeginJobAllCalc()
+void LjmetFactory::BeginJobAllCalc(edm::ConsumesCollector && iC)
 {
     // Run all BeginJob()'s
     for (std::map<std::string, BaseCalc * >::const_iterator iCalc = mpCalculators.begin(); iCalc != mpCalculators.end(); ++iCalc) {
-        iCalc->second->BeginJob();
+        iCalc->second->BeginJob((edm::ConsumesCollector &&)iC);
     }
 }
 

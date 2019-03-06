@@ -2,7 +2,7 @@
 //
 // Package:    FWLJMET/LJMet
 // Class:      LJMet
-// 
+//
 /**\class LJMet LJMet.cc FWLJMET/LJMet/plugins/LJMet.cc
 
  Description: [Full Framework LJMET]
@@ -68,20 +68,25 @@ class LJMet : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
       virtual void endJob() override;
 
       // ----------member data ---------------------------
-      
-      TTree * _tree;    
-      
+
+      TTree * _tree;
+
       // harvest all parameter sets from config file
       std::map<std::string, edm::ParameterSet const> mPar;
-      
+
       // internal LJMet event content
       LjmetEventContent ec;
-      
+
       // The factory for event selector and calculator plugins
       LjmetFactory * factory;
-      
+
       // choose event selector
-      BaseEventSelector * theSelector = 0;      
+      BaseEventSelector * theSelector = 0;
+
+
+      bool debug;
+      std::vector<std::string> vExcl;
+
 };
 
 //
@@ -99,53 +104,61 @@ LJMet::LJMet(const edm::ParameterSet& iConfig)
 
 {
    //now do what ever initialization is needed
-   usesResource("TFileService");
-   
-   edm::Service<TFileService> fs;  
-   
+
+   debug = true;
+
+   usesResource("TFileService"); // came originally with EDAnalyzer
+
+   edm::Service<TFileService> fs; //for purpose of creating / saving to root file
+
    // output tree
    std::cout << "[FWLJMet] : " << "Creating output tree" << std::endl;
    std::string const _treename = "ljmet";
    _tree = fs->make<TTree>(_treename.c_str(), _treename.c_str(), 64000000);
-   
+
    // internal LJMet event content
    ec.SetTree(_tree);
-   
+
    // The factory for event selector and calculator plugins
    factory = LjmetFactory::GetInstance();
-   
+
    // choose event selector
    std::cout << "[FWLJMet] : " << "instantiating the event selector" << std::endl;
    std::string selection = "TestSelector";//"DummySelector";
    theSelector = factory->GetEventSelector(selection);
-   
+
    // sanity check histograms from the selector
    theSelector->SetEventContent(&ec);
    theSelector->Init();
-   
+
+   //Object to pass to eventSelector and Calculators access data -
+   //edm::ConsumesCollector cC = consumesCollector(); // this didn work. so for now constructing twice for eventSelector and Calculator each.
+
    //theSelector->BeginJob(mPar);
    theSelector->BeginJob(mPar,consumesCollector());
-   
+
    // send config parameters to calculators
    factory->SetAllCalcConfig(mPar);
-   
+
    // Run BeginJob() for calculators
-   factory->BeginJobAllCalc();
+   factory->BeginJobAllCalc(consumesCollector());
+
+   // set excluded calculators
+   vExcl.push_back("DummyCalc");
+   factory->SetExcludedCalcs(vExcl); // This silly. Need to make changes so that LJMet by default only considers included Calculators!
 
 }
 
 
 LJMet::~LJMet()
 {
- 
+
    // do anything here that needs to be done at desctruction time
    // (e.g. close files, deallocate resources etc.)
-    
+
     delete theSelector;
-    
+
     delete factory;
-    
-    delete _tree;
 
 }
 
@@ -158,76 +171,76 @@ LJMet::~LJMet()
 void
 LJMet::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
-	std::cout << " " <<std::endl;
-	std::cout << "Processing Event in FWLJMet::analyze" << std::endl;
-	        
+	if(debug) std::cout << " " <<std::endl;
+	if(debug) std::cout << "Processing Event in FWLJMet::analyze" << std::endl;
+
 	//
 	//_____ Run private begin-of-event methods ___________________
 	//
 	factory->RunBeginEvent(iEvent, ec);
-	
-	
+
+
 	// run producers
 	factory->RunAllProducers(iEvent, theSelector);
-	
+
 	// event selection
 	pat::strbitset ret = theSelector->getBitTemplate();
 	bool passed = (*theSelector)( iEvent, ret );
-	
-	
+
+
 	if ( passed ) {
-		
+
 		//
 		//_____ Run all variable calculators now ___________________
 		//
 		factory->RunAllCalculators(iEvent, theSelector, ec);
-		
-		
+
+
 		//
 		//_____ Run selector-specific code if any___________________
 		//
 		theSelector->AnalyzeEvent(iEvent, ec);
-		
-		
+
+
 		//
 		//_____ Run private end-of-event methods ___________________
 		//
 		factory->RunEndEvent(iEvent, ec);
-		
-		
+
+
 		//
 		//_____Fill output file ____________________________________
 		//
 		ec.Fill();
 
 	} // end if statement for final cut requirements
-   
+
 }
 
 
 // ------------ method called once each job just before starting event loop  ------------
-void 
+void
 LJMet::beginJob()
 {
-         
+
 }
 
 // ------------ method called once each job just after ending the event loop  ------------
-void 
-LJMet::endJob() 
+void
+LJMet::endJob()
 {
-	std::cout << " " <<std::endl;
-    std::cout << "[FWLJMet] : " << "Selection" << std::endl;
+    if(debug) std::cout << " " <<std::endl;
+    if(debug) std::cout << "[FWLJMet] : " << "Selection" << std::endl;
     theSelector->print(std::cout);
-    
-        
+
+
     // Run EndJob() for calculators
     factory->EndJobAllCalc();
-        
-    
+
+
     // EndJob() for the selector
     theSelector->EndJob();
-    
+
 }
 
 // ------------ method fills 'descriptions' with the allowed parameters for the module  ------------

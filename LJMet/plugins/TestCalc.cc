@@ -8,8 +8,8 @@ class TestCalc : public BaseCalc {
 public:
     TestCalc();
     virtual ~TestCalc();
-    virtual int BeginJob();
-    virtual int AnalyzeEvent(edm::EventBase const & event, BaseEventSelector * selector);
+    virtual int BeginJob(edm::ConsumesCollector && iC);
+    virtual int AnalyzeEvent(edm::Event const & event, BaseEventSelector * selector);
     virtual int EndJob(){return 0;};
     
 private:
@@ -28,32 +28,50 @@ TestCalc::~TestCalc()
 {
 }
 
-int TestCalc::BeginJob()
+int TestCalc::BeginJob(edm::ConsumesCollector && iC)
 {
+	//do consumes here if need to access input file directly
+	//electronsToken 		= iC.consumes<pat::ElectronCollection>(edm::InputTag("slimmedElectrons"));
+
     return 0;
 }
 
-int TestCalc::AnalyzeEvent(edm::EventBase const & event, BaseEventSelector * selector)
+int TestCalc::AnalyzeEvent(edm::Event const & event, BaseEventSelector * selector)
 {     
 	std::cout << "Processing Event in TestCalc::AnalyzeEvent" << std::endl;
 
 	// ----- Get objects from the selector -----
-    //std::vector<edm::Ptr<pat::Electron> >       const & vSelectedElectrons = selector->GetSelectedElectrons();
+    std::vector<edm::Ptr<pat::Muon> >       const & vSelMuons = selector->GetSelMuons();
+    std::vector<edm::Ptr<pat::Electron> >   const & vSelElectrons = selector->GetSelElectrons();
+    int _nSelMuons       = (int)vSelMuons.size();
+    int _nSelElectrons   = (int)vSelElectrons.size();
 
-    // ----- Event kinematics -----
-    //int _nSelElectrons   = (int)vSelElectrons.size();
+    //
+    //_____Muons______
+    //
+    std::vector <double> muPt;
+    std::vector <double> muEta;
+    for (std::vector<edm::Ptr<pat::Muon> >::const_iterator imu = vSelMuons.begin(); imu != vSelMuons.end(); imu++){
+       muPt     . push_back((*imu)->pt()); 
+       muEta     . push_back((*imu)->eta()); 
+    }
+    SetValue("Nmu"     , _nSelMuons);
+    SetValue("muPt"     , muPt);
+    SetValue("muEta"     , muEta);
 
-    // Electron
-    //std::vector <double> elPt;
 
     //
     //_____Electrons______
     //
-    //for (std::vector<edm::Ptr<pat::Electron> >::const_iterator iel = vSelElectrons.begin(); iel != vSelElectrons.end(); iel++){
-    //    elPt     . push_back((*iel)->pt()); //Must check: why ecalDrivenMomentum?
-    //}
-
-    //SetValue("elPt"     , elPt);
+    std::vector <double> elPt;
+    std::vector <double> elEta;
+    for (std::vector<edm::Ptr<pat::Electron> >::const_iterator iel = vSelElectrons.begin(); iel != vSelElectrons.end(); iel++){
+       elPt     . push_back((*iel)->pt()); 
+       elEta     . push_back((*iel)->eta()); 
+    }
+    SetValue("Nel"     , _nSelElectrons);
+    SetValue("elPt"     , elPt);
+    SetValue("elEta"     , elEta);
     
     return 0;
 }

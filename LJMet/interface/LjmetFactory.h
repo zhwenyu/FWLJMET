@@ -27,7 +27,7 @@ public:
     BaseEventSelector * GetEventSelector(std::string name);
     
     /// Loop over all registered calculators and compute implemented variables
-    void RunAllCalculators(edm::EventBase const & event, BaseEventSelector * selector, LjmetEventContent & ec);
+    void RunAllCalculators(edm::Event const & event, BaseEventSelector * selector, LjmetEventContent & ec);
     
     /// Loop over all registered calculators and run all producer methods (comes before selection)
     void RunAllProducers(edm::EventBase const & event, BaseEventSelector * selector);
@@ -37,7 +37,7 @@ public:
     void SetExcludedCalcs(std::vector<std::string> vExcl);
     
     /// Run all BeginJob()'s
-    void BeginJobAllCalc();
+    void BeginJobAllCalc(edm::ConsumesCollector && iC);
     
     /// Run all EndJob()'s
     void EndJobAllCalc();

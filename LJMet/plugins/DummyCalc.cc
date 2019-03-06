@@ -8,8 +8,8 @@ class DummyCalc : public BaseCalc {
 public:
     DummyCalc();
     virtual ~DummyCalc();
-    virtual int BeginJob();
-    virtual int AnalyzeEvent(edm::EventBase const & event, BaseEventSelector * selector);
+    virtual int BeginJob(edm::ConsumesCollector && iC);
+    virtual int AnalyzeEvent(edm::Event const & event, BaseEventSelector * selector);
     virtual int EndJob(){return 0;};
     
 private:
@@ -28,12 +28,12 @@ DummyCalc::~DummyCalc()
 {
 }
 
-int DummyCalc::BeginJob()
+int DummyCalc::BeginJob(edm::ConsumesCollector && iC)
 {
     return 0;
 }
 
-int DummyCalc::AnalyzeEvent(edm::EventBase const & event, BaseEventSelector * selector)
+int DummyCalc::AnalyzeEvent(edm::Event const & event, BaseEventSelector * selector)
 {     
 	std::cout << "Processing Event in DummyCalc::AnalyzeEvent" << std::endl;
 

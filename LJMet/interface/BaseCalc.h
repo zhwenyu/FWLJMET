@@ -12,7 +12,10 @@
 
 #include "FWCore/ParameterSet/interface/ProcessDesc.h"
 #include "FWCore/PythonParameterSet/interface/PythonProcessDesc.h"
-//#include "LJMet/Com/interface/VVString.h"
+
+#include "FWCore/Framework/interface/Event.h"
+#include "FWCore/Framework/interface/ConsumesCollector.h"
+
 
 class BaseEventSelector;
 class LjmetEventContent;
@@ -33,9 +36,9 @@ public:
     virtual ~BaseCalc() { }
     BaseCalc(const BaseCalc &); // stop default
     std::string GetName() { return mName; }
-    virtual int BeginJob() = 0;
+    virtual int BeginJob(edm::ConsumesCollector && iC) = 0;
     virtual int ProduceEvent(edm::EventBase const & event, BaseEventSelector * selector) { return 0; }
-    virtual int AnalyzeEvent(edm::EventBase const & event, BaseEventSelector * selector) { return 0; }
+    virtual int AnalyzeEvent(edm::Event const & event, BaseEventSelector * selector) { return 0; }
     virtual int EndJob() { return 0; }
     
     std::string mName;
