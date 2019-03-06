@@ -123,6 +123,9 @@ LJMet::LJMet(const edm::ParameterSet& iConfig)
    theSelector->SetEventContent(&ec);
    theSelector->Init();
    
+   //Object to pass to eventSelector and Calculators access data
+   //edm::ConsumesCollector cC = consumesCollector();
+
    //theSelector->BeginJob(mPar);
    theSelector->BeginJob(mPar,consumesCollector());
    
@@ -130,7 +133,7 @@ LJMet::LJMet(const edm::ParameterSet& iConfig)
    factory->SetAllCalcConfig(mPar);
    
    // Run BeginJob() for calculators
-   factory->BeginJobAllCalc();
+   factory->BeginJobAllCalc(consumesCollector());
 
 }
 

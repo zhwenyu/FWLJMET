@@ -8,7 +8,7 @@ class DummyCalc : public BaseCalc {
 public:
     DummyCalc();
     virtual ~DummyCalc();
-    virtual int BeginJob();
+    virtual int BeginJob(edm::ConsumesCollector && iC);
     virtual int AnalyzeEvent(edm::EventBase const & event, BaseEventSelector * selector);
     virtual int EndJob(){return 0;};
     
@@ -28,7 +28,7 @@ DummyCalc::~DummyCalc()
 {
 }
 
-int DummyCalc::BeginJob()
+int DummyCalc::BeginJob(edm::ConsumesCollector && iC)
 {
     return 0;
 }

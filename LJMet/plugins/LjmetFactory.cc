@@ -116,11 +116,11 @@ void LjmetFactory::SetExcludedCalcs( std::vector<std::string> vExcl )
     }
 }
 
-void LjmetFactory::BeginJobAllCalc()
+void LjmetFactory::BeginJobAllCalc(edm::ConsumesCollector && iC)
 {
     // Run all BeginJob()'s
     for (std::map<std::string, BaseCalc * >::const_iterator iCalc = mpCalculators.begin(); iCalc != mpCalculators.end(); ++iCalc) {
-        iCalc->second->BeginJob();
+        iCalc->second->BeginJob((edm::ConsumesCollector &&)iC);
     }
 }
 

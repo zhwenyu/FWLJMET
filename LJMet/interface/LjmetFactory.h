@@ -37,7 +37,7 @@ public:
     void SetExcludedCalcs(std::vector<std::string> vExcl);
     
     /// Run all BeginJob()'s
-    void BeginJobAllCalc();
+    void BeginJobAllCalc(edm::ConsumesCollector && iC);
     
     /// Run all EndJob()'s
     void EndJobAllCalc();

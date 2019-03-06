@@ -111,22 +111,15 @@ bool TestEventSelector::operator()( edm::Event const & event, pat::strbitset & r
     for(std::vector<std::string>::const_iterator targetTrig = vTargetTrigs.begin(); targetTrig!= vTargetTrigs.end(); targetTrig++){
 
       for(unsigned int i=0; i<nTrig;i++){
-
-	std::string trigName = trigNames.triggerName(i);
-	if(trigName.find((*targetTrig)) == std::string::npos) continue;
-
-	if(triggersHandle->accept(trigNames.triggerIndex(trigName))){
-
-	  if(debug)std::cout << "\tFIRED : "<< (*targetTrig) << std::endl;
-
-	  passTrig = true;
-
-	}
-
+      	std::string trigName = trigNames.triggerName(i);
+      	if(trigName.find((*targetTrig)) == std::string::npos) continue;
+      	if(triggersHandle->accept(trigNames.triggerIndex(trigName))){
+      		if(debug)std::cout << "\tFIRED : "<< (*targetTrig) << std::endl;
+      		passTrig = true;	
+      	}
       }
-
     }
-
+    
     if(passTrig)passCut(ret, "Trigger");
     else break;
 
