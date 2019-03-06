@@ -122,6 +122,15 @@ LJMet::LJMet(const edm::ParameterSet& iConfig)
    // sanity check histograms from the selector
    theSelector->SetEventContent(&ec);
    theSelector->Init();
+   
+   //theSelector->BeginJob(mPar);
+   theSelector->BeginJob(mPar,consumesCollector());
+   
+   // send config parameters to calculators
+   factory->SetAllCalcConfig(mPar);
+   
+   // Run BeginJob() for calculators
+   factory->BeginJobAllCalc();
 
 }
 
@@ -200,16 +209,7 @@ LJMet::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 void 
 LJMet::beginJob()
 {
- 
-    //theSelector->BeginJob(mPar);
-    theSelector->BeginJob(mPar,consumesCollector());
-        
-    // send config parameters to calculators
-    factory->SetAllCalcConfig(mPar);
-
-    // Run BeginJob() for calculators
-    factory->BeginJobAllCalc();
-
+         
 }
 
 // ------------ method called once each job just after ending the event loop  ------------

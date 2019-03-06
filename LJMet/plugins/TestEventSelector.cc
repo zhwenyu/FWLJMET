@@ -17,11 +17,11 @@ public:
 
 
     // executes before loop over events
-    virtual void BeginJob(std::map<std::string, edm::ParameterSet const > par);
+    //virtual void BeginJob(std::map<std::string, edm::ParameterSet const > par);
     virtual void BeginJob(std::map<std::string, edm::ParameterSet const > par, edm::ConsumesCollector && iC);
 
     // main method where the cuts are applied
-    virtual bool operator()( edm::EventBase const & event, pat::strbitset & ret);
+    virtual bool operator()( edm::Event const & event, pat::strbitset & ret);
 
     virtual void AnalyzeEvent( edm::EventBase const & event, LjmetEventContent & ec );
 
@@ -90,7 +90,7 @@ void TestEventSelector::BeginJob( std::map<std::string, edm::ParameterSet const>
 
 } // end of BeginJob()
 
-bool TestEventSelector::operator()( edm::EventBase const & event, pat::strbitset & ret)
+bool TestEventSelector::operator()( edm::Event const & event, pat::strbitset & ret)
 {
   std::cout << "Processing Event in TestEventSelector::operator()" << std::endl;
   std::cout << "=====================================" <<std::endl;
