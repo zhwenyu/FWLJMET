@@ -131,7 +131,7 @@ LJMet::LJMet(const edm::ParameterSet& iConfig)
    theSelector->SetEventContent(&ec);
    theSelector->Init();
 
-   //Object to pass to eventSelector and Calculators access data -
+   //Object to pass to eventSelector and Calculators access data - https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideEDMGetDataFromEvent#Consumes_and_Helpers
    //edm::ConsumesCollector cC = consumesCollector(); // this didn work. so for now constructing twice for eventSelector and Calculator each.
 
    //theSelector->BeginJob(mPar);
