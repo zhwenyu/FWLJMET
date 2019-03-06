@@ -52,12 +52,12 @@ public:
     virtual void AnalyzeEvent( edm::EventBase const & event, LjmetEventContent & ec ) { }
     std::string GetName() { return mName; }
     
-    std::vector<edm::Ptr<pat::Jet>> const & GetAllJets() const { return mvAllJets; }
-    std::vector<edm::Ptr<pat::Muon>> const & GetAllMuons() const { return mvAllMuons; }
-    std::vector<edm::Ptr<pat::Electron>> const & GetAllElectrons() const { return mvAllElectrons; }
+    std::vector<unsigned int> const & GetSelTriggers() const { return mvSelTriggers; }
+    std::vector<edm::Ptr<pat::Muon>> const & GetSelMuons() const { return mvSelMuons; }
+    std::vector<edm::Ptr<pat::Electron>> const & GetSelElectrons() const { return mvSelElectrons; }
+    std::vector<edm::Ptr<pat::Jet>> const & GetSelJets() const { return mvSelJets; }
     edm::Ptr<pat::MET> const & GetMet() const { return mpMet; }
-    std::vector<unsigned int> const & GetSelectedTriggers() const { return mvSelTriggers; }
-    std::vector<edm::Ptr<reco::Vertex>> const & GetSelectedPVs() const { return mvSelPVs; }
+    std::vector<edm::Ptr<reco::Vertex>> const & GetSelPVs() const { return mvSelPVs; }
     void SetMc(bool isMc) { mbIsMc = isMc; }
     bool IsMc() { return mbIsMc; }
     
@@ -70,11 +70,11 @@ public:
     void SetHistValue(std::string name, double value) { mpEc->SetHistValue(mName, name, value); }
             
 protected:
-    std::vector<edm::Ptr<pat::Jet>> mvAllJets;
-    std::vector<edm::Ptr<pat::Muon>> mvAllMuons;
-    std::vector<edm::Ptr<pat::Electron>> mvAllElectrons;
-    edm::Ptr<pat::MET> mpMet;
     std::vector<unsigned int> mvSelTriggers;
+    std::vector<edm::Ptr<pat::Muon>> mvSelMuons;
+    std::vector<edm::Ptr<pat::Electron>> mvSelElectrons;
+    std::vector<edm::Ptr<pat::Jet>> mvSelJets;
+    edm::Ptr<pat::MET> mpMet;
     std::vector<edm::Ptr<reco::Vertex>> mvSelPVs;
     
     // containers for config parameter values
