@@ -85,7 +85,6 @@ class LJMet : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
 
 
       bool debug;
-      std::vector<std::string> vExcl;
 
 };
 
@@ -105,7 +104,10 @@ LJMet::LJMet(const edm::ParameterSet& iConfig)
 {
    //now do what ever initialization is needed
 
-   debug = true;
+   debug                           = iConfig.getParameter<bool>("debug");
+   std::string selection           = iConfig.getParameter<std::string>("selector");
+   std::vector<std::string> vExcl  = iConfig.getParameter<std::vector<std::string>>("exclude_calcs");
+
 
    usesResource("TFileService"); // came originally with EDAnalyzer
 
@@ -124,7 +126,6 @@ LJMet::LJMet(const edm::ParameterSet& iConfig)
 
    // choose event selector
    std::cout << "[FWLJMet] : " << "instantiating the event selector" << std::endl;
-   std::string selection = "TestSelector";//"DummySelector";
    theSelector = factory->GetEventSelector(selection);
 
    // sanity check histograms from the selector
@@ -132,20 +133,21 @@ LJMet::LJMet(const edm::ParameterSet& iConfig)
    theSelector->Init();
 
    //Object to pass to eventSelector and Calculators access data - https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideEDMGetDataFromEvent#Consumes_and_Helpers
-   //edm::ConsumesCollector cC = consumesCollector(); // this didn work. so for now constructing twice for eventSelector and Calculator each.
+   edm::ConsumesCollector && cC = consumesCollector(); // this didn work. so for now constructing twice for eventSelector and Calculator each.
 
    //theSelector->BeginJob(mPar);
-   theSelector->BeginJob(mPar,consumesCollector());
+   //theSelector->BeginJob(mPar,consumesCollector());
+   theSelector->BeginJob(iConfig, (edm::ConsumesCollector &&)cC);
 
    // send config parameters to calculators
-   factory->SetAllCalcConfig(mPar);
+   //factory->SetAllCalcConfig(mPar);
+   factory->SetAllCalcConfig(iConfig);
 
    // Run BeginJob() for calculators
-   factory->BeginJobAllCalc(consumesCollector());
+   factory->BeginJobAllCalc((edm::ConsumesCollector &&)cC);
 
    // set excluded calculators
-   vExcl.push_back("DummyCalc");
-   factory->SetExcludedCalcs(vExcl); // This silly. Need to make changes so that LJMet by default only considers included Calculators!
+   factory->SetExcludedCalcs(vExcl); // This is silly. Need to make changes so that LJMet by default only considers included Calculators!
 
 }
 

@@ -33,7 +33,7 @@ public:
     void RunAllProducers(edm::EventBase const & event, BaseEventSelector * selector);
     
     /// Set each calc's parameter set, if present
-    void SetAllCalcConfig(std::map<std::string, edm::ParameterSet const> mPar);
+    void SetAllCalcConfig(edm::ParameterSet const Par);
     void SetExcludedCalcs(std::vector<std::string> vExcl);
     
     /// Run all BeginJob()'s

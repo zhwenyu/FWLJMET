@@ -19,8 +19,7 @@ public:
 
 
     // executes before loop over events
-    //virtual void BeginJob(std::map<std::string, edm::ParameterSet const > par);
-    virtual void BeginJob(std::map<std::string, edm::ParameterSet const > par, edm::ConsumesCollector && iC);
+    virtual void BeginJob(const edm::ParameterSet& iConfig, edm::ConsumesCollector && iC);
 
     // main method where the cuts are applied
     virtual bool operator()( edm::Event const & event, pat::strbitset & ret);
@@ -42,15 +41,19 @@ protected:
     edm::EDGetTokenT<edm::TriggerResults>       triggersToken;
     edm::EDGetTokenT<pat::MuonCollection>       muonsToken;
     edm::EDGetTokenT<pat::ElectronCollection>   electronsToken;
-    int       minLeptons; 
-    float     min_muPt; 
-    float     max_muEta; 
-    float     min_elPt; 
-    float     max_elEta; 
+
+    int       minLeptons;
+    float     min_muPt;
+    float     max_muEta;
+    float     min_elPt;
+    float     max_elEta;
+
     std::vector<std::string>  vTargetTrigs;
-    
+
     bool TriggerSelection(edm::Event const & event);
     bool LeptonsSelection(edm::Event const & event);
+    
+    
 
 
 private:
@@ -70,30 +73,28 @@ TestEventSelector::~TestEventSelector()
 {
 }
 
-void TestEventSelector::BeginJob( std::map<std::string, edm::ParameterSet const> par, edm::ConsumesCollector && iC)
+void TestEventSelector::BeginJob( const edm::ParameterSet& iConfig, edm::ConsumesCollector && iC)
 {
+		
     std::cout << mLegend << "initializing Test selection" << std::endl;
 
-    debug = true;
+    BaseEventSelector::BeginJob(iConfig,(edm::ConsumesCollector &&)iC);
+	const edm::ParameterSet& selectorConfig = iConfig.getParameterSet("test_selector") ;
 
-    BaseEventSelector::BeginJob(par);
+    debug = selectorConfig.getParameter<bool>("debug");
 
-    triggersToken		= iC.consumes<edm::TriggerResults>(edm::InputTag("TriggerResults::HLT"));
-    //vTargetTrigs			= iConfig.getParameter<std::vector<std::string>>("HLTpaths");
-    vTargetTrigs.push_back("HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v");
-    vTargetTrigs.push_back("HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_DZ_v");
-    vTargetTrigs.push_back("HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v");
-    vTargetTrigs.push_back("HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_Mass3p8_v");
-    
-    muonsToken 			= iC.consumes<pat::MuonCollection>(edm::InputTag("slimmedMuons"));;
-    electronsToken 		= iC.consumes<pat::ElectronCollection>(edm::InputTag("slimmedElectrons"));
-    
-    minLeptons = 3;
-    min_muPt   = 20.;
-    max_muEta  = 2.4;
-    max_elEta  = 20.;
-    max_elEta  = 2.4;
+    triggersToken       = iC.consumes<edm::TriggerResults>(selectorConfig.getParameter<edm::InputTag>("HLTcollection"));
+    muonsToken          = iC.consumes<pat::MuonCollection>(selectorConfig.getParameter<edm::InputTag>("muonsCollection"));;
+    electronsToken      = iC.consumes<pat::ElectronCollection>(selectorConfig.getParameter<edm::InputTag>("electronsCollection"));
 	
+    vTargetTrigs        = selectorConfig.getParameter<std::vector<std::string>>("HLTtargets");
+
+    minLeptons = selectorConfig.getParameter<int>("minLeptons");
+    min_muPt   = selectorConfig.getParameter<double>("min_muPt");
+    max_muEta  = selectorConfig.getParameter<double>("max_muEta");;
+    max_elEta  = selectorConfig.getParameter<double>("max_elEta");
+    max_elEta  = selectorConfig.getParameter<double>("max_elEta");
+
     bFirstEntry = true; //in case anything needs a first entry bool.
 
     //See "PhysicsTools/SelectorUtils/interface/EventSelector.h"
@@ -121,13 +122,13 @@ bool TestEventSelector::operator()( edm::Event const & event, pat::strbitset & r
   while(1){ // standard infinite while loop trick to avoid nested ifs
 
     passCut(ret, "No selection");
-    
+
     if( TriggerSelection(event) ) passCut(ret, "Trigger");
     else break;
-    
+
     if( LeptonsSelection(event) ) passCut(ret, "Leptons");
     else break;
-    
+
     passCut(ret, "All cuts");
     break;
 
@@ -162,8 +163,12 @@ void TestEventSelector::EndJob()
 }
 
 bool TestEventSelector::TriggerSelection(edm::Event const & event)
-{	
+{
     bool passTrig = false;
+
+	if(debug) std::cout << std::endl;
+	if(debug)std::cout << "\t" <<"TriggerSelection:"<< std::endl;
+	if(debug) std::cout << std::endl;
 
 	edm::Handle< edm::TriggerResults > triggersHandle;
     event.getByToken(triggersToken,triggersHandle);
@@ -178,39 +183,42 @@ bool TestEventSelector::TriggerSelection(edm::Event const & event)
       	if(trigName.find((*targetTrig)) == std::string::npos) continue;
       	if(triggersHandle->accept(trigNames.triggerIndex(trigName))){
       		if(debug)std::cout << "\t"<<"FIRED : "<< (*targetTrig) << std::endl;
-      		passTrig = true;	
+      		passTrig = true;
       	}
       }
     }
-    
-    return passTrig;    
+
+    return passTrig;
 }
 
 bool TestEventSelector::LeptonsSelection(edm::Event const & event)
-{	
-	bool pass = false;   
+{
+	bool pass = false;
+
+	if(debug) std::cout << std::endl;
+	if(debug)std::cout << "\t" <<"LeptonsSelection:"<< std::endl;
 
 	//Muons
 	edm::Handle< pat::MuonCollection > muonsHandle;
-	event.getByToken(muonsToken, muonsHandle);   
+	event.getByToken(muonsToken, muonsHandle);
 	unsigned int iMu = 0; // index in input dataset
 	unsigned int nSelMu = 0; //num of selected muons
     mvSelMuons.clear();
 	for (std::vector<pat::Muon>::const_iterator _imu = muonsHandle->begin(); _imu != muonsHandle->end(); _imu++){
 		iMu = _imu - muonsHandle->begin();
-		
-		if(debug) std::cout << std::endl;   		
-		if(debug) std::cout << "\t" << "iMu = "<< iMu << " pt = " << _imu->pt() << " eta = " << _imu->eta();   
+
+		if(debug) std::cout << std::endl;
+		if(debug) std::cout << "\t" << "iMu = "<< iMu << " pt = " << _imu->pt() << " eta = " << _imu->eta();
 
 		if(_imu->pt() < min_muPt) continue;
 		if(fabs(_imu->eta()) > max_muEta) continue;
-		
+
 		mvSelMuons.push_back( edm::Ptr<pat::Muon>( muonsHandle, iMu) );
 		nSelMu++;
-		
-		if(debug) std::cout << " ---> " << "Pass";   
+
+		if(debug) std::cout << " ---> " << "Pass";
 	}
-		 
+
 	//Electrons
 	edm::Handle< pat::ElectronCollection > electronsHandle;
 	event.getByToken(electronsToken, electronsHandle);
@@ -219,25 +227,25 @@ bool TestEventSelector::LeptonsSelection(edm::Event const & event)
     mvSelElectrons.clear();
 	for (std::vector<pat::Electron>::const_iterator _iel = electronsHandle->begin(); _iel != electronsHandle->end(); _iel++){
 		iEl = _iel - electronsHandle->begin();
-		
-		if(debug) std::cout << std::endl;   		
-		if(debug) std::cout << "\t" << "iEl = "<< iEl << " pt = " << _iel->pt() << " eta = " << _iel->eta();   
+
+		if(debug) std::cout << std::endl;
+		if(debug) std::cout << "\t" << "iEl = "<< iEl << " pt = " << _iel->pt() << " eta = " << _iel->eta();
 		if(_iel->pt() < min_elPt) continue;
 		if(fabs(_iel->eta()) > max_elEta) continue;
-		
+
 		mvSelElectrons.push_back( edm::Ptr<pat::Electron>( electronsHandle, iEl) );
 		nSelEl++;
-	
-		if(debug) std::cout << " ---> " << "Pass";   
+
+		if(debug) std::cout << " ---> " << "Pass";
 	}
-	
+
 	//Check for min selected lepton requirement
-	if(debug) std::cout << std::endl;   		
-	if(debug)std::cout << "\t" << "nSelMu = "<< nSelMu << " nSelEl = "<< nSelEl << std::endl;   
-	if ( (nSelMu + nSelEl) >= (unsigned int)minLeptons){ 
-		pass = true;   		
-		if(debug)std::cout << "\t" << "Has 3 leptons that passes selection ! "<< std::endl;
+	if(debug) std::cout << std::endl;
+	if(debug)std::cout << "\t" << "nSelMu = "<< nSelMu << " nSelEl = "<< nSelEl << std::endl;
+	if ( (nSelMu + nSelEl) >= (unsigned int)minLeptons){
+		pass = true;
+		if(debug)std::cout << "\t" << "Has "<< minLeptons << " leptons that passes selection ! "<< std::endl;
 	}
-    
-    return pass;    
+
+    return pass;
 }

@@ -13,7 +13,9 @@ public:
     virtual int EndJob(){return 0;};
     
 private:
-    edm::InputTag             elec_it;
+	bool debug;
+
+    //edm::EDGetTokenT<pat::ElectronCollection>   electronsToken;
 
 };
 
@@ -31,14 +33,16 @@ TestCalc::~TestCalc()
 int TestCalc::BeginJob(edm::ConsumesCollector && iC)
 {
 	//do consumes here if need to access input file directly
-	//electronsToken 		= iC.consumes<pat::ElectronCollection>(edm::InputTag("slimmedElectrons"));
+	//electronsToken 		= iC.consumes<pat::ElectronCollection>(mPset.getParameter<edm::InputTag>("electronsCollection"));
+
+	debug = mPset.getParameter<bool>("debug");
 
     return 0;
 }
 
 int TestCalc::AnalyzeEvent(edm::Event const & event, BaseEventSelector * selector)
 {     
-	std::cout << "Processing Event in TestCalc::AnalyzeEvent" << std::endl;
+	if(debug)std::cout << "Processing Event in TestCalc::AnalyzeEvent" << std::endl;
 
 	// ----- Get objects from the selector -----
     std::vector<edm::Ptr<pat::Muon> >       const & vSelMuons = selector->GetSelMuons();
