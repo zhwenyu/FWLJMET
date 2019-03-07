@@ -45,8 +45,7 @@ class BaseEventSelector : public Selector<edm::Event> {
 public:
     BaseEventSelector();
     virtual ~BaseEventSelector() { };
-    virtual void BeginJob(std::map<std::string, edm::ParameterSet const > par);
-    virtual void BeginJob(std::map<std::string, edm::ParameterSet const > par, edm::ConsumesCollector && iC);
+    virtual void BeginJob(const edm::ParameterSet& iConfig, edm::ConsumesCollector && iC);
     virtual bool operator()( edm::Event const & event, pat::strbitset & ret) = 0;
     virtual void EndJob();
     virtual void AnalyzeEvent( edm::EventBase const & event, LjmetEventContent & ec ) { }

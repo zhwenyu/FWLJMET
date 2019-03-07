@@ -14,35 +14,10 @@ mLegend("")
 {
 }
 
-void BaseEventSelector::BeginJob(std::map<std::string, edm::ParameterSet const > par)
+
+void BaseEventSelector::BeginJob(const edm::ParameterSet& iConfig, edm::ConsumesCollector && iC)
 {
-    std::string _key = "event_selector";
-
-    if ( par.find(_key)!=par.end() ){
-
-        if (par[_key].exists("isMc")) mbPar["isMc"] = par[_key].getParameter<bool> ("isMc");
-        else mbPar["isMc"] = false;
-                
-		mtPar["pv_collection"] = par[_key].getParameter<edm::InputTag>("pv_collection");
-    }
-         
 }
-
-
-void BaseEventSelector::BeginJob(std::map<std::string, edm::ParameterSet const > par, edm::ConsumesCollector && iC)
-{
-    std::string _key = "event_selector";
-
-    if ( par.find(_key)!=par.end() ){
-
-        if (par[_key].exists("isMc")) mbPar["isMc"] = par[_key].getParameter<bool> ("isMc");
-        else mbPar["isMc"] = false;
-                
-		mtPar["pv_collection"] = par[_key].getParameter<edm::InputTag>("pv_collection");
-    }
-         
-}
-
 
 void BaseEventSelector::EndJob()
 {

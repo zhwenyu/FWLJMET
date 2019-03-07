@@ -92,16 +92,20 @@ void LjmetFactory::RunAllProducers(edm::EventBase const & event, BaseEventSelect
     }
 }
 
-void LjmetFactory::SetAllCalcConfig( std::map<std::string, edm::ParameterSet const> mPar )
+void LjmetFactory::SetAllCalcConfig( const edm::ParameterSet Par )
 {
+
     // Set each calc's parameter set, if present
     for (std::map<std::string, BaseCalc * >::const_iterator iCalc = mpCalculators.begin(); iCalc != mpCalculators.end(); ++iCalc) {
+
         std::string _name = iCalc->second->GetName();
-        if (mPar.find(_name) != mPar.end()) {
-            iCalc->second->SetPSet(mPar[_name]);
-        }
+         
+		const edm::ParameterSet& calcConfig = Par.getParameterSet(_name) ;
+
+        iCalc->second->SetPSet(calcConfig);
     }
 }
+
 
 void LjmetFactory::SetExcludedCalcs( std::vector<std::string> vExcl )
 {

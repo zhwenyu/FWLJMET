@@ -13,7 +13,7 @@ public:
     virtual int EndJob(){return 0;};
     
 private:
-    edm::InputTag             elec_it;
+	bool debug;
 
 };
 
@@ -30,12 +30,14 @@ DummyCalc::~DummyCalc()
 
 int DummyCalc::BeginJob(edm::ConsumesCollector && iC)
 {
+	debug = mPset.getParameter<bool>("debug");
+
     return 0;
 }
 
 int DummyCalc::AnalyzeEvent(edm::Event const & event, BaseEventSelector * selector)
 {     
-	std::cout << "Processing Event in DummyCalc::AnalyzeEvent" << std::endl;
+	if(debug)std::cout << "Processing Event in DummyCalc::AnalyzeEvent" << std::endl;
 
 	// ----- Get objects from the selector -----
     //std::vector<edm::Ptr<pat::Electron> >       const & vSelectedElectrons = selector->GetSelectedElectrons();

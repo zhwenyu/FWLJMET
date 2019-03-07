@@ -31,7 +31,70 @@ process.TFileService = cms.Service("TFileService", fileName = cms.string(OUTFILE
 #                                )
 
 
-process.ljmet = cms.EDAnalyzer('LJMet'
+process.ljmet = cms.EDAnalyzer(
+	'LJMet',
+
+	debug         = cms.bool(True),
+	selector      = cms.string('TestSelector'),
+	exclude_calcs = cms.vstring(
+			'DummyCalc',	
+	),
+	
+	test_selector = cms.PSet(
+	
+		debug  = cms.bool(True),
+
+		HLTcollection      = cms.InputTag("TriggerResults","","HLT"),
+		muonsCollection     = cms.InputTag("slimmedMuons"),
+		electronsCollection = cms.InputTag("slimmedElectrons"),
+		
+		HLTtargets    = cms.vstring(
+    	#MuMu        
+        'HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_v',    #exists in 2017  (PreScaled!)        
+        'HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_v',  #exists in 2017 (PreScaled!)        
+        'HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_Mass3p8_v',                      
+        'HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_v',           
+        'HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ_v',        
+    	#ElEl
+        'HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_v',  #exists in 2017    
+        'HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v', #exists in 2017        
+		#MuEl
+        'HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_v',   #exists in 2017 
+		'HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_DZ', #exists in 2017 
+        'HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_v', #exists in 2017  
+        'HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v',  #exists in 2017
+        #for trig efficiency
+        'HLT_IsoMu24_v',
+        'HLT_IsoTkMu24_v',
+        'HLT_IsoMu27_v',
+        'HLT_Ele27_WPTight_Gsf_v',
+        'HLT_Ele35_WPTight_Gsf_v',
+        ),
+        
+        minLeptons = cms.int32(3),
+
+        min_muPt   = cms.double(20.), 
+        max_muEta  = cms.double(2.4), 
+        min_elPt   = cms.double(20.), 
+        max_elEta  = cms.double(2.4), 
+        
+	),
+	
+	TestCalc = cms.PSet( # name has to match the calculator name as registered in Calc.cc
+	
+		debug  = cms.bool(True),
+
+		electronsCollection = cms.InputTag("slimmedElectrons"),
+	
+	),
+
+	DummyCalc = cms.PSet( # name has to match the calculator name as registered in Calc.cc	
+
+		debug  = cms.bool(True),
+	
+	),
+
+	
 )
 
 
@@ -59,7 +122,7 @@ process.skimMiniAOD = cms.EDFilter(
         'HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v', #exists in 2017        
 		#MuEl
         'HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_v',   #exists in 2017 
-		'HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_DZ_v', #exists in 2017 
+		'HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_DZ', #exists in 2017 
         'HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_v', #exists in 2017  
         'HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v',  #exists in 2017
         #for trig efficiency
