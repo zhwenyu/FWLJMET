@@ -90,7 +90,7 @@ void TestEventSelector::BeginJob( const edm::ParameterSet& iConfig, edm::Consume
     minLeptons = selectorConfig.getParameter<int>("minLeptons");
     min_muPt   = selectorConfig.getParameter<double>("min_muPt");
     max_muEta  = selectorConfig.getParameter<double>("max_muEta");;
-    max_elEta  = selectorConfig.getParameter<double>("max_elEta");
+    min_elPt   = selectorConfig.getParameter<double>("min_elPt");
     max_elEta  = selectorConfig.getParameter<double>("max_elEta");
 
     bFirstEntry = true; //in case anything needs a first entry bool.
