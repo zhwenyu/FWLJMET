@@ -85,6 +85,9 @@ class LJMet : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
 
 
       bool debug;
+      std::string selection;
+      std::vector<std::string> vExcl;
+      std::vector<std::string> vIncl;
 
 };
 
@@ -104,9 +107,10 @@ LJMet::LJMet(const edm::ParameterSet& iConfig)
 {
    //now do what ever initialization is needed
 
-   debug                           = iConfig.getParameter<bool>("debug");
-   std::string selection           = iConfig.getParameter<std::string>("selector");
-   std::vector<std::string> vExcl  = iConfig.getParameter<std::vector<std::string>>("exclude_calcs");
+   debug      = iConfig.getParameter<bool>("debug");
+   selection  = iConfig.getParameter<std::string>("selector");
+   vExcl      = iConfig.getParameter<std::vector<std::string>>("exclude_calcs");
+   vIncl      = iConfig.getParameter<std::vector<std::string>>("include_calcs");
 
 
    usesResource("TFileService"); // came originally with EDAnalyzer
@@ -135,19 +139,23 @@ LJMet::LJMet(const edm::ParameterSet& iConfig)
    //Object to pass to eventSelector and Calculators access data - https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideEDMGetDataFromEvent#Consumes_and_Helpers
    edm::ConsumesCollector && cC = consumesCollector(); // this didn work. so for now constructing twice for eventSelector and Calculator each.
 
-   //theSelector->BeginJob(mPar);
-   //theSelector->BeginJob(mPar,consumesCollector());
    theSelector->BeginJob(iConfig, (edm::ConsumesCollector &&)cC);
+   
+   //print out included Calculators
+   for (std::vector<std::string>::const_iterator it = vIncl.begin(); it != vIncl.end(); ++it){
+      std::cout << "[FWLJMet] : " << "including " << *it <<std::endl;
+   }
 
    // send config parameters to calculators
-   //factory->SetAllCalcConfig(mPar);
-   factory->SetAllCalcConfig(iConfig);
+   factory->SetAllCalcConfig(iConfig, vIncl);
 
    // Run BeginJob() for calculators
-   factory->BeginJobAllCalc((edm::ConsumesCollector &&)cC);
+   factory->BeginJobAllCalc((edm::ConsumesCollector &&)cC, vIncl);
 
    // set excluded calculators
    factory->SetExcludedCalcs(vExcl); // This is silly. Need to make changes so that LJMet by default only considers included Calculators!
+   
+
 
 }
 
@@ -183,7 +191,7 @@ LJMet::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 
 
 	// run producers
-	factory->RunAllProducers(iEvent, theSelector);
+	factory->RunAllProducers(iEvent, theSelector, vIncl); 
 
 	// event selection
 	pat::strbitset ret = theSelector->getBitTemplate();
@@ -195,7 +203,7 @@ LJMet::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 		//
 		//_____ Run all variable calculators now ___________________
 		//
-		factory->RunAllCalculators(iEvent, theSelector, ec);
+		factory->RunAllCalculators(iEvent, theSelector, ec, vIncl);
 
 
 		//
@@ -237,7 +245,7 @@ LJMet::endJob()
 
 
     // Run EndJob() for calculators
-    factory->EndJobAllCalc();
+    factory->EndJobAllCalc(vIncl);
 
 
     // EndJob() for the selector

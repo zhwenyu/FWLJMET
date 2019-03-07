@@ -36,6 +36,10 @@ process.ljmet = cms.EDAnalyzer(
 
 	debug         = cms.bool(True),
 	selector      = cms.string('TestSelector'),
+	include_calcs = cms.vstring(
+			'TestCalc',	
+			'DummyCalc',	
+	),
 	exclude_calcs = cms.vstring(
 			'DummyCalc',	
 	),

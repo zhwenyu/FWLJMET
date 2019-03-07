@@ -73,36 +73,46 @@ BaseEventSelector * LjmetFactory::GetEventSelector(std::string name)
     return theSelector;
 }
 
-void LjmetFactory::RunAllCalculators(edm::Event const & event, BaseEventSelector * selector, LjmetEventContent & ec)
+void LjmetFactory::RunAllCalculators(edm::Event const & event, BaseEventSelector * selector, LjmetEventContent & ec, std::vector<std::string> vIncl)
 {
-    // Loop over all registered calculators and compute
-    // implemented variables
-    for (std::map<std::string, BaseCalc * >::const_iterator iCalc = mpCalculators.begin(); iCalc != mpCalculators.end(); ++iCalc) {
-        iCalc->second->SetEventContent(&ec);
-        iCalc->second->AnalyzeEvent(event, selector);
+    for (std::vector<std::string>::const_iterator it = vIncl.begin(); it != vIncl.end(); ++it){
+    
+    	if(mpCalculators.find(*it)!=mpCalculators.end()){
+    		mpCalculators[*it]->SetEventContent(&ec);
+    		mpCalculators[*it]->AnalyzeEvent(event, selector);
+    		
+    	}
+    
     }
 }
 
-void LjmetFactory::RunAllProducers(edm::EventBase const & event, BaseEventSelector * selector)
+
+void LjmetFactory::RunAllProducers(edm::EventBase const & event, BaseEventSelector * selector, std::vector<std::string> vIncl)
 {
     // Loop over all registered calculators and
     // run all producer methods (comes before selection)
-    for (std::map<std::string, BaseCalc * >::const_iterator iCalc = mpCalculators.begin(); iCalc != mpCalculators.end(); ++iCalc) {
-        iCalc->second->ProduceEvent(event, selector);
+    for (std::vector<std::string>::const_iterator it = vIncl.begin(); it != vIncl.end(); ++it){
+    	if(mpCalculators.find(*it)!=mpCalculators.end()){
+    		mpCalculators[*it]->ProduceEvent(event, selector);    		
+    	}    
     }
 }
 
-void LjmetFactory::SetAllCalcConfig( const edm::ParameterSet Par )
+
+void LjmetFactory::SetAllCalcConfig( const edm::ParameterSet Par, std::vector<std::string> vIncl )
 {
 
     // Set each calc's parameter set, if present
-    for (std::map<std::string, BaseCalc * >::const_iterator iCalc = mpCalculators.begin(); iCalc != mpCalculators.end(); ++iCalc) {
+    for (std::vector<std::string>::const_iterator it = vIncl.begin(); it != vIncl.end(); ++it){
+    
+    	if(mpCalculators.find(*it)!=mpCalculators.end()){
+    	
+    		const edm::ParameterSet& calcConfig = Par.getParameterSet(*it) ;
 
-        std::string _name = iCalc->second->GetName();
-         
-		const edm::ParameterSet& calcConfig = Par.getParameterSet(_name) ;
-
-        iCalc->second->SetPSet(calcConfig);
+    		mpCalculators[*it]->SetPSet(calcConfig);
+    		
+    	}
+    
     }
 }
 
@@ -120,21 +130,28 @@ void LjmetFactory::SetExcludedCalcs( std::vector<std::string> vExcl )
     }
 }
 
-void LjmetFactory::BeginJobAllCalc(edm::ConsumesCollector && iC)
+void LjmetFactory::BeginJobAllCalc(edm::ConsumesCollector && iC, std::vector<std::string> vIncl)
 {
     // Run all BeginJob()'s
-    for (std::map<std::string, BaseCalc * >::const_iterator iCalc = mpCalculators.begin(); iCalc != mpCalculators.end(); ++iCalc) {
-        iCalc->second->BeginJob((edm::ConsumesCollector &&)iC);
+    for (std::vector<std::string>::const_iterator it = vIncl.begin(); it != vIncl.end(); ++it){    
+    	if(mpCalculators.find(*it)!=mpCalculators.end()){
+    		mpCalculators[*it]->BeginJob((edm::ConsumesCollector &&)iC);    		
+    	}
     }
 }
 
-void LjmetFactory::EndJobAllCalc()
+
+void LjmetFactory::EndJobAllCalc(std::vector<std::string> vIncl)
 {
     // Run all EndJob()'s
-    for (std::map<std::string, BaseCalc * >::const_iterator iCalc = mpCalculators.begin(); iCalc != mpCalculators.end(); ++iCalc) {
-        iCalc->second->EndJob();
+    for (std::vector<std::string>::const_iterator it = vIncl.begin(); it != vIncl.end(); ++it){    
+    	if(mpCalculators.find(*it)!=mpCalculators.end()){
+    		mpCalculators[*it]->EndJob();   		
+    	}
     }
 }
+
+
 
 void LjmetFactory::RunBeginEvent(edm::EventBase const & event, LjmetEventContent & ec)
 {
