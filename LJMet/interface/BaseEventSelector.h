@@ -51,12 +51,20 @@ public:
     virtual void AnalyzeEvent( edm::EventBase const & event, LjmetEventContent & ec ) { }
     std::string GetName() { return mName; }
     
-    std::vector<unsigned int> const & GetSelTriggers() const { return mvSelTriggers; }
-    std::vector<edm::Ptr<pat::Muon>> const & GetSelMuons() const { return mvSelMuons; }
+    std::vector<unsigned int>            const & GetSelTriggers()  const { return mvSelTriggers; }
+    std::vector<edm::Ptr<pat::Muon>>     const & GetSelMuons()     const { return mvSelMuons; }
     std::vector<edm::Ptr<pat::Electron>> const & GetSelElectrons() const { return mvSelElectrons; }
-    std::vector<edm::Ptr<pat::Jet>> const & GetSelJets() const { return mvSelJets; }
-    edm::Ptr<pat::MET> const & GetMet() const { return mpMet; }
-    std::vector<edm::Ptr<reco::Vertex>> const & GetSelPVs() const { return mvSelPVs; }
+    std::vector<edm::Ptr<pat::Jet>>      const & GetSelJets()      const { return mvSelJets; }
+    edm::Ptr<pat::MET>                   const & GetMet()          const { return mpMet; }
+    std::vector<edm::Ptr<reco::Vertex>>  const & GetSelPVs()       const { return mvSelPVs; }
+
+    //Originally used for MultiLepEventSelector and called by MultiCalc
+    std::map<std::string, unsigned int> const & GetSelectedTriggersEl()   const { return mvSelTriggersEl; }
+    std::map<std::string, unsigned int> const & GetSelectedTriggersMu()   const { return mvSelTriggersMu; }
+    std::map<std::string, unsigned int> const & GetSelectedMCTriggersEl() const { return mvSelMCTriggersEl; }
+    std::map<std::string, unsigned int> const & GetSelectedMCTriggersMu() const { return mvSelMCTriggersMu; }
+
+
     void SetMc(bool isMc) { mbIsMc = isMc; }
     bool IsMc() { return mbIsMc; }
     
@@ -69,21 +77,19 @@ public:
     void SetHistValue(std::string name, double value) { mpEc->SetHistValue(mName, name, value); }
             
 protected:
-    std::vector<unsigned int> mvSelTriggers;
-    std::vector<edm::Ptr<pat::Muon>> mvSelMuons;
+    std::vector<unsigned int>            mvSelTriggers;
+    std::vector<edm::Ptr<pat::Muon>>     mvSelMuons;
     std::vector<edm::Ptr<pat::Electron>> mvSelElectrons;
-    std::vector<edm::Ptr<pat::Jet>> mvSelJets;
-    edm::Ptr<pat::MET> mpMet;
-    std::vector<edm::Ptr<reco::Vertex>> mvSelPVs;
+    std::vector<edm::Ptr<pat::Jet>>      mvSelJets;
+    edm::Ptr<pat::MET>                   mpMet;
+    std::vector<edm::Ptr<reco::Vertex>>  mvSelPVs;
     
-    // containers for config parameter values
-    std::map<std::string, bool> mbPar;
-    std::map<std::string, int> miPar;
-    std::map<std::string, double> mdPar;
-    std::map<std::string, std::vector<double>> mvdPar;
-    std::map<std::string, std::string> msPar;
-    std::map<std::string, edm::InputTag> mtPar;
-    std::map<std::string, std::vector<std::string>> mvsPar;
+    //Originally used for MultiLepEventSelector and called by MultiCalc
+    std::map<std::string, unsigned int> mvSelTriggersEl;
+    std::map<std::string, unsigned int> mvSelTriggersMu;
+    std::map<std::string, unsigned int> mvSelMCTriggersEl;
+    std::map<std::string, unsigned int> mvSelMCTriggersMu;
+
 
     std::string mName;
     std::string mLegend;
