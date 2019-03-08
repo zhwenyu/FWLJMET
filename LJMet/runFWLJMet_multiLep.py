@@ -98,9 +98,10 @@ process.ljmet = cms.EDAnalyzer(
 			METfilter_extra = cms.InputTag("ecalBadCalibReducedMINIAODFilter"),
 			
 			#MET cuts
-			met_cuts    = cms.bool(True),
+			met_cuts    = cms.bool(False),
 			min_met     = cms.double(20.0),
 			max_met     = cms.double(99999999999.0),
+			met_collection           = cms.InputTag('slimmedMETs'),
 
 
             muonsCollection     = cms.InputTag("slimmedMuons"),

@@ -55,10 +55,15 @@ protected:
     
     bool metfilters;
 
+    bool met_cuts;
+    double min_met;
+    double max_met;
+
     edm::EDGetTokenT<edm::TriggerResults>       triggersToken;
     edm::EDGetTokenT<reco::VertexCollection>    PVToken;
     edm::EDGetTokenT<edm::TriggerResults>       METfilterToken;
     edm::EDGetTokenT<bool>                      METfilterToken_extra;
+    edm::EDGetTokenT<std::vector<pat::MET> >    METtoken;
     edm::EDGetTokenT<pat::MuonCollection>       muonsToken;
     edm::EDGetTokenT<pat::ElectronCollection>   electronsToken;
 
@@ -71,6 +76,7 @@ protected:
     bool TriggerSelection (edm::Event const & event);
     bool PVSelection      (edm::Event const & event);
     bool METfilter        (edm::Event const & event);
+    bool METSelection     (edm::Event const & event);
     bool LeptonsSelection (edm::Event const & event);
 
 
@@ -116,10 +122,16 @@ void MultiLepEventSelector::BeginJob( const edm::ParameterSet& iConfig, edm::Con
 
     metfilters         = selectorConfig.getParameter<bool>("metfilters");
 
+    met_cuts           = selectorConfig.getParameter<bool>("met_cuts");
+    min_met            = selectorConfig.getParameter<double>("min_met");
+    max_met            = selectorConfig.getParameter<double>("max_met");
+    
+
     triggersToken        = iC.consumes<edm::TriggerResults>(selectorConfig.getParameter<edm::InputTag>("HLTcollection"));
     PVToken              = iC.consumes<reco::VertexCollection>(PVconfig.getParameter<edm::InputTag>("pvSrc"));
     METfilterToken       = iC.consumes<edm::TriggerResults>(selectorConfig.getParameter<edm::InputTag>("flag_tag"));
     METfilterToken_extra = iC.consumes<bool>(selectorConfig.getParameter<edm::InputTag>("METfilter_extra"));
+    METtoken             = iC.consumes<std::vector<pat::MET> >(selectorConfig.getParameter<edm::InputTag>("met_collection"));
     muonsToken           = iC.consumes<pat::MuonCollection>(selectorConfig.getParameter<edm::InputTag>("muonsCollection"));;
     electronsToken       = iC.consumes<pat::ElectronCollection>(selectorConfig.getParameter<edm::InputTag>("electronsCollection"));
 
@@ -136,6 +148,7 @@ void MultiLepEventSelector::BeginJob( const edm::ParameterSet& iConfig, edm::Con
     push_back("Trigger");
     push_back("Primary Vertex");
     push_back("MET filters");
+    push_back("MET");
     push_back("Leptons");
     push_back("All cuts");
 
@@ -144,6 +157,7 @@ void MultiLepEventSelector::BeginJob( const edm::ParameterSet& iConfig, edm::Con
     set("Trigger",trigger_cut);
     set("Primary Vertex",pv_cut);
     set("MET filters", metfilters);
+    set("MET", met_cuts);
     set("Leptons",true);
     set("All cuts",true);
 
@@ -168,6 +182,9 @@ bool MultiLepEventSelector::operator()( edm::Event const & event, pat::strbitset
     else break;
 
     if( METfilter(event) )        passCut(ret, "MET filters");
+    else break;
+
+    if( METSelection(event) )     passCut(ret, "MET"); // this needs to be after jets.
     else break;
 
     if( LeptonsSelection(event) ) passCut(ret, "Leptons");
@@ -431,6 +448,54 @@ bool MultiLepEventSelector::METfilter(edm::Event const & event)
 	else{
 
 	  if(debug)std::cout << "\t" <<"IGNORING MET Filter selection"<< std::endl;
+
+	  pass = true;
+
+	}
+
+    return pass;
+
+}
+
+
+bool MultiLepEventSelector::METSelection(edm::Event const & event)
+{
+
+	bool pass = false;
+
+	//
+	//_____ MET cuts __________________________________
+	//
+	//
+	if (considerCut("MET")) {
+
+        if (debug) std::cout<<"\t" <<"MET Selection:"<< std::endl;
+        
+        edm::Handle<std::vector<pat::MET> > mhMet;
+        event.getByToken( METtoken, mhMet );
+        pMet = edm::Ptr<pat::MET>( mhMet, 0);
+
+		// pfMet
+		bool passMinMET = false;
+		bool passMaxMET = false;
+		if ( pMet.isNonnull() && pMet.isAvailable() ) {
+			pat::MET const & met = mhMet->at(0);
+// 			TLorentzVector corrMET = correctMet(met, event);
+// 			
+//         	if (debug) std::cout<<"\t\t" <<"MET = " << corrMET.Pt()<< std::endl;
+// 
+// 			if ( corrMET.Pt() > min_met ) passMinMET=true;
+// 			if ( corrMET.Pt() < max_met ) passMaxMET=false;
+			
+			if (passMinMET && passMaxMET){
+				 pass = true;
+        		if (debug) std::cout<<"\t\t\t" <<"---> PASSES MET Selection. " << std::endl;
+			}
+		}
+	}
+	else{
+
+	  if(debug)std::cout << "\t" <<"IGNORING MET selection"<< std::endl;
 
 	  pass = true;
 
