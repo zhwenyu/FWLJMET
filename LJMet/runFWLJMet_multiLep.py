@@ -20,7 +20,7 @@ process.source = cms.Source("PoolSource",
     )
 )
 
-OUTFILENAME = 'ljmet_TprimeTprime_M-1100_TuneCP5_13TeV-madgraph-pythia8_test_producer_MC.root'
+OUTFILENAME = 'TprimeTprime_M-1100_TuneCP5_13TeV-madgraph-pythia8_FWLJMET_MC.root'
 # TFileService
 process.TFileService = cms.Service("TFileService", fileName = cms.string(OUTFILENAME))
 
@@ -44,15 +44,11 @@ process.ljmet = cms.EDAnalyzer(
             debug  = cms.bool(True),
 
             isMc  = cms.bool(True),
-            
-            HLTcollection       = cms.InputTag("TriggerResults","","HLT"),
-            muonsCollection     = cms.InputTag("slimmedMuons"),
-            electronsCollection = cms.InputTag("slimmedElectrons"),
-            
+                        
 			# Trigger cuts
+            HLTcollection       = cms.InputTag("TriggerResults","","HLT"),
 			trigger_cut  = cms.bool(True),
 			dump_trigger = cms.bool(True),
-
 			mctrigger_path_el = cms.vstring(        
 				'HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_v',  #exists in 2017    
 				'HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v', #exists in 2017        
@@ -83,10 +79,22 @@ process.ljmet = cms.EDAnalyzer(
 				'HLT_IsoTkMu24_v',
 				'HLT_IsoMu27_v',
 				),
-
 			trigger_path_el = cms.vstring(''),
-			trigger_path_mu = cms.vstring(''),   
-            
+			trigger_path_mu = cms.vstring(''),
+			
+			# PV cuts
+			pv_cut         = cms.bool(True),
+			pvSelector = cms.PSet( # taken from https://github.com/cms-sw/cmssw/blob/CMSSW_9_4_X/PhysicsTools/SelectorUtils/python/pvSelector_cfi.py
+				NPV     = cms.int32(1),
+				pvSrc   = cms.InputTag('offlineSlimmedPrimaryVertices'),
+				minNdof = cms.double(4.0),
+				maxZ    = cms.double(24.0),
+				maxRho  = cms.double(2.0)
+				),
+
+
+            muonsCollection     = cms.InputTag("slimmedMuons"),
+            electronsCollection = cms.InputTag("slimmedElectrons"),
 
             minLeptons = cms.int32(3),
 
@@ -96,7 +104,8 @@ process.ljmet = cms.EDAnalyzer(
             max_elEta  = cms.double(2.4),
 
             ),
-
+            
+			
 	MultiLepCalc = cms.PSet( # name has to match the calculator name as registered in Calc.cc
 
 	    debug  = cms.bool(True),

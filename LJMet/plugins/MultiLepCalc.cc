@@ -49,7 +49,8 @@ int MultiLepCalc::AnalyzeEvent(edm::Event const & event, BaseEventSelector * sel
     std::map<std::string, unsigned int>         const & mSelTriggersEl   = selector->GetSelectedTriggersEl();
     std::map<std::string, unsigned int>         const & mSelMCTriggersMu = selector->GetSelectedMCTriggersMu();
     std::map<std::string, unsigned int>         const & mSelTriggersMu   = selector->GetSelectedTriggersMu();
-
+    
+    std::vector<edm::Ptr<reco::Vertex>>         const & vSelPVs       = selector->GetSelPVs();
     std::vector<edm::Ptr<pat::Muon> >           const & vSelMuons     = selector->GetSelMuons();
     std::vector<edm::Ptr<pat::Electron> >       const & vSelElectrons = selector->GetSelElectrons();
     int _nSelMuons       = (int)vSelMuons.size();
@@ -86,18 +87,25 @@ int MultiLepCalc::AnalyzeEvent(edm::Event const & event, BaseEventSelector * sel
     SetValue("viSelMCTriggersMu", viSelMCTriggersMu);
     SetValue("viSelTriggersMu", viSelTriggersMu);
 
+
+    //
+    //_____Primary Vertex______
+    //
+    SetValue("nPV", (int)vSelPVs.size());
+
+
     //
     //_____Muons______
     //
     std::vector <double> muPt;
     std::vector <double> muEta;
     for (std::vector<edm::Ptr<pat::Muon> >::const_iterator imu = vSelMuons.begin(); imu != vSelMuons.end(); imu++){
-       muPt     . push_back((*imu)->pt()); 
-       muEta     . push_back((*imu)->eta()); 
+       muPt.push_back((*imu)->pt()); 
+       muEta.push_back((*imu)->eta()); 
     }
-    SetValue("Nmu"     , _nSelMuons);
-    SetValue("muPt"     , muPt);
-    SetValue("muEta"     , muEta);
+    SetValue("Nmu",_nSelMuons);
+    SetValue("muPt",muPt);
+    SetValue("muEta",muEta);
 
 
     //
@@ -106,12 +114,12 @@ int MultiLepCalc::AnalyzeEvent(edm::Event const & event, BaseEventSelector * sel
     std::vector <double> elPt;
     std::vector <double> elEta;
     for (std::vector<edm::Ptr<pat::Electron> >::const_iterator iel = vSelElectrons.begin(); iel != vSelElectrons.end(); iel++){
-       elPt     . push_back((*iel)->pt()); 
-       elEta     . push_back((*iel)->eta()); 
+       elPt.push_back((*iel)->pt()); 
+       elEta.push_back((*iel)->eta()); 
     }
-    SetValue("Nel"     , _nSelElectrons);
-    SetValue("elPt"     , elPt);
-    SetValue("elEta"     , elEta);
+    SetValue("Nel",_nSelElectrons);
+    SetValue("elPt", elPt);
+    SetValue("elEta",elEta);
     
     return 0;
 }
