@@ -52,9 +52,13 @@ protected:
 
     bool pv_cut;
     boost::shared_ptr<PVSelector>              pvSel_;
+    
+    bool metfilters;
 
     edm::EDGetTokenT<edm::TriggerResults>       triggersToken;
-    edm::EDGetTokenT<reco::VertexCollection>    PVToken;    
+    edm::EDGetTokenT<reco::VertexCollection>    PVToken;
+    edm::EDGetTokenT<edm::TriggerResults>       METfilterToken;
+    edm::EDGetTokenT<bool>                      METfilterToken_extra;
     edm::EDGetTokenT<pat::MuonCollection>       muonsToken;
     edm::EDGetTokenT<pat::ElectronCollection>   electronsToken;
 
@@ -64,9 +68,10 @@ protected:
     float     min_elPt;
     float     max_elEta;
 
-    bool TriggerSelection(edm::Event const & event);
-    bool PVSelection(edm::Event const & event);
-    bool LeptonsSelection(edm::Event const & event);
+    bool TriggerSelection (edm::Event const & event);
+    bool PVSelection      (edm::Event const & event);
+    bool METfilter        (edm::Event const & event);
+    bool LeptonsSelection (edm::Event const & event);
 
 
 private:
@@ -109,10 +114,14 @@ void MultiLepEventSelector::BeginJob( const edm::ParameterSet& iConfig, edm::Con
     const edm::ParameterSet& PVconfig = selectorConfig.getParameterSet("pvSelector") ;
     pvSel_ = boost::shared_ptr<PVSelector>( new PVSelector(PVconfig) );
 
-    triggersToken       = iC.consumes<edm::TriggerResults>(selectorConfig.getParameter<edm::InputTag>("HLTcollection"));
-    PVToken             = iC.consumes<reco::VertexCollection>(PVconfig.getParameter<edm::InputTag>("pvSrc"));
-    muonsToken          = iC.consumes<pat::MuonCollection>(selectorConfig.getParameter<edm::InputTag>("muonsCollection"));;
-    electronsToken      = iC.consumes<pat::ElectronCollection>(selectorConfig.getParameter<edm::InputTag>("electronsCollection"));
+    metfilters         = selectorConfig.getParameter<bool>("metfilters");
+
+    triggersToken        = iC.consumes<edm::TriggerResults>(selectorConfig.getParameter<edm::InputTag>("HLTcollection"));
+    PVToken              = iC.consumes<reco::VertexCollection>(PVconfig.getParameter<edm::InputTag>("pvSrc"));
+    METfilterToken       = iC.consumes<edm::TriggerResults>(selectorConfig.getParameter<edm::InputTag>("flag_tag"));
+    METfilterToken_extra = iC.consumes<bool>(selectorConfig.getParameter<edm::InputTag>("METfilter_extra"));
+    muonsToken           = iC.consumes<pat::MuonCollection>(selectorConfig.getParameter<edm::InputTag>("muonsCollection"));;
+    electronsToken       = iC.consumes<pat::ElectronCollection>(selectorConfig.getParameter<edm::InputTag>("electronsCollection"));
 
     minLeptons = selectorConfig.getParameter<int>("minLeptons");
     min_muPt   = selectorConfig.getParameter<double>("min_muPt");
@@ -126,6 +135,7 @@ void MultiLepEventSelector::BeginJob( const edm::ParameterSet& iConfig, edm::Con
     push_back("No selection");
     push_back("Trigger");
     push_back("Primary Vertex");
+    push_back("MET filters");
     push_back("Leptons");
     push_back("All cuts");
 
@@ -133,6 +143,7 @@ void MultiLepEventSelector::BeginJob( const edm::ParameterSet& iConfig, edm::Con
     set("No selection",true);
     set("Trigger",trigger_cut);
     set("Primary Vertex",pv_cut);
+    set("MET filters", metfilters);
     set("Leptons",true);
     set("All cuts",true);
 
@@ -153,7 +164,10 @@ bool MultiLepEventSelector::operator()( edm::Event const & event, pat::strbitset
     if( TriggerSelection(event) ) passCut(ret, "Trigger");
     else break;
 
-    if( PVSelection(event) ) passCut(ret, "Primary Vertex");
+    if( PVSelection(event) )      passCut(ret, "Primary Vertex");
+    else break;
+
+    if( METfilter(event) )        passCut(ret, "MET filters");
     else break;
 
     if( LeptonsSelection(event) ) passCut(ret, "Leptons");
@@ -224,7 +238,7 @@ bool MultiLepEventSelector::TriggerSelection(edm::Event const & event)
 				std::cout << trigName <<std::endl;
 			}
 		}
-		if (debug) std::cout<< "\t" <<"The event FIRED the following registered trigger(s) in LJMet: "<<std::endl;
+		if (debug) std::cout<< "\t\t" <<"The event FIRED the following registered trigger(s) in LJMet: "<<std::endl;
 
 		mvSelTriggersEl.clear();
 		mvSelMCTriggersEl.clear();
@@ -317,24 +331,24 @@ bool MultiLepEventSelector::PVSelection(edm::Event const & event)
 {
 
 	bool pass = false;
-	
+
 	//
     //_____ Primary Vertex cuts __________________________________
     //
     vSelPVs.clear();
     if ( considerCut("Primary Vertex") ) {
-    
+
     	if(debug)std::cout << "\t" <<"PVSelection:"<< std::endl;
-    	
+
     	if ( (*pvSel_)(event) ){
     		pass = true;
     		vSelPVs = pvSel_->GetSelectedPvs(); //reference: https://github.com/cms-sw/cmssw/blob/CMSSW_9_4_X/PhysicsTools/SelectorUtils/interface/PVSelector.h
     		if(debug)std::cout << "\t" << "\t" <<"num of selected PV = "<< pvSel_->GetNpv()<< std::endl;
     	}
     	else{
-    		if(debug)std::cout << "\t" << "\t" <<"No selected PV."<< std::endl;    	
+    		if(debug)std::cout << "\t" << "\t" <<"No selected PV."<< std::endl;
     	}
-    	    	
+
     }
 	else{
 
@@ -343,16 +357,94 @@ bool MultiLepEventSelector::PVSelection(edm::Event const & event)
 		pass = true;
 
 	}
-    
+
     return pass;
 
 }
+
+bool MultiLepEventSelector::METfilter(edm::Event const & event)
+{
+
+	bool pass = false;
+
+	//
+	//_____ MET Filters __________________________________
+	//
+	//
+	if (considerCut("MET filters")) {
+
+	  if(debug)std::cout << "\t" <<"METFilterSelection:"<< std::endl;
+
+	  edm::Handle<edm::TriggerResults > PatTriggerResults;
+	  event.getByToken( METfilterToken, PatTriggerResults );
+	  const edm::TriggerNames patTrigNames = event.triggerNames(*PatTriggerResults);
+
+	  bool goodvertpass = false;
+	  bool globaltighthalopass = false;
+	  bool hbhenoisepass = false;
+	  bool hbhenoiseisopass = false;
+	  bool ecaldeadcellpass = false;
+	  bool badpfmuonpass = false;
+	  bool badchargedcandpass = false;
+	  bool eebadscpass = false;
+	  bool eebadcalibpass = false;
+
+
+	  for (unsigned int i=0; i<PatTriggerResults->size(); i++){
+	    if (patTrigNames.triggerName(i) == "Flag_goodVertices") goodvertpass = PatTriggerResults->accept(patTrigNames.triggerIndex(patTrigNames.triggerName(i)));
+	    if (patTrigNames.triggerName(i) == "Flag_globalSuperTightHalo2016Filter") globaltighthalopass = PatTriggerResults->accept(patTrigNames.triggerIndex(patTrigNames.triggerName(i)));
+	    if (patTrigNames.triggerName(i) == "Flag_HBHENoiseFilter") hbhenoisepass = PatTriggerResults->accept(patTrigNames.triggerIndex(patTrigNames.triggerName(i)));
+	    if (patTrigNames.triggerName(i) == "Flag_HBHENoiseIsoFilter") hbhenoiseisopass = PatTriggerResults->accept(patTrigNames.triggerIndex(patTrigNames.triggerName(i)));
+	    if (patTrigNames.triggerName(i) == "Flag_EcalDeadCellTriggerPrimitiveFilter") ecaldeadcellpass = PatTriggerResults->accept(patTrigNames.triggerIndex(patTrigNames.triggerName(i)));
+	    if (patTrigNames.triggerName(i) == "Flag_BadPFMuonFilter") badpfmuonpass = PatTriggerResults->accept(patTrigNames.triggerIndex(patTrigNames.triggerName(i)));
+	    if (patTrigNames.triggerName(i) == "Flag_BadChargedCandidateFilter") badchargedcandpass = PatTriggerResults->accept(patTrigNames.triggerIndex(patTrigNames.triggerName(i)));
+	    if (patTrigNames.triggerName(i) == "Flag_eeBadScFilter") eebadscpass = PatTriggerResults->accept(patTrigNames.triggerIndex(patTrigNames.triggerName(i)));
+	    if (patTrigNames.triggerName(i) == "Flag_ecalBadCalibFilter") eebadcalibpass = PatTriggerResults->accept(patTrigNames.triggerIndex(patTrigNames.triggerName(i)));
+	  }
+
+	  // Rerun ecalBadCalibReducedMINIAODFilter if possible
+	  edm::Handle<bool> passecalBadCalibFilterUpdate;
+	  if(event.getByToken( METfilterToken_extra , passecalBadCalibFilterUpdate)){
+	      eebadcalibpass = *passecalBadCalibFilterUpdate;
+	  }
+
+	  if( hbhenoisepass &&
+	      hbhenoiseisopass &&
+	      globaltighthalopass &&
+	      ecaldeadcellpass &&
+	      (isMc || eebadscpass) &&
+	      goodvertpass &&
+	      badpfmuonpass &&
+	      badchargedcandpass &&
+	      eebadcalibpass)
+	  {
+	    if(debug)std::cout << "\t\t" <<"Passes MET Filter selection."<< std::endl;
+	    pass=true;
+	  }
+	  else{
+
+	    if(debug)std::cout << "\t" <<"Fails MET Filter selection."<< std::endl;
+
+	  }
+
+	}
+	else{
+
+	  if(debug)std::cout << "\t" <<"IGNORING MET Filter selection"<< std::endl;
+
+	  pass = true;
+
+	}
+
+    return pass;
+
+}
+
 
 bool MultiLepEventSelector::LeptonsSelection(edm::Event const & event)
 {
 	bool pass = false;
 
-	if(debug) std::cout << std::endl;
 	if(debug)std::cout << "\t" <<"LeptonsSelection:"<< std::endl;
 
 	//Muons
@@ -365,7 +457,7 @@ bool MultiLepEventSelector::LeptonsSelection(edm::Event const & event)
 		iMu = _imu - muonsHandle->begin();
 
 		if(debug) std::cout << std::endl;
-		if(debug) std::cout << "\t" << "iMu = "<< iMu << " pt = " << _imu->pt() << " eta = " << _imu->eta();
+		if(debug) std::cout << "\t\t" << "iMu = "<< iMu << " pt = " << _imu->pt() << " eta = " << _imu->eta();
 
 		if(_imu->pt() < min_muPt) continue;
 		if(fabs(_imu->eta()) > max_muEta) continue;
@@ -386,7 +478,7 @@ bool MultiLepEventSelector::LeptonsSelection(edm::Event const & event)
 		iEl = _iel - electronsHandle->begin();
 
 		if(debug) std::cout << std::endl;
-		if(debug) std::cout << "\t" << "iEl = "<< iEl << " pt = " << _iel->pt() << " eta = " << _iel->eta();
+		if(debug) std::cout << "\t\t" << "iEl = "<< iEl << " pt = " << _iel->pt() << " eta = " << _iel->eta();
 		if(_iel->pt() < min_elPt) continue;
 		if(fabs(_iel->eta()) > max_elEta) continue;
 
@@ -398,10 +490,10 @@ bool MultiLepEventSelector::LeptonsSelection(edm::Event const & event)
 
 	//Check for min selected lepton requirement
 	if(debug) std::cout << std::endl;
-	if(debug)std::cout << "\t" << "nSelMu = "<< nSelMu << " nSelEl = "<< nSelEl << std::endl;
+	if(debug)std::cout << "\t" << "\t" << "nSelMu = "<< nSelMu << " nSelEl = "<< nSelEl << std::endl;
 	if ( (nSelMu + nSelEl) >= (unsigned int)minLeptons){
 		pass = true;
-		if(debug)std::cout << "\t" << "Has "<< minLeptons << " leptons that passes selection ! "<< std::endl;
+		if(debug)std::cout << "\t" << "\t" << "Has "<< minLeptons << " leptons that passes selection ! "<< std::endl;
 	}
 
 	return pass;
@@ -412,19 +504,19 @@ bool MultiLepEventSelector::EXAMPLESelection(edm::Event const & event)
 {
 
 	bool pass = false;
-	
+
 	//
     //_____ Example cuts __________________________________
     //
     if ( considerCut("example cuts") ) {
-    
+
     	if(debug)std::cout << "\t" <<"ExampleSelection:"<< std::endl;
-    	
+
     	if ( condition ){
     		pass = true;
     	}
-    	    	
-    } 
+
+    }
 	   else{
 
 		if(debug)std::cout << "\t" <<"IGNORING ExampleSelection"<< std::endl;
@@ -432,7 +524,7 @@ bool MultiLepEventSelector::EXAMPLESelection(edm::Event const & event)
 		pass = true;
 
 	   } // end cuts
-    
+
     return pass;
 
 }

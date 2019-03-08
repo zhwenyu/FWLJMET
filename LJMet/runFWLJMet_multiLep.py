@@ -91,6 +91,16 @@ process.ljmet = cms.EDAnalyzer(
 				maxZ    = cms.double(24.0),
 				maxRho  = cms.double(2.0)
 				),
+				
+			# MET filter - https://twiki.cern.ch/twiki/bin/viewauth/CMS/MissingETOptionalFiltersRun2 
+			metfilters      = cms.bool(True),
+			flag_tag        = cms.InputTag('TriggerResults::PAT'),
+			METfilter_extra = cms.InputTag("ecalBadCalibReducedMINIAODFilter"),
+			
+			#MET cuts
+			met_cuts    = cms.bool(True),
+			min_met     = cms.double(20.0),
+			max_met     = cms.double(99999999999.0),
 
 
             muonsCollection     = cms.InputTag("slimmedMuons"),
