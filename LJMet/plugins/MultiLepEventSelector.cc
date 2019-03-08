@@ -54,7 +54,7 @@ protected:
     boost::shared_ptr<PVSelector>              pvSel_;
 
     edm::EDGetTokenT<edm::TriggerResults>       triggersToken;
-    edm::EDGetTokenT<reco::VertexCollection>    PVToken;
+    edm::EDGetTokenT<reco::VertexCollection>    PVToken;    
     edm::EDGetTokenT<pat::MuonCollection>       muonsToken;
     edm::EDGetTokenT<pat::ElectronCollection>   electronsToken;
 
@@ -122,14 +122,14 @@ void MultiLepEventSelector::BeginJob( const edm::ParameterSet& iConfig, edm::Con
 
     bFirstEntry = true; //in case anything needs a first entry bool.
 
-    //See "PhysicsTools/SelectorUtils/interface/EventSelector.h"
+    //Reference: "PhysicsTools/SelectorUtils/interface/EventSelector.h"
     push_back("No selection");
     push_back("Trigger");
     push_back("Primary Vertex");
     push_back("Leptons");
     push_back("All cuts");
 
-    //See "PhysicsTools/SelectorUtils/interface/EventSelector.h"
+    //Reference: "PhysicsTools/SelectorUtils/interface/EventSelector.h"
     set("No selection",true);
     set("Trigger",trigger_cut);
     set("Primary Vertex",pv_cut);
@@ -317,34 +317,34 @@ bool MultiLepEventSelector::PVSelection(edm::Event const & event)
 {
 
 	bool pass = false;
-
+	
 	//
-	//_____ Primary Vertex cuts __________________________________
-	//
-	mvSelPVs.clear();
-	if ( considerCut("Primary Vertex") ) {
-
-	    if(debug)std::cout << "\t" <<"PVSelection:"<< std::endl;
-
-	    if ( (*pvSel_)(event) ){
+    //_____ Primary Vertex cuts __________________________________
+    //
+    vSelPVs.clear();
+    if ( considerCut("Primary Vertex") ) {
+    
+    	if(debug)std::cout << "\t" <<"PVSelection:"<< std::endl;
+    	
+    	if ( (*pvSel_)(event) ){
     		pass = true;
-    		mvSelPVs = pvSel_->GetSelectedPvs(); //reference: https://github.com/cms-sw/cmssw/blob/CMSSW_9_4_X/PhysicsTools/SelectorUtils/interface/PVSelector.h
+    		vSelPVs = pvSel_->GetSelectedPvs(); //reference: https://github.com/cms-sw/cmssw/blob/CMSSW_9_4_X/PhysicsTools/SelectorUtils/interface/PVSelector.h
     		if(debug)std::cout << "\t" << "\t" <<"num of selected PV = "<< pvSel_->GetNpv()<< std::endl;
-	    }
-	    else{
-    		if(debug)std::cout << "\t" << "\t" <<"No selected PV."<< std::endl;
-	    }
-
-	}
+    	}
+    	else{
+    		if(debug)std::cout << "\t" << "\t" <<"No selected PV."<< std::endl;    	
+    	}
+    	    	
+    }
 	else{
 
-	    if(debug)std::cout << "\t" <<"IGNORING PVSelection"<< std::endl;
+		if(debug)std::cout << "\t" <<"IGNORING PVSelection"<< std::endl;
 
-	    pass = true;
+		pass = true;
 
 	}
-
-	return pass;
+    
+    return pass;
 
 }
 
@@ -360,7 +360,7 @@ bool MultiLepEventSelector::LeptonsSelection(edm::Event const & event)
 	event.getByToken(muonsToken, muonsHandle);
 	unsigned int iMu = 0; // index in input dataset
 	unsigned int nSelMu = 0; //num of selected muons
-	mvSelMuons.clear();
+	vSelMuons.clear();
 	for (std::vector<pat::Muon>::const_iterator _imu = muonsHandle->begin(); _imu != muonsHandle->end(); _imu++){
 		iMu = _imu - muonsHandle->begin();
 
@@ -370,7 +370,7 @@ bool MultiLepEventSelector::LeptonsSelection(edm::Event const & event)
 		if(_imu->pt() < min_muPt) continue;
 		if(fabs(_imu->eta()) > max_muEta) continue;
 
-		mvSelMuons.push_back( edm::Ptr<pat::Muon>( muonsHandle, iMu) );
+		vSelMuons.push_back( edm::Ptr<pat::Muon>( muonsHandle, iMu) );
 		nSelMu++;
 
 		if(debug) std::cout << " ---> " << "Pass";
@@ -381,7 +381,7 @@ bool MultiLepEventSelector::LeptonsSelection(edm::Event const & event)
 	event.getByToken(electronsToken, electronsHandle);
 	unsigned int iEl = 0; // index in input dataset
 	unsigned int nSelEl = 0; //num of selected muons
-	mvSelElectrons.clear();
+	vSelElectrons.clear();
 	for (std::vector<pat::Electron>::const_iterator _iel = electronsHandle->begin(); _iel != electronsHandle->end(); _iel++){
 		iEl = _iel - electronsHandle->begin();
 
@@ -390,7 +390,7 @@ bool MultiLepEventSelector::LeptonsSelection(edm::Event const & event)
 		if(_iel->pt() < min_elPt) continue;
 		if(fabs(_iel->eta()) > max_elEta) continue;
 
-		mvSelElectrons.push_back( edm::Ptr<pat::Electron>( electronsHandle, iEl) );
+		vSelElectrons.push_back( edm::Ptr<pat::Electron>( electronsHandle, iEl) );
 		nSelEl++;
 
 		if(debug) std::cout << " ---> " << "Pass";
@@ -412,19 +412,19 @@ bool MultiLepEventSelector::EXAMPLESelection(edm::Event const & event)
 {
 
 	bool pass = false;
-
+	
 	//
     //_____ Example cuts __________________________________
     //
     if ( considerCut("example cuts") ) {
-
+    
     	if(debug)std::cout << "\t" <<"ExampleSelection:"<< std::endl;
-
+    	
     	if ( condition ){
     		pass = true;
     	}
-
-    }
+    	    	
+    } 
 	   else{
 
 		if(debug)std::cout << "\t" <<"IGNORING ExampleSelection"<< std::endl;
@@ -432,7 +432,7 @@ bool MultiLepEventSelector::EXAMPLESelection(edm::Event const & event)
 		pass = true;
 
 	   } // end cuts
-
+    
     return pass;
 
 }

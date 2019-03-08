@@ -201,7 +201,7 @@ bool TestEventSelector::LeptonsSelection(edm::Event const & event)
 	event.getByToken(muonsToken, muonsHandle);
 	unsigned int iMu = 0; // index in input dataset
 	unsigned int nSelMu = 0; //num of selected muons
-	mvSelMuons.clear();
+	vSelMuons.clear();
 	for (std::vector<pat::Muon>::const_iterator _imu = muonsHandle->begin(); _imu != muonsHandle->end(); _imu++){
 		iMu = _imu - muonsHandle->begin();
 
@@ -211,7 +211,7 @@ bool TestEventSelector::LeptonsSelection(edm::Event const & event)
 		if(_imu->pt() < min_muPt) continue;
 		if(fabs(_imu->eta()) > max_muEta) continue;
 
-		mvSelMuons.push_back( edm::Ptr<pat::Muon>( muonsHandle, iMu) );
+		vSelMuons.push_back( edm::Ptr<pat::Muon>( muonsHandle, iMu) );
 		nSelMu++;
 
 		if(debug) std::cout << " ---> " << "Pass";
@@ -222,7 +222,7 @@ bool TestEventSelector::LeptonsSelection(edm::Event const & event)
 	event.getByToken(electronsToken, electronsHandle);
 	unsigned int iEl = 0; // index in input dataset
 	unsigned int nSelEl = 0; //num of selected muons
-	mvSelElectrons.clear();
+	vSelElectrons.clear();
 	for (std::vector<pat::Electron>::const_iterator _iel = electronsHandle->begin(); _iel != electronsHandle->end(); _iel++){
 		iEl = _iel - electronsHandle->begin();
 
@@ -231,7 +231,7 @@ bool TestEventSelector::LeptonsSelection(edm::Event const & event)
 		if(_iel->pt() < min_elPt) continue;
 		if(fabs(_iel->eta()) > max_elEta) continue;
 
-		mvSelElectrons.push_back( edm::Ptr<pat::Electron>( electronsHandle, iEl) );
+		vSelElectrons.push_back( edm::Ptr<pat::Electron>( electronsHandle, iEl) );
 		nSelEl++;
 
 		if(debug) std::cout << " ---> " << "Pass";

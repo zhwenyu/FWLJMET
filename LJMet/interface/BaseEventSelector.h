@@ -51,12 +51,12 @@ public:
     virtual void AnalyzeEvent( edm::EventBase const & event, LjmetEventContent & ec ) { }
     std::string GetName() { return mName; }
     
-    std::vector<unsigned int>            const & GetSelTriggers()  const { return mvSelTriggers; }
-    std::vector<edm::Ptr<pat::Muon>>     const & GetSelMuons()     const { return mvSelMuons; }
-    std::vector<edm::Ptr<pat::Electron>> const & GetSelElectrons() const { return mvSelElectrons; }
-    std::vector<edm::Ptr<pat::Jet>>      const & GetSelJets()      const { return mvSelJets; }
-    edm::Ptr<pat::MET>                   const & GetMet()          const { return mpMet; }
-    std::vector<edm::Ptr<reco::Vertex>>  const & GetSelPVs()       const { return mvSelPVs; }
+    std::vector<unsigned int>            const & GetSelTriggers()  const { return vSelTriggers; }
+    std::vector<edm::Ptr<pat::Muon>>     const & GetSelMuons()     const { return vSelMuons; }
+    std::vector<edm::Ptr<pat::Electron>> const & GetSelElectrons() const { return vSelElectrons; }
+    std::vector<edm::Ptr<pat::Jet>>      const & GetSelJets()      const { return vSelJets; }
+    edm::Ptr<pat::MET>                   const & GetMet()          const { return pMet; }
+    std::vector<edm::Ptr<reco::Vertex>>  const & GetSelPVs()       const { return vSelPVs; }
 
     //Originally used for MultiLepEventSelector and called by MultiCalc
     std::map<std::string, unsigned int> const & GetSelectedTriggersEl()   const { return mvSelTriggersEl; }
@@ -77,12 +77,12 @@ public:
     void SetHistValue(std::string name, double value) { mpEc->SetHistValue(mName, name, value); }
             
 protected:
-    std::vector<unsigned int>            mvSelTriggers;
-    std::vector<edm::Ptr<pat::Muon>>     mvSelMuons;
-    std::vector<edm::Ptr<pat::Electron>> mvSelElectrons;
-    std::vector<edm::Ptr<pat::Jet>>      mvSelJets;
-    edm::Ptr<pat::MET>                   mpMet;
-    std::vector<edm::Ptr<reco::Vertex>>  mvSelPVs;
+    std::vector<unsigned int>            vSelTriggers;
+    std::vector<edm::Ptr<pat::Muon>>     vSelMuons;
+    std::vector<edm::Ptr<pat::Electron>> vSelElectrons;
+    std::vector<edm::Ptr<pat::Jet>>      vSelJets;
+    edm::Ptr<pat::MET>                   pMet;
+    std::vector<edm::Ptr<reco::Vertex>>  vSelPVs;
     
     //Originally used for MultiLepEventSelector and called by MultiCalc
     std::map<std::string, unsigned int> mvSelTriggersEl;
