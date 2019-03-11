@@ -10,6 +10,9 @@
 #include "DataFormats/PatCandidates/interface/Muon.h"
 #include "DataFormats/PatCandidates/interface/Electron.h"
 
+#include "FWLJMET/LJMet/interface/MiniIsolation.h"
+
+
 using namespace std;
 
 class MultiLepEventSelector : public BaseEventSelector { //adapted from singleLepEventSelector.cc
@@ -77,6 +80,20 @@ protected:
 	double loose_muon_dz;
 	double loose_muon_relIso;   
 
+    bool   electron_cuts;
+    int    min_electron;
+    double electron_minpt;
+    double electron_maxeta;
+    bool   electron_useMiniIso;
+    double electron_miniIso;
+    double loose_electron_miniIso;
+    double loose_electron_minpt;
+    double loose_electron_maxeta;
+    bool   UseElMVA;
+    bool   UseElIDV1;
+
+
+
     edm::EDGetTokenT<edm::TriggerResults>            triggersToken;
     edm::EDGetTokenT<reco::VertexCollection>         PVToken;
     edm::EDGetTokenT<edm::TriggerResults>            METfilterToken;
@@ -97,9 +114,9 @@ protected:
     bool PVSelection       (edm::Event const & event);
     bool METfilter         (edm::Event const & event);
     int  MuonSelection     (edm::Event const & event);
-    bool ElectronSelection (edm::Event const & event);
-    bool METSelection      (edm::Event const & event);
+    int  ElectronSelection (edm::Event const & event);
     bool LeptonsSelection  (edm::Event const & event);
+    bool METSelection      (edm::Event const & event);
 
 
 private:
@@ -162,6 +179,18 @@ void MultiLepEventSelector::BeginJob( const edm::ParameterSet& iConfig, edm::Con
 	loose_muon_relIso        = selectorConfig.getParameter<double>("loose_muon_relIso");
 
 
+    electron_cuts            = selectorConfig.getParameter<bool>("electron_cuts");
+    min_electron             = selectorConfig.getParameter<int>("min_electron");
+    electron_minpt           = selectorConfig.getParameter<double>("electron_minpt");
+    electron_maxeta          = selectorConfig.getParameter<double>("electron_maxeta");
+    electron_useMiniIso      = selectorConfig.getParameter<bool>("electron_useMiniIso");
+    electron_miniIso         = selectorConfig.getParameter<double>("electron_miniIso");
+    loose_electron_miniIso   = selectorConfig.getParameter<double>("loose_electron_miniIso");
+    loose_electron_minpt     = selectorConfig.getParameter<double>("loose_electron_minpt");
+    loose_electron_maxeta    = selectorConfig.getParameter<double>("loose_electron_maxeta");
+    UseElMVA                 = selectorConfig.getParameter<bool>("UseElMVA");
+    UseElIDV1                = selectorConfig.getParameter<bool>("UseElIDV1");
+
 
     met_cuts           = selectorConfig.getParameter<bool>("met_cuts");
     min_met            = selectorConfig.getParameter<double>("min_met");
@@ -191,8 +220,8 @@ void MultiLepEventSelector::BeginJob( const edm::ParameterSet& iConfig, edm::Con
     push_back("Trigger");
     push_back("Primary Vertex");
     push_back("MET filters");
-    push_back("MET");
     push_back("Leptons");
+    push_back("MET");
     push_back("All cuts");
 
     //Reference: "PhysicsTools/SelectorUtils/interface/EventSelector.h"
@@ -200,8 +229,8 @@ void MultiLepEventSelector::BeginJob( const edm::ParameterSet& iConfig, edm::Con
     set("Trigger",trigger_cut);
     set("Primary Vertex",pv_cut);
     set("MET filters", metfilters);
-    set("MET", met_cuts);
     set("Leptons",true);
+    set("MET", met_cuts);
     set("All cuts",true);
 
 
@@ -227,7 +256,8 @@ bool MultiLepEventSelector::operator()( edm::Event const & event, pat::strbitset
     if( METfilter(event) )        passCut(ret, "MET filters");
     else break;
     
-    int totalSelLooseMuon = MuonSelection(event); 
+    int totalSelLooseMuon     = MuonSelection(event); 
+    int totalSelLooseElectron = ElectronSelection(event); 
     if( LeptonsSelection(event) ) passCut(ret, "Leptons");
     else break;
 
@@ -558,14 +588,13 @@ int MultiLepEventSelector::MuonSelection(edm::Event const & event)
 	//
 	//_____ Muon cuts ________________________________
 	//      
-	// loop over muons
+	// 
 
-	
 	int _n_muons  = 0;
 	int nSelMuons = 0;
 	int nSelLooseMuons = 0;
 	
-	//get muons and packed pfcandidates
+	//get muons
 	edm::Handle< pat::MuonCollection > 	muonsHandle;
 	event.getByToken(muonsToken, muonsHandle);
 
@@ -573,6 +602,7 @@ int MultiLepEventSelector::MuonSelection(edm::Event const & event)
 	vSelLooseMuons.clear();
 
 	if ( muon_cuts ) { if(debug)std::cout << "\t" <<"Applying MuonSelection"<< std::endl;}
+	else { if(debug)std::cout << "\t" <<" NOT applying MuonSelection"<< std::endl;}
 			
 	for (std::vector<pat::Muon>::const_iterator _imu = muonsHandle->begin(); _imu != muonsHandle->end(); _imu++){
 
@@ -717,8 +747,6 @@ int MultiLepEventSelector::MuonSelection(edm::Event const & event)
         } // end of muon cuts
 		else{
 
-			if(debug)std::cout << "\t" <<" NOT applying MuonSelection"<< std::endl;
-
 			// save ALL muons
 			vSelMuons.push_back( edm::Ptr<pat::Muon>( muonsHandle, _n_muons) );
 			++nSelMuons;     
@@ -740,6 +768,184 @@ int MultiLepEventSelector::MuonSelection(edm::Event const & event)
 
 
 }
+
+int MultiLepEventSelector::ElectronSelection(edm::Event const & event)
+{
+
+
+
+        //
+        //_____ Electron cuts __________________________________
+        //      
+        // loop over electrons
+
+        int _n_electrons  = 0;
+        int nSelElectrons = 0;
+        int nSelLooseElectrons = 0;
+
+		//get electrons
+		edm::Handle< pat::ElectronCollection > electronsHandle;
+		event.getByToken(electronsToken, electronsHandle);
+
+		vSelElectrons.clear();
+		vSelLooseElectrons.clear();
+
+		//packed pf candidates and rho source needed miniIso
+		edm::Handle<pat::PackedCandidateCollection> packedPFCandsHandle;
+		event.getByToken(PFCandToken, packedPFCandsHandle);
+
+		//rho isolation from susy recommendation
+		edm::Handle<double> rhoJetsNC_Handle;
+		event.getByToken(rhoJetsNC_Token, rhoJetsNC_Handle);
+		double myRhoJetsNC = *rhoJetsNC_Handle;
+
+
+        if ( electron_cuts ) {
+        			
+            for (std::vector<pat::Electron>::const_iterator _iel = electronsHandle->begin(); _iel != electronsHandle->end(); _iel++){
+                bool pass = false;
+
+                bool pass_electron_minpt = false;
+                bool pass_electron_maxeta = false;
+                bool pass_electron_isEBEEGap = false;
+                bool pass_electron_mva = false;
+                bool pass_electron_cutbased = false;
+                bool pass_electron_useMiniIso = false;
+
+                bool pass_electron_minpt_loose = false;
+                bool pass_electron_maxeta_loose = false;
+                bool pass_electron_isEBEEGap_loose = false;
+                bool pass_electron_mva_loose = false;
+                bool pass_electron_cutbased_loose = false;
+                bool pass_electron_useMiniIso_loose = false;
+
+
+				if (debug) std::cout << "pt                                          = " << _iel->pt() << std::endl; //DEBUG - rizki
+				if (debug) std::cout << "|eta| ( ->superCluster()->eta(), ->eta() )  = " << fabs(_iel->superCluster()->eta()) << ", " << fabs(_iel->eta()) << std::endl; //DEBUG - rizki
+				if (debug) std::cout << "phi ( ->superCluster()->phi(), ->phi() )    = " << _iel->superCluster()->phi() << ", " << _iel->phi() << std::endl; //DEBUG - rizki
+
+                //electron cuts
+                while(1){
+
+                    if (_iel->pt()>electron_minpt){ }
+                    else break;
+	  
+                    if ( fabs(_iel->superCluster()->eta())<electron_maxeta ){ }
+                    else break;
+
+                    if ( fabs(_iel->superCluster()->eta())<1.4442 || fabs(_iel->superCluster()->eta())>1.566 ){ }
+                    else break;
+
+                    if ( UseElMVA ) {
+                    
+                    	//bool mvapass = true;  // HACK FOR TESTING THE MVA EFFICIENCY
+                    	bool mvapass = false;
+                    	if(UseElIDV1) mvapass = _iel->electronID("mvaEleID-Fall17-noIso-V1-wp90");
+                    	else mvapass = _iel->electronID("mvaEleID-Fall17-noIso-V2-wp90");
+                    	
+                    	if (!mvapass) break;
+                    	
+                    	if(electron_useMiniIso){
+                    	
+                    		bool passIso = false;
+                    		pat::Electron* elptr = new pat::Electron(*_iel);
+                    		float miniIso = getPFMiniIsolation_EffectiveArea(packedPFCandsHandle, dynamic_cast<const reco::Candidate* > (elptr), 0.05, 0.2, 10., false, false,myRhoJetsNC);
+                    		
+                    		if(miniIso < electron_miniIso) passIso = true;                      
+                    		if(!passIso){delete elptr;  break;}
+                    		
+                    		delete elptr;
+                    	}
+                    }
+                    else {
+                    
+                    	bool cutbasedpass = false;
+                    	if(UseElIDV1) cutbasedpass = _iel->electronID("cutBasedElectronID-Fall17-94X-V1-tight");
+                    	else cutbasedpass = _iel->electronID("cutBasedElectronID-Fall17-94X-V2-tight");
+                    	
+                    	if(!cutbasedpass) break;
+                    }
+		    
+                    pass = true; // success
+                    break;
+                }
+
+				if (debug)std::cout << " -------------------------------------------------------------------> Electron pass ? " << pass << std::endl; //DEBUG - rizki
+				if (debug)std::cout << " " << std::endl; //DEBUG - rizki
+
+                if ( pass ){
+                     ++nSelElectrons;
+                   
+                    // save every good electron
+                    vSelElectrons.push_back( edm::Ptr<pat::Electron>( electronsHandle, _n_electrons) );
+                    vSelLooseElectrons.push_back( edm::Ptr<pat::Electron>( electronsHandle, _n_electrons) );
+                }	
+                else {
+                    bool pass_loose = false;
+    
+                    //electron cuts
+                    while(1){
+    
+                        if (_iel->pt()>loose_electron_minpt){ }
+                        else break;
+    	  
+                        if ( fabs(_iel->superCluster()->eta())<loose_electron_maxeta ){ }
+                        else break;
+    
+                        if (!((*_iel).isEBEEGap())){ }
+                        else break;
+
+                        if ( UseElMVA ) {
+                        	//bool mvapass = true; // HACK FOR TESTING THE MVA EFFICIENCY
+                        	bool mvapass = false;
+
+							if(UseElIDV1) mvapass = _iel->electronID("mvaEleID-Fall17-noIso-V1-wpLoose");
+							else mvapass = _iel->electronID("mvaEleID-Fall17-noIso-V2-wpLoose");
+
+							if (!mvapass) break;
+
+							if(electron_useMiniIso){
+								bool passIso = false;
+								pat::Electron* elptr = new pat::Electron(*_iel);
+								float miniIso = getPFMiniIsolation_EffectiveArea(packedPFCandsHandle, dynamic_cast<const reco::Candidate* > (elptr), 0.05, 0.2, 10., false, false,myRhoJetsNC);
+
+								if(miniIso < loose_electron_miniIso) passIso = true;                      
+								if(!passIso){delete elptr;  break;}
+								delete elptr;
+							}
+                        }
+                        else {
+							bool cutbasedpass = false;
+							if(UseElIDV1) cutbasedpass = _iel->electronID("cutBasedElectronID-Fall17-94X-V1-loose");
+							else cutbasedpass = _iel->electronID("cutBasedElectronID-Fall17-94X-V2-loose");
+
+							if(!cutbasedpass) break;
+                        }
+
+                        pass_loose = true; // success
+                        break;
+                    }
+    
+                    if ( pass_loose ){
+						++nSelLooseElectrons;
+						vSelLooseElectrons.push_back( edm::Ptr<pat::Electron>( electronsHandle, _n_electrons) );
+					}
+				}
+                 	
+                _n_electrons++;
+            } // end of the electron loop
+
+        } // end of electron cuts
+
+		if (debug)std::cout<< "+++++++++++++++++++++++++++++++++++++++ " <<std::endl; // DEBUG - rizki
+		if (debug)std::cout<< "nSelElectrons              = " << nSelElectrons << " out of " << electronsHandle->size() <<std::endl; // DEBUG - rizki
+		if (debug)std::cout<< "+++++++++++++++++++++++++++++++++++++++ " <<std::endl; // DEBUG - rizki
+        if (debug) std::cout<<"finish electron cuts..."<<std::endl;
+        
+        return nSelLooseElectrons;
+
+}
+
 
 
 bool MultiLepEventSelector::LeptonsSelection(edm::Event const & event)

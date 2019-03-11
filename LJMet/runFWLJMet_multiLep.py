@@ -25,6 +25,12 @@ OUTFILENAME = 'TprimeTprime_M-1100_TuneCP5_13TeV-madgraph-pythia8_FWLJMET_MC.roo
 process.TFileService = cms.Service("TFileService", fileName = cms.string(OUTFILENAME))
 
 
+## Produce new slimmedElectrons with V2 IDs
+from RecoEgamma.EgammaTools.EgammaPostRecoTools import setupEgammaPostRecoSeq
+setupEgammaPostRecoSeq(process,
+                       runVID=True,
+                       era='2017-Nov17ReReco')
+
 
 process.ljmet = cms.EDAnalyzer(
 	'LJMet',
@@ -109,7 +115,7 @@ process.ljmet = cms.EDAnalyzer(
             
             #Muon
             muonsCollection        = cms.InputTag("slimmedMuons"),
-			muon_cuts                = cms.bool(True),
+			muon_cuts                = cms.bool(False),
 			min_muon                 = cms.int32(0),
 			muon_minpt               = cms.double(20.0),
 			muon_maxeta              = cms.double(2.4),
@@ -126,12 +132,23 @@ process.ljmet = cms.EDAnalyzer(
 			# Muon -- Unused parameters but could be use again
 			muon_relIso              = cms.double(0.2),
 			loose_muon_relIso        = cms.double(0.4),
-
-
-            electronsCollection    = cms.InputTag("slimmedElectrons"),
-
-
-
+			
+			# Electon
+			#electronsCollection    = cms.InputTag("slimmedElectrons"),
+			electronsCollection    = cms.InputTag("slimmedElectrons::LJMet"),
+			electron_cuts            = cms.bool(True),
+			min_electron             = cms.int32(0),
+			electron_minpt           = cms.double(20.0),
+			electron_maxeta          = cms.double(2.4),
+			electron_useMiniIso      = cms.bool(True),
+			electron_miniIso         = cms.double(0.1),
+			loose_electron_miniIso   = cms.double(0.4),
+			loose_electron_minpt     = cms.double(20.0),
+			loose_electron_maxeta    = cms.double(2.4),
+			UseElMVA                 = cms.bool(True),
+			UseElIDV1                = cms.bool(False),
+			
+            
             minLeptons = cms.int32(3),
 
             min_muPt   = cms.double(20.),
