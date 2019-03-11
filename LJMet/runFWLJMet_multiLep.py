@@ -14,15 +14,35 @@ MAXEVENTS = 100
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(MAXEVENTS) )
 
 ## Source / Input
+isMC=True
 process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring(
         'root://cmsxrootd.fnal.gov//store/mc/RunIIFall17MiniAODv2/TprimeTprime_M-1100_TuneCP5_13TeV-madgraph-pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14-v2/00000/8EA8FE89-254F-E811-835E-0090FAA58BF4.root',
     )
 )
 
-OUTFILENAME = 'TprimeTprime_M-1100_TuneCP5_13TeV-madgraph-pythia8_FWLJMET_MC.root'
+OUTFILENAME = 'TprimeTprime_M-1100_TuneCP5_13TeV-madgraph-pythia8'
 # TFileService
-process.TFileService = cms.Service("TFileService", fileName = cms.string(OUTFILENAME))
+process.TFileService = cms.Service("TFileService", fileName = cms.string(OUTFILENAME+'_FWLJMET_MC.root'))
+
+
+# Output Module Configuration (expects a path 'p')
+# process.out = cms.OutputModule("PoolOutputModule",
+#                                fileName = cms.untracked.string(OUTFILENAME+'_postReco_MC.root'),
+#                                #SelectEvents = cms.untracked.PSet( SelectEvents = cms.vstring('p') ),
+#                                #outputCommands = cms.untracked.vstring('keep *')
+#                                )
+
+
+## Geometry and Detector Conditions (needed for a few patTuple production steps)
+process.load("Configuration.Geometry.GeometryRecoDB_cff")
+process.load('Configuration.StandardSequences.Services_cff')
+process.load("Configuration.StandardSequences.MagneticField_cff")
+process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
+from Configuration.AlCa.GlobalTag import GlobalTag
+process.GlobalTag = GlobalTag(process.GlobalTag, '94X_mc2017_realistic_v17', '')
+if isMC == False: process.GlobalTag = GlobalTag(process.GlobalTag, '94X_dataRun2_v11')
+print 'Using global tag', process.GlobalTag.globaltag
 
 
 ## Produce new slimmedElectrons with V2 IDs
@@ -50,18 +70,18 @@ process.ljmet = cms.EDAnalyzer(
             debug  = cms.bool(True),
 
             isMc  = cms.bool(True),
-                        
+
 			# Trigger cuts
             HLTcollection       = cms.InputTag("TriggerResults","","HLT"),
 			trigger_cut  = cms.bool(True),
 			dump_trigger = cms.bool(True),
-			mctrigger_path_el = cms.vstring(        
-				'HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_v',  #exists in 2017    
-				'HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v', #exists in 2017        
+			mctrigger_path_el = cms.vstring(
+				'HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_v',  #exists in 2017
+				'HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v', #exists in 2017
 
-				'HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_v',   #exists in 2017 
-				'HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_DZ', #exists in 2017 
-				'HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_v', #exists in 2017  
+				'HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_v',   #exists in 2017
+				'HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_DZ', #exists in 2017
+				'HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_v', #exists in 2017
 				'HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v',  #exists in 2017
 
 				#for trig efficiency
@@ -69,16 +89,16 @@ process.ljmet = cms.EDAnalyzer(
 				'HLT_Ele35_WPTight_Gsf_v',
 				),
 			mctrigger_path_mu = cms.vstring(
-				'HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_v',   #exists in 2017 
-				'HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_DZ', #exists in 2017 
-				'HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_v', #exists in 2017  
+				'HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_v',   #exists in 2017
+				'HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_DZ', #exists in 2017
+				'HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_v', #exists in 2017
 				'HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v',  #exists in 2017
 
-				'HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_v',    #exists in 2017  (PreScaled!)        
-				'HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_v',  #exists in 2017 (PreScaled!)        
-				'HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_Mass3p8_v',                      
-				'HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_v',           
-				'HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ_v',        
+				'HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_v',    #exists in 2017  (PreScaled!)
+				'HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_v',  #exists in 2017 (PreScaled!)
+				'HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_Mass3p8_v',
+				'HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_v',
+				'HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ_v',
 
 				#for trig efficiency
 				'HLT_IsoMu24_v',
@@ -87,7 +107,7 @@ process.ljmet = cms.EDAnalyzer(
 				),
 			trigger_path_el = cms.vstring(''),
 			trigger_path_mu = cms.vstring(''),
-			
+
 			# PV cuts
 			pv_cut         = cms.bool(True),
 			pvSelector = cms.PSet( # taken from https://github.com/cms-sw/cmssw/blob/CMSSW_9_4_X/PhysicsTools/SelectorUtils/python/pvSelector_cfi.py
@@ -97,12 +117,12 @@ process.ljmet = cms.EDAnalyzer(
 				maxZ    = cms.double(24.0),
 				maxRho  = cms.double(2.0)
 				),
-				
-			# MET filter - https://twiki.cern.ch/twiki/bin/viewauth/CMS/MissingETOptionalFiltersRun2 
+
+			# MET filter - https://twiki.cern.ch/twiki/bin/viewauth/CMS/MissingETOptionalFiltersRun2
 			metfilters      = cms.bool(True),
 			flag_tag        = cms.InputTag('TriggerResults::PAT'),
 			METfilter_extra = cms.InputTag("ecalBadCalibReducedMINIAODFilter"),
-			
+
 			#MET cuts
 			met_cuts    = cms.bool(False),
 			min_met     = cms.double(20.0),
@@ -112,7 +132,7 @@ process.ljmet = cms.EDAnalyzer(
 
             PFparticlesCollection  = cms.InputTag("packedPFCandidates"),
             rhoInputTag            = cms.InputTag("fixedGridRhoFastjetCentralNeutral",""),
-            
+
             #Muon
             muonsCollection        = cms.InputTag("slimmedMuons"),
 			muon_cuts                = cms.bool(False),
@@ -132,10 +152,10 @@ process.ljmet = cms.EDAnalyzer(
 			# Muon -- Unused parameters but could be use again
 			muon_relIso              = cms.double(0.2),
 			loose_muon_relIso        = cms.double(0.4),
-			
+
 			# Electon
 			#electronsCollection    = cms.InputTag("slimmedElectrons"),
-			electronsCollection    = cms.InputTag("slimmedElectrons::LJMet"),
+			electronsCollection    = cms.InputTag("slimmedElectrons::LJMET"),
 			electron_cuts            = cms.bool(True),
 			min_electron             = cms.int32(0),
 			electron_minpt           = cms.double(20.0),
@@ -147,8 +167,8 @@ process.ljmet = cms.EDAnalyzer(
 			loose_electron_maxeta    = cms.double(2.4),
 			UseElMVA                 = cms.bool(True),
 			UseElIDV1                = cms.bool(False),
-			
-            
+
+
             minLeptons = cms.int32(3),
 
             min_muPt   = cms.double(20.),
@@ -157,8 +177,8 @@ process.ljmet = cms.EDAnalyzer(
             max_elEta  = cms.double(2.4),
 
             ),
-            
-			
+
+
 	MultiLepCalc = cms.PSet( # name has to match the calculator name as registered in Calc.cc
 
 	    debug  = cms.bool(True),
@@ -173,5 +193,8 @@ process.ljmet = cms.EDAnalyzer(
 
 # Configure a path and endpath to run the producer and output modules
 process.p = cms.Path(
-	process.ljmet
+    process.egammaPostRecoSeq *
+    process.ljmet
 )
+
+# process.ep = cms.EndPath(process.out)
