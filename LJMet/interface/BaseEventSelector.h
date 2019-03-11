@@ -53,6 +53,7 @@ public:
     
     std::vector<unsigned int>            const & GetSelTriggers()  const { return vSelTriggers; }
     std::vector<edm::Ptr<pat::Muon>>     const & GetSelMuons()     const { return vSelMuons; }
+    std::vector<edm::Ptr<pat::Muon>>     const & GetSelLooseMuons()const { return vSelLooseMuons; }
     std::vector<edm::Ptr<pat::Electron>> const & GetSelElectrons() const { return vSelElectrons; }
     std::vector<edm::Ptr<pat::Jet>>      const & GetSelJets()      const { return vSelJets; }
     edm::Ptr<pat::MET>                   const & GetMet()          const { return pMet; }
@@ -79,6 +80,7 @@ public:
 protected:
     std::vector<unsigned int>            vSelTriggers;
     std::vector<edm::Ptr<pat::Muon>>     vSelMuons;
+    std::vector<edm::Ptr<pat::Muon>>     vSelLooseMuons;
     std::vector<edm::Ptr<pat::Electron>> vSelElectrons;
     std::vector<edm::Ptr<pat::Jet>>      vSelJets;
     edm::Ptr<pat::MET>                   pMet;

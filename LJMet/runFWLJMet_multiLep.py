@@ -104,8 +104,33 @@ process.ljmet = cms.EDAnalyzer(
 			met_collection           = cms.InputTag('slimmedMETs'),
 
 
-            muonsCollection     = cms.InputTag("slimmedMuons"),
-            electronsCollection = cms.InputTag("slimmedElectrons"),
+            PFparticlesCollection  = cms.InputTag("packedPFCandidates"),
+            rhoInputTag            = cms.InputTag("fixedGridRhoFastjetCentralNeutral",""),
+            
+            #Muon
+            muonsCollection        = cms.InputTag("slimmedMuons"),
+			muon_cuts                = cms.bool(True),
+			min_muon                 = cms.int32(0),
+			muon_minpt               = cms.double(20.0),
+			muon_maxeta              = cms.double(2.4),
+			muon_useMiniIso          = cms.bool(True),
+			muon_miniIso             = cms.double(0.2),
+			loose_muon_miniIso       = cms.double(0.4),
+			loose_muon_minpt         = cms.double(20.0),
+			loose_muon_maxeta        = cms.double(2.4),
+			muon_dxy                 = cms.double(0.2),
+			muon_dz                  = cms.double(0.5),
+			loose_muon_dxy           = cms.double(999999.),
+			loose_muon_dz            = cms.double(999999.),
+
+			# Muon -- Unused parameters but could be use again
+			muon_relIso              = cms.double(0.2),
+			loose_muon_relIso        = cms.double(0.4),
+
+
+            electronsCollection    = cms.InputTag("slimmedElectrons"),
+
+
 
             minLeptons = cms.int32(3),
 
