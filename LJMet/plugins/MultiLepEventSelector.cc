@@ -112,8 +112,8 @@ protected:
     bool TriggerSelection  (edm::Event const & event);
     bool PVSelection       (edm::Event const & event);
     bool METfilter         (edm::Event const & event);
-    void  MuonSelection     (edm::Event const & event);
-    void  ElectronSelection (edm::Event const & event);
+    void MuonSelection     (edm::Event const & event);
+    void ElectronSelection (edm::Event const & event);
     bool LeptonsSelection  (edm::Event const & event, pat::strbitset & ret);
     bool METSelection      (edm::Event const & event);
 
@@ -865,8 +865,9 @@ void MultiLepEventSelector::ElectronSelection(edm::Event const & event)
 
 
 			  if(electron_useMiniIso){
-
+			  
 				pat::Electron* elptr = new pat::Electron(*_iel);
+				//Don't we need to update to the official CMSSW MiniIsolation.cc rather than some old file? --Rizki Mar 12, 2019.
 				float miniIso = getPFMiniIsolation_EffectiveArea(packedPFCandsHandle, dynamic_cast<const reco::Candidate* > (elptr), 0.05, 0.2, 10., false, false,myRhoJetsNC);
 
 				if(miniIso > electron_miniIso){delete elptr;  break;}

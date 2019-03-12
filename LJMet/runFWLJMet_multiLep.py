@@ -181,10 +181,14 @@ process.ljmet = cms.EDAnalyzer(
 
 	MultiLepCalc = cms.PSet( # name has to match the calculator name as registered in Calc.cc
 
-            debug  = cms.bool(True),
-            isMc   = cms.bool(isMC),
-            rhoInputTag    = cms.InputTag("fixedGridRhoFastjetCentralNeutral",""),
-            saveLooseLeps  = cms.bool(True),  
+            debug                  = cms.bool(True),
+            isMc                   = cms.bool(isMC),
+            saveLooseLeps          = cms.bool(True),  
+            keepFullMChistory      = cms.bool(isMC),
+
+            rhoInputTag            = cms.InputTag("fixedGridRhoFastjetCentralNeutral",""),
+            genParticlesCollection = cms.InputTag("prunedGenParticles"), 
+            PFparticlesCollection  = cms.InputTag("packedPFCandidates"),
 
 	),
 
