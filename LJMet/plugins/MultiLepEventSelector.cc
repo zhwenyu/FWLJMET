@@ -68,11 +68,9 @@ protected:
     double muon_minpt;
     double muon_maxeta;
     bool   muon_useMiniIso;
-    double muon_miniIso;
     double muon_dxy;
     double muon_dz;
     double muon_relIso;
-    double loose_muon_miniIso;
     double loose_muon_minpt;
     double loose_muon_maxeta;
     double loose_muon_dxy;
@@ -90,8 +88,9 @@ protected:
     double loose_electron_maxeta;
     bool   UseElMVA;
     bool   UseElIDV1;
-
-
+    
+    bool minLeptons_cut;
+    int  minLeptons;
 
     edm::EDGetTokenT<edm::TriggerResults>            triggersToken;
     edm::EDGetTokenT<reco::VertexCollection>         PVToken;
@@ -103,18 +102,13 @@ protected:
     edm::EDGetTokenT<pat::PackedCandidateCollection> PFCandToken;
     edm::EDGetTokenT<double>                         rhoJetsNC_Token;
 
-    int       minLeptons;
-    float     min_muPt;
-    float     max_muEta;
-    float     min_elPt;
-    float     max_elEta;
 
     bool TriggerSelection  (edm::Event const & event);
     bool PVSelection       (edm::Event const & event);
     bool METfilter         (edm::Event const & event);
     int  MuonSelection     (edm::Event const & event);
     int  ElectronSelection (edm::Event const & event);
-    bool LeptonsSelection  (edm::Event const & event);
+    bool LeptonsSelection  (edm::Event const & event, unsigned int nSelMu, unsigned int nSelEl);
     bool METSelection      (edm::Event const & event);
 
 
@@ -165,8 +159,6 @@ void MultiLepEventSelector::BeginJob( const edm::ParameterSet& iConfig, edm::Con
     muon_minpt               = selectorConfig.getParameter<double>("muon_minpt");
     muon_maxeta              = selectorConfig.getParameter<double>("muon_maxeta");
     muon_useMiniIso          = selectorConfig.getParameter<bool>("muon_useMiniIso");
-    muon_miniIso             = selectorConfig.getParameter<double>("muon_miniIso");
-    loose_muon_miniIso       = selectorConfig.getParameter<double>("loose_muon_miniIso");
     loose_muon_minpt         = selectorConfig.getParameter<double>("loose_muon_minpt");
     loose_muon_maxeta        = selectorConfig.getParameter<double>("loose_muon_maxeta");
     muon_dxy                 = selectorConfig.getParameter<double>("muon_dxy");
@@ -176,7 +168,6 @@ void MultiLepEventSelector::BeginJob( const edm::ParameterSet& iConfig, edm::Con
 
     muon_relIso              = selectorConfig.getParameter<double>("muon_relIso");
     loose_muon_relIso        = selectorConfig.getParameter<double>("loose_muon_relIso");
-
 
     electron_cuts            = selectorConfig.getParameter<bool>("electron_cuts");
     min_electron             = selectorConfig.getParameter<int>("min_electron");
@@ -190,6 +181,8 @@ void MultiLepEventSelector::BeginJob( const edm::ParameterSet& iConfig, edm::Con
     UseElMVA                 = selectorConfig.getParameter<bool>("UseElMVA");
     UseElIDV1                = selectorConfig.getParameter<bool>("UseElIDV1");
 
+    minLeptons_cut           = selectorConfig.getParameter<bool>("minLeptons_cut");
+    minLeptons               = selectorConfig.getParameter<int>("minLeptons");
 
     met_cuts           = selectorConfig.getParameter<bool>("met_cuts");
     min_met            = selectorConfig.getParameter<double>("min_met");
@@ -206,11 +199,6 @@ void MultiLepEventSelector::BeginJob( const edm::ParameterSet& iConfig, edm::Con
     PFCandToken          = iC.consumes<pat::PackedCandidateCollection>(selectorConfig.getParameter<edm::InputTag>("PFparticlesCollection"));
     rhoJetsNC_Token      = iC.consumes<double>(selectorConfig.getParameter<edm::InputTag>("rhoInputTag"));
 
-    minLeptons = selectorConfig.getParameter<int>("minLeptons");
-    min_muPt   = selectorConfig.getParameter<double>("min_muPt");
-    max_muEta  = selectorConfig.getParameter<double>("max_muEta");;
-    min_elPt  = selectorConfig.getParameter<double>("min_elPt");
-    max_elEta  = selectorConfig.getParameter<double>("max_elEta");
 
     bFirstEntry = true; //in case anything needs a first entry bool.
 
@@ -228,7 +216,7 @@ void MultiLepEventSelector::BeginJob( const edm::ParameterSet& iConfig, edm::Con
     set("Trigger",trigger_cut);
     set("Primary Vertex",pv_cut);
     set("MET filters", metfilters);
-    set("Leptons",true);
+    set("Leptons",minLeptons_cut);
     set("MET", met_cuts);
     set("All cuts",true);
 
@@ -255,9 +243,7 @@ bool MultiLepEventSelector::operator()( edm::Event const & event, pat::strbitset
     if( METfilter(event) )        passCut(ret, "MET filters");
     else break;
 
-    int totalSelLooseMuon     = MuonSelection(event);
-    int totalSelLooseElectron = ElectronSelection(event);
-    if( LeptonsSelection(event) ) passCut(ret, "Leptons");
+    if( LeptonsSelection(event,MuonSelection(event),ElectronSelection(event)) ) passCut(ret, "Leptons");
     else break;
 
     if( METSelection(event) )     passCut(ret, "MET"); // this needs to be after jets.
@@ -531,7 +517,6 @@ bool MultiLepEventSelector::METfilter(edm::Event const & event)
 
 }
 
-
 bool MultiLepEventSelector::METSelection(edm::Event const & event)
 {
 
@@ -578,7 +563,6 @@ bool MultiLepEventSelector::METSelection(edm::Event const & event)
     return pass;
 
 }
-
 
 int MultiLepEventSelector::MuonSelection(edm::Event const & event)
 {
@@ -917,61 +901,27 @@ int MultiLepEventSelector::ElectronSelection(edm::Event const & event)
 
 }
 
-
-
-bool MultiLepEventSelector::LeptonsSelection(edm::Event const & event)
+bool MultiLepEventSelector::LeptonsSelection(edm::Event const & event, unsigned int nSelMu, unsigned int nSelEl)
 {
 	bool pass = false;
 
-	if(debug)std::cout << "\t" <<"LeptonsSelection:"<< std::endl;
+	if ( considerCut("Leptons") ) {
 
-	//Muons
-	edm::Handle< pat::MuonCollection > muonsHandle;
-	event.getByToken(muonsToken, muonsHandle);
-	unsigned int iMu = 0; // index in input dataset
-	unsigned int nSelMu = 0; //num of selected muons
-	vSelMuons.clear();
-	for (std::vector<pat::Muon>::const_iterator _imu = muonsHandle->begin(); _imu != muonsHandle->end(); _imu++){
-		iMu = _imu - muonsHandle->begin();
+		if(debug)std::cout << "\t" <<"Leptons Selection:"<< std::endl;
 
-		if(debug) std::cout << std::endl;
-		if(debug) std::cout << "\t\t" << "iMu = "<< iMu << " pt = " << _imu->pt() << " eta = " << _imu->eta();
-
-		if(_imu->pt() < min_muPt) continue;
-		if(fabs(_imu->eta()) > max_muEta) continue;
-
-		vSelMuons.push_back( edm::Ptr<pat::Muon>( muonsHandle, iMu) );
-		nSelMu++;
-
-		if(debug) std::cout << " ---> " << "Pass";
+		//Check for min selected lepton requirement
+		if(debug)std::cout << "\t" << "\t" << "nSelMu = "<< nSelMu << " nSelEl = "<< nSelEl << std::endl;
+		if ( (nSelMu + nSelEl) >= (unsigned int)minLeptons){
+			pass = true;
+			if(debug)std::cout << "\t" << "\t" << "Has "<< minLeptons << " leptons that passes selection ! "<< std::endl;
+		}
 	}
+	else{
 
-	//Electrons
-	edm::Handle< pat::ElectronCollection > electronsHandle;
-	event.getByToken(electronsToken, electronsHandle);
-	unsigned int iEl = 0; // index in input dataset
-	unsigned int nSelEl = 0; //num of selected muons
-	vSelElectrons.clear();
-	for (std::vector<pat::Electron>::const_iterator _iel = electronsHandle->begin(); _iel != electronsHandle->end(); _iel++){
-		iEl = _iel - electronsHandle->begin();
+		if(debug)std::cout << "\t" <<"IGNORING min Lepton cut"<< std::endl;
 
-		if(debug) std::cout << std::endl;
-		if(debug) std::cout << "\t\t" << "iEl = "<< iEl << " pt = " << _iel->pt() << " eta = " << _iel->eta();
-		if(_iel->pt() < min_elPt) continue;
-		if(fabs(_iel->eta()) > max_elEta) continue;
-
-		vSelElectrons.push_back( edm::Ptr<pat::Electron>( electronsHandle, iEl) );
-		nSelEl++;
-
-		if(debug) std::cout << " ---> " << "Pass";
-	}
-
-	//Check for min selected lepton requirement
-	if(debug) std::cout << std::endl;
-	if(debug)std::cout << "\t" << "\t" << "nSelMu = "<< nSelMu << " nSelEl = "<< nSelEl << std::endl;
-	if ( (nSelMu + nSelEl) >= (unsigned int)minLeptons){
 		pass = true;
-		if(debug)std::cout << "\t" << "\t" << "Has "<< minLeptons << " leptons that passes selection ! "<< std::endl;
+
 	}
 
 	return pass;

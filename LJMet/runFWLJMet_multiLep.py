@@ -135,13 +135,11 @@ process.ljmet = cms.EDAnalyzer(
 
             #Muon
             muonsCollection        = cms.InputTag("slimmedMuons"),
-            muon_cuts                = cms.bool(False),
+            muon_cuts                = cms.bool(True),
             min_muon                 = cms.int32(0),
             muon_minpt               = cms.double(20.0),
             muon_maxeta              = cms.double(2.4),
             muon_useMiniIso          = cms.bool(True),
-            muon_miniIso             = cms.double(0.2),
-            loose_muon_miniIso       = cms.double(0.4),
             loose_muon_minpt         = cms.double(20.0),
             loose_muon_maxeta        = cms.double(2.4),
             muon_dxy                 = cms.double(0.2),
@@ -154,7 +152,7 @@ process.ljmet = cms.EDAnalyzer(
             loose_muon_relIso        = cms.double(0.4),
 
             # Electon
-            #electronsCollection    = cms.InputTag("slimmedElectrons"),
+            electronsCollection    = cms.InputTag("slimmedElectrons"),
             electronsCollection    = cms.InputTag("slimmedElectrons::LJMET"), #Egamma ID V2
             electron_cuts            = cms.bool(True),
             min_electron             = cms.int32(0),
@@ -166,15 +164,11 @@ process.ljmet = cms.EDAnalyzer(
             loose_electron_minpt     = cms.double(20.0),
             loose_electron_maxeta    = cms.double(2.4),
             UseElMVA                 = cms.bool(True),
-            UseElIDV1                = cms.bool(False),
+#             UseElIDV1                = cms.bool(False),
+            UseElIDV1                = cms.bool(True),
 
-
-            minLeptons = cms.int32(3),
-
-            min_muPt   = cms.double(20.),
-            max_muEta  = cms.double(2.4),
-            min_elPt   = cms.double(20.),
-            max_elEta  = cms.double(2.4),
+            minLeptons_cut = cms.bool(True),
+            minLeptons     = cms.int32(2),
 
             ),
 
@@ -193,7 +187,7 @@ process.ljmet = cms.EDAnalyzer(
 
 # Configure a path and endpath to run the producer and output modules
 process.p = cms.Path(
-    process.egammaPostRecoSeq *
+#     process.egammaPostRecoSeq *
     process.ljmet
 )
 
