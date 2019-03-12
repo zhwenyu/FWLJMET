@@ -91,6 +91,12 @@ protected:
     
     bool minLeptons_cut;
     int  minLeptons;
+    bool maxLeptons_cut;
+    int  maxLeptons;
+    bool minLooseLeptons_cut;
+    int  minLooseLeptons;
+    bool maxLooseLeptons_cut;
+    int  maxLooseLeptons;
 
     edm::EDGetTokenT<edm::TriggerResults>            triggersToken;
     edm::EDGetTokenT<reco::VertexCollection>         PVToken;
@@ -106,9 +112,9 @@ protected:
     bool TriggerSelection  (edm::Event const & event);
     bool PVSelection       (edm::Event const & event);
     bool METfilter         (edm::Event const & event);
-    int  MuonSelection     (edm::Event const & event);
-    int  ElectronSelection (edm::Event const & event);
-    bool LeptonsSelection  (edm::Event const & event, unsigned int nSelMu, unsigned int nSelEl);
+    void  MuonSelection     (edm::Event const & event);
+    void  ElectronSelection (edm::Event const & event);
+    bool LeptonsSelection  (edm::Event const & event, pat::strbitset & ret);
     bool METSelection      (edm::Event const & event);
 
 
@@ -181,8 +187,14 @@ void MultiLepEventSelector::BeginJob( const edm::ParameterSet& iConfig, edm::Con
     UseElMVA                 = selectorConfig.getParameter<bool>("UseElMVA");
     UseElIDV1                = selectorConfig.getParameter<bool>("UseElIDV1");
 
+    minLooseLeptons_cut      = selectorConfig.getParameter<bool>("minLooseLeptons_cut");
+    minLooseLeptons          = selectorConfig.getParameter<int>("minLooseLeptons");
+    maxLooseLeptons_cut      = selectorConfig.getParameter<bool>("maxLooseLeptons_cut");
+    maxLooseLeptons          = selectorConfig.getParameter<int>("maxLooseLeptons");
     minLeptons_cut           = selectorConfig.getParameter<bool>("minLeptons_cut");
     minLeptons               = selectorConfig.getParameter<int>("minLeptons");
+    maxLeptons_cut           = selectorConfig.getParameter<bool>("maxLeptons_cut");
+    maxLeptons               = selectorConfig.getParameter<int>("maxLeptons");
 
     met_cuts           = selectorConfig.getParameter<bool>("met_cuts");
     min_met            = selectorConfig.getParameter<double>("min_met");
@@ -207,7 +219,10 @@ void MultiLepEventSelector::BeginJob( const edm::ParameterSet& iConfig, edm::Con
     push_back("Trigger");
     push_back("Primary Vertex");
     push_back("MET filters");
-    push_back("Leptons");
+    push_back("Min Loose Leptons");
+    push_back("Max Loose Leptons");
+    push_back("Min Leptons");
+    push_back("Max Leptons");
     push_back("MET");
     push_back("All cuts");
 
@@ -216,7 +231,10 @@ void MultiLepEventSelector::BeginJob( const edm::ParameterSet& iConfig, edm::Con
     set("Trigger",trigger_cut);
     set("Primary Vertex",pv_cut);
     set("MET filters", metfilters);
-    set("Leptons",minLeptons_cut);
+    set("Min Loose Leptons",minLooseLeptons_cut);
+    set("Max Loose Leptons",maxLooseLeptons_cut);
+    set("Min Leptons",minLeptons_cut);
+    set("Max Leptons",maxLeptons_cut);
     set("MET", met_cuts);
     set("All cuts",true);
 
@@ -242,9 +260,12 @@ bool MultiLepEventSelector::operator()( edm::Event const & event, pat::strbitset
 
     if( METfilter(event) )        passCut(ret, "MET filters");
     else break;
+    
+	//Collect selected leptons
+    MuonSelection(event);
+    ElectronSelection(event);
+    if( ! LeptonsSelection(event, ret) ) break;
 
-    if( LeptonsSelection(event,MuonSelection(event),ElectronSelection(event)) ) passCut(ret, "Leptons");
-    else break;
 
     if( METSelection(event) )     passCut(ret, "MET"); // this needs to be after jets.
     else break;
@@ -564,7 +585,7 @@ bool MultiLepEventSelector::METSelection(edm::Event const & event)
 
 }
 
-int MultiLepEventSelector::MuonSelection(edm::Event const & event)
+void MultiLepEventSelector::MuonSelection(edm::Event const & event)
 {
 
 	//======================================================
@@ -719,12 +740,9 @@ int MultiLepEventSelector::MuonSelection(edm::Event const & event)
 	if (debug) std::cout<< "\t\t"<< "+++++++++++++++++++++++++++++++++++++++++ " <<std::endl; // DEBUG - rizki
 
 
-	return nSelLooseMuons;
-
-
 }
 
-int MultiLepEventSelector::ElectronSelection(edm::Event const & event)
+void MultiLepEventSelector::ElectronSelection(edm::Event const & event)
 {
 
 	//
@@ -897,33 +915,68 @@ int MultiLepEventSelector::ElectronSelection(edm::Event const & event)
 	if (debug)std::cout<< "\t\t"<< "nSelElectrons              = " << nSelElectrons << " out of " << electronsHandle->size() <<std::endl; // DEBUG - rizki
 	if (debug)std::cout<< "\t\t"<< "+++++++++++++++++++++++++++++++++++++++ " <<std::endl; // DEBUG - rizki
 
-	return nSelLooseElectrons;
 
 }
 
-bool MultiLepEventSelector::LeptonsSelection(edm::Event const & event, unsigned int nSelMu, unsigned int nSelEl)
+bool MultiLepEventSelector::LeptonsSelection(edm::Event const & event, pat::strbitset & ret)
 {
 	bool pass = false;
 
-	if ( considerCut("Leptons") ) {
+	if(debug)std::cout << "\t" <<"Leptons Selection:"<< std::endl;
 
-		if(debug)std::cout << "\t" <<"Leptons Selection:"<< std::endl;
+	//Check for selected lepton requirement
+	if(debug)std::cout << "\t" << "\t" << "nSelLooseMu = "<< vSelLooseMuons.size() << " nSelLooseEl = "<< vSelLooseElectrons.size() << std::endl;
+	if(debug)std::cout << "\t" << "\t" << "nSelMu      = "<< vSelMuons.size() << " nSelEl      = "<< vSelElectrons.size() << std::endl;
 
-		//Check for min selected lepton requirement
-		if(debug)std::cout << "\t" << "\t" << "nSelMu = "<< nSelMu << " nSelEl = "<< nSelEl << std::endl;
-		if ( (nSelMu + nSelEl) >= (unsigned int)minLeptons){
-			pass = true;
-			if(debug)std::cout << "\t" << "\t" << "Has "<< minLeptons << " leptons that passes selection ! "<< std::endl;
+	unsigned int nLeps      = vSelMuons.size() + vSelElectrons.size();
+	unsigned int nLooseLeps = vSelLooseMuons.size() + vSelLooseElectrons.size();
+			
+	bool pass_minLooseLeptons = false;
+	bool pass_maxLooseLeptons = false;
+	bool pass_minLeptons      = false;
+	bool pass_maxLeptons      = false;
+
+	if(considerCut("Min Loose Leptons")){
+		if ( nLooseLeps >= (unsigned int)minLooseLeptons){
+			pass_minLooseLeptons = true;
+			passCut(ret, "Min Loose Leptons");	
+			if(debug)std::cout << "\t\t\t" << "pass_minLooseLeptons"<<std::endl;
 		}
 	}
-	else{
 
-		if(debug)std::cout << "\t" <<"IGNORING min Lepton cut"<< std::endl;
-
-		pass = true;
-
+	if(considerCut("Max Loose Leptons")){
+		if ( nLooseLeps <= (unsigned int)maxLooseLeptons){
+			pass_maxLooseLeptons = true;
+			passCut(ret, "Max Loose Leptons");	
+			if(debug)std::cout << "\t\t\t" << "pass_maxLooseLeptons"<<std::endl;			
+		}
 	}
 
+
+	if(considerCut("Min Leptons")){
+		if ( nLeps >= (unsigned int)minLeptons){
+			pass_minLeptons = true;
+			passCut(ret, "Min Leptons");	
+			if(debug)std::cout << "\t\t\t" << "pass_minLeptons"<<std::endl;			
+		}
+	}
+
+	if(considerCut("Max Leptons")){
+		if ( nLeps <= (unsigned int)maxLeptons){
+			pass_maxLeptons = true;
+			passCut(ret, "Max Leptons");	
+			if(debug)std::cout << "\t\t\t" << "pass_maxLeptons"<<std::endl;			
+		}
+	}
+	
+	if(ignoreCut("Min Loose Leptons")) pass_minLooseLeptons = true;
+	if(ignoreCut("Max Loose Leptons")) pass_maxLooseLeptons = true;
+	if(ignoreCut("Min Leptons")) pass_minLeptons = true;
+	if(ignoreCut("Max Leptons")) pass_maxLeptons = true;
+	
+	if( pass_minLooseLeptons && pass_maxLooseLeptons && pass_minLeptons && pass_maxLeptons) pass=true;
+		
+		
 	return pass;
 }
 

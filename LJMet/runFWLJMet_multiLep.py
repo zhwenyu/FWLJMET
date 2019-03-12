@@ -10,7 +10,7 @@ process.MessageLogger.cerr.FwkReport.reportEvery = 20
 process.options = cms.untracked.PSet( wantSummary = cms.untracked.bool(False) )
 
 ## Maximal Number of Events
-MAXEVENTS = 100
+MAXEVENTS = 200
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(MAXEVENTS) )
 
 ## Source / Input
@@ -167,8 +167,14 @@ process.ljmet = cms.EDAnalyzer(
 #             UseElIDV1                = cms.bool(False),
             UseElIDV1                = cms.bool(True),
 
-            minLeptons_cut = cms.bool(True),
-            minLeptons     = cms.int32(2),
+            minLooseLeptons_cut = cms.bool(True), #inclusive Loose.
+            minLooseLeptons     = cms.int32(2),
+            maxLooseLeptons_cut = cms.bool(False),
+            maxLooseLeptons     = cms.int32(9999),
+            minLeptons_cut      = cms.bool(False),
+            minLeptons          = cms.int32(2),
+            maxLeptons_cut      = cms.bool(False),
+            maxLeptons          = cms.int32(9999),
 
             ),
 
@@ -177,7 +183,8 @@ process.ljmet = cms.EDAnalyzer(
 
             debug  = cms.bool(True),
             isMc   = cms.bool(isMC),
-            electronsCollection = cms.InputTag("slimmedElectrons"),
+            rhoInputTag    = cms.InputTag("fixedGridRhoFastjetCentralNeutral",""),
+            saveLooseLeps  = cms.bool(True),  
 
 	),
 
