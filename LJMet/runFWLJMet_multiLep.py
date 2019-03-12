@@ -69,7 +69,7 @@ process.ljmet = cms.EDAnalyzer(
 
             debug  = cms.bool(True),
 
-            isMc  = cms.bool(True),
+            isMc  = cms.bool(isMC),
 
 			# Trigger cuts
             HLTcollection       = cms.InputTag("TriggerResults","","HLT"),
@@ -153,7 +153,7 @@ process.ljmet = cms.EDAnalyzer(
 
             # Electon
             electronsCollection    = cms.InputTag("slimmedElectrons"),
-            electronsCollection    = cms.InputTag("slimmedElectrons::LJMET"), #Egamma ID V2
+#             electronsCollection    = cms.InputTag("slimmedElectrons::LJMET"), #Egamma ID V2
             electron_cuts            = cms.bool(True),
             min_electron             = cms.int32(0),
             electron_minpt           = cms.double(20.0),
@@ -175,7 +175,8 @@ process.ljmet = cms.EDAnalyzer(
 
 	MultiLepCalc = cms.PSet( # name has to match the calculator name as registered in Calc.cc
 
-	    debug  = cms.bool(True),
+            debug  = cms.bool(True),
+            isMc   = cms.bool(isMC),
             electronsCollection = cms.InputTag("slimmedElectrons"),
 
 	),

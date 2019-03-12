@@ -2,6 +2,8 @@
 #include "FWLJMET/LJMet/interface/LjmetFactory.h"
 #include "FWLJMET/LJMet/interface/LjmetEventContent.h"
 
+#include "SimDataFormats/PileupSummaryInfo/interface/PileupSummaryInfo.h"
+
 class LjmetFactory;
 
 class MultiLepCalc : public BaseCalc {
@@ -14,8 +16,11 @@ public:
     
 private:
 	bool debug;
+	bool isMc;
 
-    //edm::EDGetTokenT<pat::ElectronCollection>   electronsToken;
+    edm::EDGetTokenT<std::vector<PileupSummaryInfo>>   PupInfoToken;
+    edm::EDGetTokenT<std::vector<PileupSummaryInfo>>   PupInfoToken2;
+
 
 };
 
@@ -33,9 +38,13 @@ MultiLepCalc::~MultiLepCalc()
 int MultiLepCalc::BeginJob(edm::ConsumesCollector && iC)
 {
 	//do consumes here if need to access input file directly
-	//electronsToken 		= iC.consumes<pat::ElectronCollection>(mPset.getParameter<edm::InputTag>("electronsCollection"));
+
+	//PU info
+	PupInfoToken 		= iC.consumes<std::vector<PileupSummaryInfo>>(edm::InputTag("addPileupInfo"));
+	PupInfoToken2 		= iC.consumes<std::vector<PileupSummaryInfo>>(edm::InputTag("slimmedAddPileupInfo"));
 
 	debug = mPset.getParameter<bool>("debug");
+	isMc  = mPset.getParameter<bool>("isMc");
 
     return 0;
 }
@@ -93,10 +102,29 @@ int MultiLepCalc::AnalyzeEvent(edm::Event const & event, BaseEventSelector * sel
     //
     SetValue("nPV", (int)vSelPVs.size());
 
+    int NumTrueInts = -1;
+    int NumPUInts = -1;
+    if(isMc){
+      edm::Handle<std::vector<PileupSummaryInfo>> PupInfo;
+      if(! event.getByToken(PupInfoToken, PupInfo) ){
+      	event.getByToken(PupInfoToken2, PupInfo);
+      }
+      
+      for(std::vector<PileupSummaryInfo>::const_iterator PVI = PupInfo->begin(); PVI != PupInfo->end(); ++PVI){
+		int BX = PVI->getBunchCrossing();
+		if(BX == 0){
+		  NumTrueInts = PVI->getTrueNumInteractions();
+		  NumPUInts = PVI->getPU_NumInteractions();
+		}
+      }
+    }
+    SetValue("nTrueInteractions",NumTrueInts);
+    SetValue("nPileupInteractions",NumPUInts);
 
     //
     //_____Muons______
     //
+
     std::vector <double> muPt;
     std::vector <double> muEta;
     for (std::vector<edm::Ptr<pat::Muon> >::const_iterator imu = vSelMuons.begin(); imu != vSelMuons.end(); imu++){
