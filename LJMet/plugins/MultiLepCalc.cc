@@ -26,18 +26,28 @@ private:
 	bool isMc;
 	bool saveLooseLeps;
 	bool keepFullMChistory;
+	bool UseElMVA;
+	bool UseElIDV1;
 
 	edm::EDGetTokenT<std::vector<PileupSummaryInfo>>   PupInfoToken;
 	edm::EDGetTokenT<edm::TriggerResults >             muflagtagToken;
-	edm::EDGetTokenT<double>                           rhoJetsNC_Token;
-        edm::EDGetTokenT<pat::PackedCandidateCollection>   PFCandToken;
-        edm::EDGetTokenT<reco::GenParticleCollection>      genParticlesToken;
-
-        //helper functions
-        int findMatch(const reco::GenParticleCollection & genParticles, int idToMatch, double eta, double phi);
-        double mdeltaR(double eta1, double phi1, double eta2, double phi2);
-        void fillMotherInfo(const reco::Candidate *mother, int i, std::vector <int> & momid, std::vector <int> & momstatus, std::vector<double> & mompt, std::vector<double> & mometa, std::vector<double> & momphi, std::vector<double> & momenergy);
-
+	edm::EDGetTokenT<double>                           rhoJetsNCToken;
+	edm::EDGetTokenT<double>                           rhoJetsToken;
+	edm::EDGetTokenT<pat::PackedCandidateCollection>   PFCandToken;
+	edm::EDGetTokenT<reco::GenParticleCollection>      genParticlesToken;
+	
+	//helper functions
+	int findMatch(const reco::GenParticleCollection & genParticles, int idToMatch, double eta, double phi);
+	double mdeltaR(double eta1, double phi1, double eta2, double phi2);
+	void fillMotherInfo(const reco::Candidate *mother, 
+						int i, 
+						std::vector <int> & momid, 
+						std::vector <int> & momstatus, 
+						std::vector<double> & mompt, 
+						std::vector<double> & mometa, 
+						std::vector<double> & momphi, 
+						std::vector<double> & momenergy);
+        
 
 };
 
@@ -62,11 +72,15 @@ int MultiLepCalc::BeginJob(edm::ConsumesCollector && iC)
 	//Bad, dup, mu flag
 	muflagtagToken 		= iC.consumes<edm::TriggerResults >(edm::InputTag("TriggerResults::RECO"));
 
-	//For miniIsolation
-	rhoJetsNC_Token      = iC.consumes<double>(mPset.getParameter<edm::InputTag>("rhoInputTag"));
-        PFCandToken          = iC.consumes<pat::PackedCandidateCollection>(mPset.getParameter<edm::InputTag>("PFparticlesCollection"));
-        genParticlesToken    = iC.consumes<reco::GenParticleCollection>(mPset.getParameter<edm::InputTag>("genParticlesCollection"));
+	//Misc
+	rhoJetsNCToken      = iC.consumes<double>(mPset.getParameter<edm::InputTag>("rhoJetsNCInputTag"));    
+	PFCandToken         = iC.consumes<pat::PackedCandidateCollection>(mPset.getParameter<edm::InputTag>("PFparticlesCollection"));
+	genParticlesToken   = iC.consumes<reco::GenParticleCollection>(mPset.getParameter<edm::InputTag>("genParticlesCollection"));
+	rhoJetsToken        = iC.consumes<double>(mPset.getParameter<edm::InputTag>("rhoJetsInputTag"));
 
+	//Electron
+	UseElMVA          = mPset.getParameter<bool>("UseElMVA");
+	UseElIDV1         = mPset.getParameter<bool>("UseElIDV1");
 
 	debug             = mPset.getParameter<bool>("debug");
 	isMc              = mPset.getParameter<bool>("isMc");
@@ -176,6 +190,30 @@ int MultiLepCalc::AnalyzeEvent(edm::Event const & event, BaseEventSelector * sel
 	  vSelElectrons = vSelLooseElectrons;
 	}
 
+
+	//
+	//_____Misc______
+	//
+
+	std::vector< TLorentzVector > vGenLep;
+	TLorentzVector tmpLV;
+
+	//packed pf candidates and rho source needed miniIso
+	edm::Handle<pat::PackedCandidateCollection> packedPFCands;
+	event.getByToken(PFCandToken, packedPFCands);
+
+	edm::Handle<double> rhoJetsNC;
+	event.getByToken(rhoJetsNCToken, rhoJetsNC);
+	double myRhoJetsNC = *rhoJetsNC;
+	
+	edm::Handle<reco::GenParticleCollection> genParticles;
+	event.getByToken(genParticlesToken, genParticles);
+	
+	edm::Handle<double> rhoHandle;
+	event.getByToken(rhoJetsToken, rhoHandle);
+	double rhoIso = std::max(*(rhoHandle.product()), 0.0);
+
+
 	//
 	//_____Muons______
 	//
@@ -241,25 +279,11 @@ int MultiLepCalc::AnalyzeEvent(edm::Event const & event, BaseEventSelector * sel
 	std::vector<double> muMatchedPhi;
 	std::vector<double> muMatchedEnergy;
 
-	std::vector< TLorentzVector > vGenLep;
-	TLorentzVector tmpLV;
-
-	//packed pf candidates and rho source needed miniIso
-	edm::Handle<pat::PackedCandidateCollection> packedPFCands;
-	event.getByToken(PFCandToken, packedPFCands);
-
-	edm::Handle<double> rhoJetsNC;
-	event.getByToken(rhoJetsNC_Token, rhoJetsNC);
-	double myRhoJetsNC = *rhoJetsNC;
-
-	edm::Handle<reco::GenParticleCollection> genParticles;
-	event.getByToken(genParticlesToken, genParticles);
-
 	for (std::vector<edm::Ptr<pat::Muon> >::const_iterator imu = vSelMuons.begin(); imu != vSelMuons.end(); imu++) {
 	  //Protect against muons without tracks (should never happen, but just in case)
-	  if ((*imu)->globalTrack().isNonnull()   and
+	  if ((*imu)->globalTrack().isNonnull()   and 
 	      (*imu)->globalTrack().isAvailable() and
-	      (*imu)->innerTrack().isNonnull()    and
+	      (*imu)->innerTrack().isNonnull()    and 
 	      (*imu)->innerTrack().isAvailable())
 	    {
 
@@ -304,7 +328,7 @@ int MultiLepCalc::AnalyzeEvent(edm::Event const & event, BaseEventSelector * sel
             double puIso  = (*imu)->userIsolation(pat::PfPUChargedHadronIso);
             double relIso = (chIso + std::max(0.,nhIso + gIso - 0.5*puIso)) / (*imu)->pt();
 
-	    //Do we need two of these? And don't we need to update to the official CMSSW MiniIsolation.cc rather than some old file --Rizki Mar 12, 2019.
+			//Do we need two of these? And don't we need to update to the official CMSSW MiniIsolation.cc rather than some old file --Rizki Mar 12, 2019.
             double miniIso = getPFMiniIsolation_EffectiveArea(packedPFCands, dynamic_cast<const reco::Candidate *>(imu->get()), 0.05, 0.2, 10., false, false,myRhoJetsNC);
             double miniIsoDB = getPFMiniIsolation_DeltaBeta(packedPFCands, dynamic_cast<const reco::Candidate *>(imu->get()), 0.05, 0.2, 10., false);
 
@@ -421,9 +445,330 @@ int MultiLepCalc::AnalyzeEvent(edm::Event const & event, BaseEventSelector * sel
 	SetValue("muMatchedEnergy", muMatchedEnergy);
 
 
-	//
-	//_____Electrons______
-	//
+    //
+    //_____Electrons______
+    //
+
+    //Four std::vector
+    std::vector <double> elPt;
+    std::vector <double> elEta;
+    std::vector <double> elPFEta;
+    std::vector <double> elPhi;
+    std::vector <double> elSCE;
+    std::vector <double> elPFPhi;
+    std::vector <double> elEnergy;
+
+    std::vector <double> elEtaVtx;
+    std::vector <double> elPhiVtx;
+    std::vector <double> elDEtaSCTkAtVtx;
+    std::vector <double> elDPhiSCTkAtVtx;
+
+    //Quality criteria
+    std::vector <double> elRelIso;
+    std::vector <double> elMiniIso;
+    std::vector <double> elDxy;
+    std::vector <int>    elNotConversion;
+    std::vector <int>    elChargeConsistent;
+    std::vector <int>    elIsEBEE;
+    std::vector <int>    elCharge;
+    std::vector <int>    elGsfCharge;
+    std::vector <int>    elCtfCharge;
+    std::vector <int>    elScPixCharge;
+
+    //ID requirement
+    std::vector <double> elDeta;
+    std::vector <double> elDphi;
+    std::vector <double> elSihih;
+    std::vector <double> elHoE;
+    std::vector <double> elD0;
+    std::vector <double> elDZ;
+    std::vector <double> elOoemoop;
+    std::vector <int>    elMHits;
+    std::vector <int>    elVtxFitConv;    
+
+    std::vector <double> elMVAValue;
+    std::vector <double> elMVAValue_iso;
+    std::vector <int>    elIsMVATight80;
+    std::vector <int>    elIsMVATight90;
+    std::vector <int>    elIsMVALoose;
+    std::vector <int>    elIsMVATightIso80;
+    std::vector <int>    elIsMVATightIso90;
+    std::vector <int>    elIsMVALooseIso;
+
+    //Extra info about isolation
+    std::vector <double> elChIso;
+    std::vector <double> elNhIso;
+    std::vector <double> elPhIso;
+    std::vector <double> elAEff;
+    std::vector <double> elRhoIso;
+    std::vector <double> elEcalPFClusterIso;
+    std::vector <double> elHcalPFClusterIso;
+    std::vector <double> elDR03TkSumPt;
+
+    //mother-information
+    //Generator level information -- MC matching
+    std::vector<double> elGen_Reco_dr;
+    std::vector<int> elPdgId;
+    std::vector<int> elStatus;
+    std::vector<int> elMatched;
+    std::vector<int> elNumberOfMothers;
+    std::vector<double> elMother_pt;
+    std::vector<double> elMother_eta;
+    std::vector<double> elMother_phi;
+    std::vector<double> elMother_energy;
+    std::vector<int> elMother_id;
+    std::vector<int> elMother_status;
+
+    //Matched gen electron information:
+    std::vector<double> elMatchedPt;
+    std::vector<double> elMatchedEta;
+    std::vector<double> elMatchedPhi;
+    std::vector<double> elMatchedEnergy;
+
+    std::vector<double> elIsTight;
+    std::vector<double> elIsMedium;
+    std::vector<double> elIsLoose;
+    std::vector<double> elIsVeto;
+
+
+    for (std::vector<edm::Ptr<pat::Electron> >::const_iterator iel = vSelElectrons.begin(); iel != vSelElectrons.end(); iel++){
+        //Protect against electrons without tracks (should never happen, but just in case)
+        if ((*iel)->gsfTrack().isNonnull() and (*iel)->gsfTrack().isAvailable()){
+
+	    if ((*iel)->genParticle()!=0) {
+                tmpLV.SetPtEtaPhiE((*iel)->genParticle()->pt(),(*iel)->genParticle()->eta(),(*iel)->genParticle()->phi(),(*iel)->genParticle()->energy());
+                vGenLep.push_back(tmpLV);
+            }
+
+            //Four std::vector
+            elPt     . push_back((*iel)->pt()); //Must check: why ecalDrivenMomentum?
+            elEta    . push_back((*iel)->superCluster()->eta());
+            elPFEta  . push_back((*iel)->eta());
+            elPhi    . push_back((*iel)->superCluster()->phi());
+            elSCE    . push_back((*iel)->superCluster()->energy());
+            elPFPhi  . push_back((*iel)->phi());
+            elEnergy . push_back((*iel)->energy());
+            
+            elEtaVtx.push_back((*iel)->trackMomentumAtVtxWithConstraint().Eta());
+            elPhiVtx.push_back((*iel)->trackMomentumAtVtxWithConstraint().Phi());
+            elDEtaSCTkAtVtx.push_back((*iel)->deltaEtaSuperClusterTrackAtVtx());
+            elDPhiSCTkAtVtx.push_back((*iel)->deltaPhiSuperClusterTrackAtVtx());
+
+            //Isolation
+            double scEta = (*iel)->superCluster()->eta();
+            double AEff;
+            if(fabs(scEta) >2.4) AEff = 0.1524;
+            else if(fabs(scEta) >2.3) AEff = 0.1204;
+            else if(fabs(scEta) >2.2) AEff = 0.1051;
+            else if(fabs(scEta) >2.0) AEff = 0.0854;
+            else if(fabs(scEta) >1.479) AEff = 0.1073;
+            else if(fabs(scEta) >1.0) AEff = 0.1626;
+            else AEff = 0.1566;
+  
+            double chIso = ((*iel)->pfIsolationVariables()).sumChargedHadronPt;
+            double nhIso = ((*iel)->pfIsolationVariables()).sumNeutralHadronEt;
+            double phIso = ((*iel)->pfIsolationVariables()).sumPhotonEt;
+            double relIso = ( chIso + std::max(0.0, nhIso + phIso - rhoIso*AEff) ) / (*iel)->pt();
+
+            elChIso  . push_back(chIso);
+            elNhIso  . push_back(nhIso);
+            elPhIso  . push_back(phIso);
+            elAEff   . push_back(AEff);
+            elRhoIso . push_back(rhoIso);
+            
+            elEcalPFClusterIso.push_back((*iel)->ecalPFClusterIso());
+            elHcalPFClusterIso.push_back((*iel)->hcalPFClusterIso());
+            elDR03TkSumPt.push_back((*iel)->dr03TkSumPt());
+
+            double miniIso = getPFMiniIsolation_EffectiveArea(packedPFCands, dynamic_cast<const reco::Candidate *>(iel->get()), 0.05, 0.2, 10., false, false,myRhoJetsNC);
+
+            elRelIso . push_back(relIso);
+            elMiniIso . push_back(miniIso);
+            
+            //get three different charges
+            elGsfCharge.push_back( (*iel)->gsfTrack()->charge());
+            if( (*iel)->closestCtfTrackRef().isNonnull()) elCtfCharge.push_back((*iel)->closestCtfTrackRef()->charge());
+            else elCtfCharge.push_back(-999);
+            elScPixCharge.push_back((*iel)->scPixCharge());
+            elCharge.push_back((*iel)->charge());
+
+            //IP: for some reason this is with respect to the first vertex in the collection
+            if(vSelPVs.size() > 0){ //This is now PV from PV selector not all PV in MiniAOD as how it was in old singleLepCalc.cc -- Rizki, Mar 12, 1019.
+                elDxy.push_back((-1.0)*(*iel)->gsfTrack()->dxy((*vSelPVs[0]).position()));
+                elD0.push_back((-1.0)*(*iel)->gsfTrack()->dxy((*vSelPVs[0]).position()));
+                elDZ.push_back((*iel)->gsfTrack()->dz((*vSelPVs[0]).position()));
+            } else {
+                elDxy.push_back(-999);
+                elD0.push_back(-999);
+                elDZ.push_back(-999);
+            }
+            elChargeConsistent.push_back((*iel)->isGsfCtfScPixChargeConsistent());
+            elIsEBEE.push_back(((*iel)->isEBEEGap()<<2) + ((*iel)->isEE()<<1) + (*iel)->isEB());
+            elDeta.push_back((*iel)->deltaEtaSuperClusterTrackAtVtx());
+            elDphi.push_back((*iel)->deltaPhiSuperClusterTrackAtVtx());
+            elSihih.push_back((*iel)->full5x5_sigmaIetaIeta());
+            elHoE.push_back((*iel)->hcalOverEcal());
+            elOoemoop.push_back(fabs(1.0/(*iel)->ecalEnergy() - (*iel)->eSuperClusterOverP()/(*iel)->ecalEnergy()));
+            elMHits.push_back((*iel)->gsfTrack()->hitPattern().numberOfAllHits(reco::HitPattern::MISSING_INNER_HITS));
+            elVtxFitConv.push_back((*iel)->passConversionVeto());
+            elNotConversion.push_back((*iel)->passConversionVeto());
+	    
+
+	    if(UseElIDV1){
+	      elIsTight.push_back((*iel)->electronID("cutBasedElectronID-Fall17-94X-V1-tight"));
+	      elIsMedium.push_back((*iel)->electronID("cutBasedElectronID-Fall17-94X-V1-medium"));
+	      elIsLoose.push_back((*iel)->electronID("cutBasedElectronID-Fall17-94X-V1-loose"));
+	      elIsVeto.push_back((*iel)->electronID("cutBasedElectronID-Fall17-94X-V1-veto"));
+
+	      if (UseElMVA) {
+			elIsMVATight80.push_back((*iel)->electronID("mvaEleID-Fall17-noIso-V1-wp80"));
+			elIsMVATight90.push_back((*iel)->electronID("mvaEleID-Fall17-noIso-V1-wp90"));
+			elIsMVALoose.push_back((*iel)->electronID("mvaEleID-Fall17-noIso-V1-wpLoose"));
+			elMVAValue.push_back((*iel)->userFloat("ElectronMVAEstimatorRun2Fall17NoIsoV1Values"));
+
+			elIsMVATightIso80.push_back((*iel)->electronID("mvaEleID-Fall17-iso-V1-wp80"));
+			elIsMVATightIso90.push_back((*iel)->electronID("mvaEleID-Fall17-iso-V1-wp90"));
+			elIsMVALooseIso.push_back((*iel)->electronID("mvaEleID-Fall17-iso-V1-wpLoose"));
+			elMVAValue_iso.push_back((*iel)->userFloat("ElectronMVAEstimatorRun2Fall17IsoV1Values"));
+	      }
+	    }
+	    else{
+	      elIsTight.push_back((*iel)->electronID("cutBasedElectronID-Fall17-94X-V2-tight"));
+	      elIsMedium.push_back((*iel)->electronID("cutBasedElectronID-Fall17-94X-V2-medium"));
+	      elIsLoose.push_back((*iel)->electronID("cutBasedElectronID-Fall17-94X-V2-loose"));
+	      elIsVeto.push_back((*iel)->electronID("cutBasedElectronID-Fall17-94X-V2-veto"));
+
+	      if (UseElMVA) {
+			elIsMVATight80.push_back((*iel)->electronID("mvaEleID-Fall17-noIso-V2-wp80"));
+			elIsMVATight90.push_back((*iel)->electronID("mvaEleID-Fall17-noIso-V2-wp90"));
+			elIsMVALoose.push_back((*iel)->electronID("mvaEleID-Fall17-noIso-V2-wpLoose"));
+			elMVAValue.push_back((*iel)->userFloat("ElectronMVAEstimatorRun2Fall17NoIsoV2Values"));
+
+			elIsMVATightIso80.push_back((*iel)->electronID("mvaEleID-Fall17-iso-V2-wp80"));
+			elIsMVATightIso90.push_back((*iel)->electronID("mvaEleID-Fall17-iso-V2-wp90"));
+			elIsMVALooseIso.push_back((*iel)->electronID("mvaEleID-Fall17-iso-V2-wpLoose"));
+			elMVAValue_iso.push_back((*iel)->userFloat("ElectronMVAEstimatorRun2Fall17IsoV2Values"));
+	      }
+	    }
+
+            if(isMc && keepFullMChistory){
+                //cout << "start\n";
+                int matchId = findMatch(*genParticles, 11, (*iel)->eta(), (*iel)->phi());
+                double closestDR = 10000.;
+                //cout << "matchId "<<matchId <<endl;
+                if (matchId>=0) {
+                    const reco::GenParticle & p = (*genParticles).at(matchId);
+                    closestDR = mdeltaR( (*iel)->eta(), (*iel)->phi(), p.eta(), p.phi());
+                    //cout << "closestDR "<<closestDR <<endl;
+                    if(closestDR < 0.3){
+                        elGen_Reco_dr.push_back(closestDR);
+                        elPdgId.push_back(p.pdgId());
+                        elStatus.push_back(p.status());
+                        elMatched.push_back(1);
+                        elMatchedPt.push_back( p.pt());
+                        elMatchedEta.push_back(p.eta());
+                        elMatchedPhi.push_back(p.phi());
+                        elMatchedEnergy.push_back(p.energy());
+                        int oldSize = elMother_id.size();
+                        fillMotherInfo(p.mother(), 0, elMother_id, elMother_status, elMother_pt, elMother_eta, elMother_phi, elMother_energy);
+                        elNumberOfMothers.push_back(elMother_id.size()-oldSize);
+                    }
+                }
+                if(closestDR >= 0.3){
+                    elNumberOfMothers.push_back(-1);
+                    elGen_Reco_dr.push_back(-1.0);
+                    elPdgId.push_back(-1);
+                    elStatus.push_back(-1);
+                    elMatched.push_back(0);
+                    elMatchedPt.push_back(-1000.0);
+                    elMatchedEta.push_back(-1000.0);
+                    elMatchedPhi.push_back(-1000.0);
+                    elMatchedEnergy.push_back(-1000.0);
+
+                }
+            }//closing the isMC checking criteria
+        }
+    }
+
+    //Four std::vector
+    SetValue("elPt"     , elPt);
+    SetValue("elEta"    , elEta);
+    SetValue("elPFEta"  , elPFEta);
+    SetValue("elPhi"    , elPhi);
+    SetValue("elSCE"    , elSCE);
+    SetValue("elPFPhi"  , elPFPhi);
+    SetValue("elEnergy" , elEnergy);
+
+    SetValue("elEtaVtx" , elEtaVtx);
+    SetValue("elPhiVtx" , elPhiVtx);
+    SetValue("elDEtaSCTkAtVtx" , elDEtaSCTkAtVtx);
+    SetValue("elDPhiSCTkAtVtx" , elDPhiSCTkAtVtx);
+
+    SetValue("elCharge", elCharge);
+    SetValue("elGsfCharge", elGsfCharge);
+    SetValue("elCtfCharge", elCtfCharge);
+    SetValue("elScPixCharge", elScPixCharge);
+
+    SetValue("elIsTight", elIsTight);
+    SetValue("elIsMedium",elIsMedium);
+    SetValue("elIsLoose",elIsLoose);
+    SetValue("elIsVeto",elIsVeto);
+
+    //Quality requirements
+    SetValue("elRelIso" , elRelIso); //Isolation
+    SetValue("elMiniIso" , elMiniIso); //Mini Isolation
+    SetValue("elDxy"    , elDxy);    //Dxy
+    SetValue("elNotConversion" , elNotConversion);  //Conversion rejection
+    SetValue("elChargeConsistent", elChargeConsistent);
+    SetValue("elIsEBEE", elIsEBEE);
+
+    //ID cuts
+    SetValue("elDeta", elDeta);
+    SetValue("elDphi", elDphi);
+    SetValue("elSihih", elSihih);
+    SetValue("elHoE", elHoE);
+    SetValue("elD0", elD0);
+    SetValue("elDZ", elDZ);
+    SetValue("elOoemoop", elOoemoop);
+    SetValue("elMHits", elMHits);
+    SetValue("elVtxFitConv", elVtxFitConv);
+
+    SetValue("elMVAValue", elMVAValue);
+    SetValue("elMVAValue_iso", elMVAValue_iso);
+    SetValue("elIsMVATight80", elIsMVATight80);
+    SetValue("elIsMVATight90", elIsMVATight90);
+    SetValue("elIsMVALoose", elIsMVALoose);
+    SetValue("elIsMVATightIso80",elIsMVATightIso80);
+    SetValue("elIsMVATightIso90",elIsMVATightIso90);
+    SetValue("elIsMVALooseIso",elIsMVALooseIso);
+
+    //Extra info about isolation
+    SetValue("elChIso" , elChIso);
+    SetValue("elNhIso" , elNhIso);
+    SetValue("elPhIso" , elPhIso);
+    SetValue("elAEff"  , elAEff);
+    SetValue("elRhoIso", elRhoIso);
+    SetValue("elEcalPFClusterIso", elEcalPFClusterIso);
+    SetValue("elHcalPFClusterIso", elHcalPFClusterIso);
+    SetValue("elDR03TkSumPt", elDR03TkSumPt);
+
+    //MC matching -- mother information
+    SetValue("elNumberOfMothers", elNumberOfMothers);
+    SetValue("elGen_Reco_dr", elGen_Reco_dr);
+    SetValue("elPdgId", elPdgId);
+    SetValue("elStatus", elStatus);
+    SetValue("elMatched",elMatched);
+    SetValue("elMother_pt", elMother_pt);
+    SetValue("elMother_eta", elMother_eta);
+    SetValue("elMother_phi", elMother_phi);
+    SetValue("elMother_energy", elMother_energy);
+    SetValue("elMother_status", elMother_status);
+    SetValue("elMother_id", elMother_id);
+    //Matched gen muon information:
+    SetValue("elMatchedPt", elMatchedPt);
+    SetValue("elMatchedEta", elMatchedEta);
+    SetValue("elMatchedPhi", elMatchedPhi);
+    SetValue("elMatchedEnergy", elMatchedEnergy);
 
 
 	return 0;
@@ -442,7 +787,7 @@ int MultiLepCalc::findMatch(const reco::GenParticleCollection & genParticles, in
             closestDR = dRtmp;
             closestGenPart = j;
         }//end of requirement for matching
-    }//end of gen particle loop
+    }//end of gen particle loop 
     return closestGenPart;
 }
 

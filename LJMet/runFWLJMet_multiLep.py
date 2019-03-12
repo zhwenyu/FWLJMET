@@ -131,7 +131,7 @@ process.ljmet = cms.EDAnalyzer(
 
 
             PFparticlesCollection  = cms.InputTag("packedPFCandidates"),
-            rhoInputTag            = cms.InputTag("fixedGridRhoFastjetCentralNeutral",""),
+            rhoJetsNCInputTag            = cms.InputTag("fixedGridRhoFastjetCentralNeutral",""),
 
             #Muon
             muonsCollection        = cms.InputTag("slimmedMuons"),
@@ -186,9 +186,16 @@ process.ljmet = cms.EDAnalyzer(
             saveLooseLeps          = cms.bool(True),  
             keepFullMChistory      = cms.bool(isMC),
 
-            rhoInputTag            = cms.InputTag("fixedGridRhoFastjetCentralNeutral",""),
+            rhoJetsNCInputTag            = cms.InputTag("fixedGridRhoFastjetCentralNeutral",""), #this is for muon
             genParticlesCollection = cms.InputTag("prunedGenParticles"), 
             PFparticlesCollection  = cms.InputTag("packedPFCandidates"),
+
+            rhoJetsInputTag            = cms.InputTag("fixedGridRhoFastjetAll"), #this is for electron. Why is it different compared to muon?
+            
+        	UseElMVA                 = cms.bool(True),
+#             UseElIDV1                = cms.bool(False),
+            UseElIDV1                = cms.bool(True),
+
 
 	),
 
