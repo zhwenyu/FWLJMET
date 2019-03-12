@@ -55,30 +55,29 @@ protected:
 
     bool pv_cut;
     boost::shared_ptr<PVSelector>              pvSel_;
-    
+
     bool metfilters;
 
     bool met_cuts;
     double min_met;
     double max_met;
     
-	bool   muon_cuts;
-	int    min_muon;
+    bool   muon_cuts;
+    int    min_muon;
 
-	double muon_minpt;
-	double muon_maxeta;
-	bool   muon_useMiniIso;
-	double muon_miniIso;   
-	double muon_dxy;
-	double muon_dz; 
-	double muon_relIso;   
-
-	double loose_muon_miniIso;
-	double loose_muon_minpt;  
-	double loose_muon_maxeta; 
-	double loose_muon_dxy;
-	double loose_muon_dz;
-	double loose_muon_relIso;   
+    double muon_minpt;
+    double muon_maxeta;
+    bool   muon_useMiniIso;
+    double muon_miniIso;
+    double muon_dxy;
+    double muon_dz;
+    double muon_relIso;
+    double loose_muon_miniIso;
+    double loose_muon_minpt;
+    double loose_muon_maxeta;
+    double loose_muon_dxy;
+    double loose_muon_dz;
+    double loose_muon_relIso;
 
     bool   electron_cuts;
     int    min_electron;
@@ -101,7 +100,7 @@ protected:
     edm::EDGetTokenT<std::vector<pat::MET> >         METtoken;
     edm::EDGetTokenT<pat::MuonCollection>            muonsToken;
     edm::EDGetTokenT<pat::ElectronCollection>        electronsToken;
-	edm::EDGetTokenT<pat::PackedCandidateCollection> PFCandToken;
+    edm::EDGetTokenT<pat::PackedCandidateCollection> PFCandToken;
     edm::EDGetTokenT<double>                         rhoJetsNC_Token;
 
     int       minLeptons;
@@ -161,22 +160,22 @@ void MultiLepEventSelector::BeginJob( const edm::ParameterSet& iConfig, edm::Con
 
     metfilters         = selectorConfig.getParameter<bool>("metfilters");
 
-	muon_cuts                = selectorConfig.getParameter<bool>("muon_cuts");
-	min_muon                 = selectorConfig.getParameter<int>("min_muon");
-	muon_minpt               = selectorConfig.getParameter<double>("muon_minpt");
-	muon_maxeta              = selectorConfig.getParameter<double>("muon_maxeta");
-	muon_useMiniIso          = selectorConfig.getParameter<bool>("muon_useMiniIso");
-	muon_miniIso             = selectorConfig.getParameter<double>("muon_miniIso");
-	loose_muon_miniIso       = selectorConfig.getParameter<double>("loose_muon_miniIso");
-	loose_muon_minpt         = selectorConfig.getParameter<double>("loose_muon_minpt");
-	loose_muon_maxeta        = selectorConfig.getParameter<double>("loose_muon_maxeta");
-	muon_dxy                 = selectorConfig.getParameter<double>("muon_dxy");
-	muon_dz                  = selectorConfig.getParameter<double>("muon_dz");
-	loose_muon_dxy           = selectorConfig.getParameter<double>("loose_muon_dxy");
-	loose_muon_dz            = selectorConfig.getParameter<double>("loose_muon_dz");
+    muon_cuts                = selectorConfig.getParameter<bool>("muon_cuts");
+    min_muon                 = selectorConfig.getParameter<int>("min_muon");
+    muon_minpt               = selectorConfig.getParameter<double>("muon_minpt");
+    muon_maxeta              = selectorConfig.getParameter<double>("muon_maxeta");
+    muon_useMiniIso          = selectorConfig.getParameter<bool>("muon_useMiniIso");
+    muon_miniIso             = selectorConfig.getParameter<double>("muon_miniIso");
+    loose_muon_miniIso       = selectorConfig.getParameter<double>("loose_muon_miniIso");
+    loose_muon_minpt         = selectorConfig.getParameter<double>("loose_muon_minpt");
+    loose_muon_maxeta        = selectorConfig.getParameter<double>("loose_muon_maxeta");
+    muon_dxy                 = selectorConfig.getParameter<double>("muon_dxy");
+    muon_dz                  = selectorConfig.getParameter<double>("muon_dz");
+    loose_muon_dxy           = selectorConfig.getParameter<double>("loose_muon_dxy");
+    loose_muon_dz            = selectorConfig.getParameter<double>("loose_muon_dz");
 
-	muon_relIso              = selectorConfig.getParameter<double>("muon_relIso");
-	loose_muon_relIso        = selectorConfig.getParameter<double>("loose_muon_relIso");
+    muon_relIso              = selectorConfig.getParameter<double>("muon_relIso");
+    loose_muon_relIso        = selectorConfig.getParameter<double>("loose_muon_relIso");
 
 
     electron_cuts            = selectorConfig.getParameter<bool>("electron_cuts");
@@ -195,7 +194,7 @@ void MultiLepEventSelector::BeginJob( const edm::ParameterSet& iConfig, edm::Con
     met_cuts           = selectorConfig.getParameter<bool>("met_cuts");
     min_met            = selectorConfig.getParameter<double>("min_met");
     max_met            = selectorConfig.getParameter<double>("max_met");
-    
+
 
     triggersToken        = iC.consumes<edm::TriggerResults>(selectorConfig.getParameter<edm::InputTag>("HLTcollection"));
     PVToken              = iC.consumes<reco::VertexCollection>(PVconfig.getParameter<edm::InputTag>("pvSrc"));
@@ -255,9 +254,9 @@ bool MultiLepEventSelector::operator()( edm::Event const & event, pat::strbitset
 
     if( METfilter(event) )        passCut(ret, "MET filters");
     else break;
-    
-    int totalSelLooseMuon     = MuonSelection(event); 
-    int totalSelLooseElectron = ElectronSelection(event); 
+
+    int totalSelLooseMuon     = MuonSelection(event);
+    int totalSelLooseElectron = ElectronSelection(event);
     if( LeptonsSelection(event) ) passCut(ret, "Leptons");
     else break;
 
@@ -545,7 +544,7 @@ bool MultiLepEventSelector::METSelection(edm::Event const & event)
 	if (considerCut("MET")) {
 
         if (debug) std::cout<<"\t" <<"MET Selection:"<< std::endl;
-        
+
         edm::Handle<std::vector<pat::MET> > mhMet;
         event.getByToken( METtoken, mhMet );
         pMet = edm::Ptr<pat::MET>( mhMet, 0);
@@ -556,12 +555,12 @@ bool MultiLepEventSelector::METSelection(edm::Event const & event)
 		if ( pMet.isNonnull() && pMet.isAvailable() ) {
 			pat::MET const & met = mhMet->at(0);
 // 			TLorentzVector corrMET = correctMet(met, event);
-// 			
+//
 //         	if (debug) std::cout<<"\t\t" <<"MET = " << corrMET.Pt()<< std::endl;
-// 
+//
 // 			if ( corrMET.Pt() > min_met ) passMinMET=true;
 // 			if ( corrMET.Pt() < max_met ) passMaxMET=false;
-			
+
 			if (passMinMET && passMaxMET){
 				 pass = true;
         		if (debug) std::cout<<"\t\t\t" <<"---> PASSES MET Selection. " << std::endl;
@@ -583,17 +582,17 @@ bool MultiLepEventSelector::METSelection(edm::Event const & event)
 
 int MultiLepEventSelector::MuonSelection(edm::Event const & event)
 {
-	
+
 	//======================================================
 	//
 	//_____ Muon cuts ________________________________
-	//      
-	// 
+	//
+	//
 
 	int _n_muons  = 0;
 	int nSelMuons = 0;
 	int nSelLooseMuons = 0;
-	
+
 	//get muons
 	edm::Handle< pat::MuonCollection > 	muonsHandle;
 	event.getByToken(muonsToken, muonsHandle);
@@ -602,169 +601,164 @@ int MultiLepEventSelector::MuonSelection(edm::Event const & event)
 	vSelLooseMuons.clear();
 
 	if ( muon_cuts ) { if(debug)std::cout << "\t" <<"Applying MuonSelection"<< std::endl;}
-	else { if(debug)std::cout << "\t" <<" NOT applying MuonSelection"<< std::endl;}
-			
+	else { if(debug)std::cout << "\t" <<"NOT applying MuonSelection"<< std::endl;}
+
 	for (std::vector<pat::Muon>::const_iterator _imu = muonsHandle->begin(); _imu != muonsHandle->end(); _imu++){
 
 
-		bool pass = false;
-
-		bool pass_CutBasedID_tight = false;
-		bool pass_muon_relIso = false;
-		bool pass_muon_miniIso = false;
-		bool pass_muon_dxy = false;
-		bool pass_muon_dz = false;
-		bool pass_muon_minpt = false;
-		bool pass_muon_maxeta = false;
-
-		bool pass_loose = false;
-
-		bool pass_CutBasedID_loose = false;
-		bool pass_muon_relIso_loose = false;
-		bool pass_muon_miniIso_loose = false;
-		bool pass_muon_dxy_loose = false;
-		bool pass_muon_dz_loose = false;
-		bool pass_muon_minpt_loose = false;
-		bool pass_muon_maxeta_loose = false;
-
-
 		if ( muon_cuts ) {
-	    
-	    	if (debug) std::cout<< "\t\t" << "pt    = " << _imu->pt() << std::endl; //DEBUG - rizki
-	    	if (debug) std::cout<< "\t\t" << "|eta| = " << fabs(_imu->eta()) << std::endl; //DEBUG - rizki
-	    	if (debug) std::cout<< "\t\t" << "phi = " << _imu->phi() << std::endl; //DEBUG - rizki
-	    	
-			double chIso = (*_imu).pfIsolationR04().sumChargedHadronPt;
-			double nhIso = (*_imu).pfIsolationR04().sumNeutralHadronEt;
-			double gIso  = (*_imu).pfIsolationR04().sumPhotonEt;
-			double puIso = (*_imu).pfIsolationR04().sumPUPt;
 
-			double pt    = (*_imu).pt() ;
-			double pfIso = (chIso + std::max(0.,nhIso + gIso - 0.5*puIso))/pt;
+		  bool pass = false;
 
-	    	//muon cuts
-	    	
-	    	//check loose first
-			while(1){
+		  bool pass_CutBasedID_tight = false;
+		  bool pass_muon_relIso = false;
+		  bool pass_muon_miniIso = false;
+		  bool pass_muon_dxy = false;
+		  bool pass_muon_dz = false;
+		  bool pass_muon_minpt = false;
+		  bool pass_muon_maxeta = false;
 
-			  if ( (*_imu).passed(reco::Muon::CutBasedIdLoose) ){ pass_CutBasedID_loose = true; } 
-			  else break; // fail
-	  
-			  if (!muon_useMiniIso && pfIso<loose_muon_relIso) {pass_muon_relIso_loose = true;}
-			  else if (muon_useMiniIso && (*_imu).passed(reco::Muon::MiniIsoLoose) ) {pass_muon_miniIso_loose = true;}
-			  else{ break;}
-  
-			  if (vSelPVs.size() > 0){
-				if ( fabs((*_imu).muonBestTrack()->dxy((*vSelPVs[0]).position())) < loose_muon_dxy ){ pass_muon_dxy_loose = true; }
-				else break;
-				if ( fabs((*_imu).muonBestTrack()->dz((*vSelPVs[0]).position())) < loose_muon_dz ){ pass_muon_dz_loose = true; }
-				else break;
-			  }
-				
-			  if ( _imu->pt()>loose_muon_minpt ){ pass_muon_minpt_loose = true; }
-			  else break;
-  
-			  if ( fabs(_imu->eta())< loose_muon_maxeta ){ pass_muon_maxeta_loose = true; }
-			  else break;
+		  bool pass_loose = false;
 
-			  pass_loose = true; // success
-			  break;
-			}
+		  bool pass_CutBasedID_loose = false;
+		  bool pass_muon_relIso_loose = false;
+		  bool pass_muon_miniIso_loose = false;
+		  bool pass_muon_dxy_loose = false;
+		  bool pass_muon_dz_loose = false;
+		  bool pass_muon_minpt_loose = false;
+		  bool pass_muon_maxeta_loose = false;
 
-			if(debug){
-				std::cout<< "\t\t\t" << "pass_CutBasedID_loose   = " << pass_CutBasedID_loose << std::endl;;
-				if(muon_useMiniIso){
-					std::cout<< "\t\t\t" << "pass_muon_miniIso_loose = " << pass_muon_miniIso_loose<< std::endl;;			
-				}
-				else{
-					std::cout<< "\t\t\t" << "pass_muon_relIso_loose  = " << pass_muon_relIso_loose<< std::endl;;
-				}
-				std::cout<< "\t\t\t" << "pass_muon_dxy_loose     = " << pass_muon_dxy_loose<< std::endl;;
-				std::cout<< "\t\t\t" << "pass_muon_dz_loose      = " << pass_muon_dz_loose<< std::endl;;
-				std::cout<< "\t\t\t" << "pass_muon_minpt_loose   = " << pass_muon_minpt_loose<< std::endl;;
-				std::cout<< "\t\t\t" << "pass_muon_maxeta_loose  = " << pass_muon_maxeta_loose<< std::endl;;
-				std::cout<< "\t\t\t\t" << "pass_loose              = " << pass_loose << std::endl;
-			}
+		  if (debug) std::cout<< "\t\t" << "pt    = " << _imu->pt() << std::endl; //DEBUG - rizki
+		  if (debug) std::cout<< "\t\t" << "|eta| = " << fabs(_imu->eta()) << std::endl; //DEBUG - rizki
+		  if (debug) std::cout<< "\t\t" << "phi = " << _imu->phi() << std::endl; //DEBUG - rizki
 
-			if ( pass_loose ){
-				// save loose muon
-				vSelLooseMuons.push_back( edm::Ptr<pat::Muon>( muonsHandle, _n_muons) );
-				++nSelLooseMuons; 
-			}
-			else continue; //skip to next muon if fail loose
+		  double chIso = (*_imu).pfIsolationR04().sumChargedHadronPt;
+		  double nhIso = (*_imu).pfIsolationR04().sumNeutralHadronEt;
+		  double gIso  = (*_imu).pfIsolationR04().sumPhotonEt;
+		  double puIso = (*_imu).pfIsolationR04().sumPUPt;
 
-	    	//check tight
-	    	while(1){
-	      
-			  if ( (*_imu).passed(reco::Muon::CutBasedIdTight) ){pass_CutBasedID_tight = true;}
-			  else break; // fail
-	      		  		  		  
-			  if (!muon_useMiniIso && pfIso<muon_relIso ) {pass_muon_relIso = true;}
-			  else if (muon_useMiniIso && (*_imu).passed(reco::Muon::MiniIsoTight) ) {pass_muon_miniIso = true;}
-			  else{ break;}
-		  
-			  if (vSelPVs.size() > 0){
-				if ( fabs((*_imu).muonBestTrack()->dxy((*vSelPVs[0]).position())) < muon_dxy ){ pass_muon_dxy = true; }
-				else break;
-				if ( fabs((*_imu).muonBestTrack()->dz((*vSelPVs[0]).position())) < muon_dz ){ pass_muon_dz = true;}
-				else break;
-			  }
-		  
-			  if ( _imu->pt()>muon_minpt ){ pass_muon_minpt = true ;}
-			  else break;
-		  
-			  if ( fabs(_imu->eta())<muon_maxeta ){ pass_muon_maxeta = true; }
-			  else break;
-		  
-			  pass = true; // success
-			  break;
-			  
-			}
+		  double pt    = (*_imu).pt() ;
+		  double pfIso = (chIso + std::max(0.,nhIso + gIso - 0.5*puIso))/pt;
 
-			if(debug){
-				std::cout<< "\t\t\t" << "pass_CutBasedID_tight   = "<< pass_CutBasedID_tight<< std::endl;;
-				if(muon_useMiniIso){
-					std::cout<< "\t\t\t" << "pass_muon_miniIso       = " << pass_muon_miniIso<< std::endl;;			
-				}
-				else{
-					std::cout<< "\t\t\t" << "pass_muon_relIso        = " << pass_muon_relIso<< std::endl;;
-				}
-				std::cout<< "\t\t\t" << "pass_muon_dxy           = " << pass_muon_dxy<< std::endl;;
-				std::cout<< "\t\t\t" << "pass_muon_dz            = " << pass_muon_dz<< std::endl;;
-				std::cout<< "\t\t\t" << "pass_muon_minpt         = " << pass_muon_minpt<< std::endl;;
-				std::cout<< "\t\t\t" << "pass_muon_maxeta        = " << pass_muon_maxeta<< std::endl;;
-				std::cout<< "\t\t\t\t" << "pass                    = " << pass << std::endl;;
-			}
-						
-			if ( pass ){		
-				// savet tight muon
-				vSelMuons.push_back( edm::Ptr<pat::Muon>( muonsHandle, _n_muons) );
-				++nSelMuons; 
-			}
+		  //muon cuts
+
+		  //check loose first
+		  while(1){
+
+		    if ( (*_imu).passed(reco::Muon::CutBasedIdLoose) ){ pass_CutBasedID_loose = true; }
+		    else break; // fail
+
+		    if (!muon_useMiniIso && pfIso<loose_muon_relIso) {pass_muon_relIso_loose = true;}
+		    else if (muon_useMiniIso && (*_imu).passed(reco::Muon::MiniIsoLoose) ) {pass_muon_miniIso_loose = true;}
+		    else{ break;}
+
+		    if (vSelPVs.size() > 0){
+		      if ( fabs((*_imu).muonBestTrack()->dxy((*vSelPVs[0]).position())) < loose_muon_dxy ){ pass_muon_dxy_loose = true; }
+		      else break;
+		      if ( fabs((*_imu).muonBestTrack()->dz((*vSelPVs[0]).position())) < loose_muon_dz ){ pass_muon_dz_loose = true; }
+		      else break;
+		    }
+
+		    if ( _imu->pt()>loose_muon_minpt ){ pass_muon_minpt_loose = true; }
+		    else break;
+
+		    if ( fabs(_imu->eta())< loose_muon_maxeta ){ pass_muon_maxeta_loose = true; }
+		    else break;
+
+		    pass_loose = true; // success
+		    break;
+		  }
+
+		  if(debug){
+		    std::cout<< "\t\t\t" << "pass_CutBasedID_loose   = " << pass_CutBasedID_loose << std::endl;
+		    if(muon_useMiniIso){
+		      std::cout<< "\t\t\t" << "pass_muon_miniIso_loose = " << pass_muon_miniIso_loose<< std::endl;}
+		    else{
+		      std::cout<< "\t\t\t" << "pass_muon_relIso_loose  = " << pass_muon_relIso_loose<< std::endl;}
+		    std::cout<< "\t\t\t" << "pass_muon_dxy_loose     = " << pass_muon_dxy_loose<< std::endl;
+		    std::cout<< "\t\t\t" << "pass_muon_dz_loose      = " << pass_muon_dz_loose<< std::endl;
+		    std::cout<< "\t\t\t" << "pass_muon_minpt_loose   = " << pass_muon_minpt_loose<< std::endl;
+		    std::cout<< "\t\t\t" << "pass_muon_maxeta_loose  = " << pass_muon_maxeta_loose<< std::endl;
+		    std::cout<< "\t\t\t\t" << "pass_loose              = " << pass_loose << std::endl;
+		  }
+
+		  if ( pass_loose ){
+		    // save loose muon
+		    vSelLooseMuons.push_back( edm::Ptr<pat::Muon>( muonsHandle, _n_muons) );
+		    ++nSelLooseMuons;
+		  }
+		  else continue; //skip to next muon if fail loose
+
+		  //check tight
+		  while(1){
+
+		    if ( (*_imu).passed(reco::Muon::CutBasedIdTight) ){pass_CutBasedID_tight = true;}
+		    else break; // fail
+
+		    if (!muon_useMiniIso && pfIso<muon_relIso ) {pass_muon_relIso = true;}
+		    else if (muon_useMiniIso && (*_imu).passed(reco::Muon::MiniIsoTight) ) {pass_muon_miniIso = true;}
+		    else{ break;}
+
+		    if (vSelPVs.size() > 0){
+		      if ( fabs((*_imu).muonBestTrack()->dxy((*vSelPVs[0]).position())) < muon_dxy ){ pass_muon_dxy = true; }
+		      else break;
+		      if ( fabs((*_imu).muonBestTrack()->dz((*vSelPVs[0]).position())) < muon_dz ){ pass_muon_dz = true;}
+		      else break;
+		    }
+
+		    if ( _imu->pt()>muon_minpt ){ pass_muon_minpt = true ;}
+		    else break;
+
+		    if ( fabs(_imu->eta())<muon_maxeta ){ pass_muon_maxeta = true; }
+		    else break;
+
+		    pass = true; // success
+		    break;
+
+		  }
+
+		  if(debug){
+		    std::cout<< "\t\t\t" << "pass_CutBasedID_tight   = "<< pass_CutBasedID_tight<< std::endl;
+		    if(muon_useMiniIso){
+		      std::cout<< "\t\t\t" << "pass_muon_miniIso       = " << pass_muon_miniIso<< std::endl;}
+		    else{
+		      std::cout<< "\t\t\t" << "pass_muon_relIso        = " << pass_muon_relIso<< std::endl;}
+		    std::cout<< "\t\t\t" << "pass_muon_dxy           = " << pass_muon_dxy<< std::endl;
+		    std::cout<< "\t\t\t" << "pass_muon_dz            = " << pass_muon_dz<< std::endl;
+		    std::cout<< "\t\t\t" << "pass_muon_minpt         = " << pass_muon_minpt<< std::endl;
+		    std::cout<< "\t\t\t" << "pass_muon_maxeta        = " << pass_muon_maxeta<< std::endl;
+		    std::cout<< "\t\t\t\t" << "pass                    = " << pass << std::endl;
+		  }
+
+		  if ( pass ){
+		    // savet tight muon
+		    vSelMuons.push_back( edm::Ptr<pat::Muon>( muonsHandle, _n_muons) );
+		    ++nSelMuons;
+		  }
 
 
 
-        } // end of muon cuts
+		} // end of muon cuts
 		else{
 
-			// save ALL muons
-			vSelMuons.push_back( edm::Ptr<pat::Muon>( muonsHandle, _n_muons) );
-			++nSelMuons;     
-			vSelLooseMuons.push_back( edm::Ptr<pat::Muon>( muonsHandle, _n_muons) );
-			++nSelLooseMuons; 
+		  // save ALL muons
+		  vSelLooseMuons.push_back( edm::Ptr<pat::Muon>( muonsHandle, _n_muons) );
+		  ++nSelLooseMuons;
+		  vSelMuons.push_back( edm::Ptr<pat::Muon>( muonsHandle, _n_muons) );
+		  ++nSelMuons;
 		}
 
 		_n_muons++;
 
-    } // end of the muon loop
+	} // end of the muon loop
 
-    if (debug) std::cout<< "\t\t"<< "+++++++++++++++++++++++++++++++++++++++++ " <<std::endl; // DEBUG - rizki
-    if (debug) std::cout<< "\t\t"<< "nSelMuons               = " << nSelMuons << " out of "<< muonsHandle->size() << std::endl; // DEBUG - rizki
-    if (debug) std::cout<< "\t\t"<< "nSelLooseMuons          = " << nSelLooseMuons << " out of "<< muonsHandle->size() << std::endl; // DEBUG - rizki
-    if (debug) std::cout<< "\t\t"<< "+++++++++++++++++++++++++++++++++++++++++ " <<std::endl; // DEBUG - rizki
-    
+	if (debug) std::cout<< "\t\t"<< "+++++++++++++++++++++++++++++++++++++++++ " <<std::endl; // DEBUG - rizki
+	if (debug) std::cout<< "\t\t"<< "nSelMuons               = " << nSelMuons << " out of "<< muonsHandle->size() << std::endl; // DEBUG - rizki
+	if (debug) std::cout<< "\t\t"<< "nSelLooseMuons          = " << nSelLooseMuons << " out of "<< muonsHandle->size() << std::endl; // DEBUG - rizki
+	if (debug) std::cout<< "\t\t"<< "+++++++++++++++++++++++++++++++++++++++++ " <<std::endl; // DEBUG - rizki
 
-    return nSelLooseMuons;
+
+	return nSelLooseMuons;
 
 
 }
@@ -772,177 +766,176 @@ int MultiLepEventSelector::MuonSelection(edm::Event const & event)
 int MultiLepEventSelector::ElectronSelection(edm::Event const & event)
 {
 
+	//
+	//_____ Electron cuts __________________________________
+	//
+	// loop over electrons
+
+	int _n_electrons  = 0;
+	int nSelElectrons = 0;
+	int nSelLooseElectrons = 0;
+
+	//get electrons
+	edm::Handle< pat::ElectronCollection > electronsHandle;
+	event.getByToken(electronsToken, electronsHandle);
+
+	vSelElectrons.clear();
+	vSelLooseElectrons.clear();
+
+	//packed pf candidates and rho source needed miniIso
+	edm::Handle<pat::PackedCandidateCollection> packedPFCandsHandle;
+	event.getByToken(PFCandToken, packedPFCandsHandle);
+
+	//rho isolation from susy recommendation
+	edm::Handle<double> rhoJetsNC_Handle;
+	event.getByToken(rhoJetsNC_Token, rhoJetsNC_Handle);
+	double myRhoJetsNC = *rhoJetsNC_Handle;
+
+	if ( electron_cuts ) { if(debug)std::cout << "\t" <<"Applying ElectronSelection"<< std::endl;}
+	else { if(debug)std::cout << "\t" <<"NOT applying ElectronSelection"<< std::endl;}
 
 
-        //
-        //_____ Electron cuts __________________________________
-        //      
-        // loop over electrons
+	for (std::vector<pat::Electron>::const_iterator _iel = electronsHandle->begin(); _iel != electronsHandle->end(); _iel++){
 
-        int _n_electrons  = 0;
-        int nSelElectrons = 0;
-        int nSelLooseElectrons = 0;
+		if ( electron_cuts ) {
 
-		//get electrons
-		edm::Handle< pat::ElectronCollection > electronsHandle;
-		event.getByToken(electronsToken, electronsHandle);
+		  bool pass_loose = false;
+		  bool pass = false;
 
-		vSelElectrons.clear();
-		vSelLooseElectrons.clear();
-
-		//packed pf candidates and rho source needed miniIso
-		edm::Handle<pat::PackedCandidateCollection> packedPFCandsHandle;
-		event.getByToken(PFCandToken, packedPFCandsHandle);
-
-		//rho isolation from susy recommendation
-		edm::Handle<double> rhoJetsNC_Handle;
-		event.getByToken(rhoJetsNC_Token, rhoJetsNC_Handle);
-		double myRhoJetsNC = *rhoJetsNC_Handle;
+		  if (debug) std::cout << "\t\t" << "pt                                          = " << _iel->pt() << std::endl; //DEBUG - rizki
+		  if (debug) std::cout << "\t\t" << "|eta| ( ->superCluster()->eta(), ->eta() )  = " << fabs(_iel->superCluster()->eta()) << ", " << fabs(_iel->eta()) << std::endl; //DEBUG - rizki
+		  if (debug) std::cout << "\t\t" << "phi ( ->superCluster()->phi(), ->phi() )    = " << _iel->superCluster()->phi() << ", " << _iel->phi() << std::endl; //DEBUG - rizki
 
 
-        if ( electron_cuts ) {
-        			
-            for (std::vector<pat::Electron>::const_iterator _iel = electronsHandle->begin(); _iel != electronsHandle->end(); _iel++){
-                bool pass = false;
+		  //electron cuts
 
-                bool pass_electron_minpt = false;
-                bool pass_electron_maxeta = false;
-                bool pass_electron_isEBEEGap = false;
-                bool pass_electron_mva = false;
-                bool pass_electron_cutbased = false;
-                bool pass_electron_useMiniIso = false;
+		  //check loose first
+		  while(1){
 
-                bool pass_electron_minpt_loose = false;
-                bool pass_electron_maxeta_loose = false;
-                bool pass_electron_isEBEEGap_loose = false;
-                bool pass_electron_mva_loose = false;
-                bool pass_electron_cutbased_loose = false;
-                bool pass_electron_useMiniIso_loose = false;
+			if (_iel->pt()<loose_electron_minpt) break;
+			if(debug)std::cout << "\t\t\t" << "pass_electron_minpt_loose" <<std::endl;
+
+			if ( fabs(_iel->superCluster()->eta())>loose_electron_maxeta )break;
+			if(debug)std::cout << "\t\t\t" << "pass_electron_maxeta_loose" <<std::endl;
+
+			if ((*_iel).isEBEEGap()) break; //why is this different from the tight selection version?
+			if(debug)std::cout << "\t\t\t" << "pass_electron_isEBEEGap_loose" <<std::endl;
+
+			if ( UseElMVA ) {
+
+			  bool mvapass = false;
+
+			  if(UseElIDV1) mvapass = _iel->electronID("mvaEleID-Fall17-noIso-V1-wpLoose");
+			  else mvapass = _iel->electronID("mvaEleID-Fall17-noIso-V2-wpLoose");
+
+			  if (!mvapass) break;
+			  if(debug)std::cout << "\t\t\t" << "pass_electron_mva_loose" <<std::endl;
+
+			  if(electron_useMiniIso){
+
+				pat::Electron* elptr = new pat::Electron(*_iel);
+				float miniIso = getPFMiniIsolation_EffectiveArea(packedPFCandsHandle, dynamic_cast<const reco::Candidate* > (elptr), 0.05, 0.2, 10., false, false,myRhoJetsNC);
+
+				if(miniIso > loose_electron_miniIso){delete elptr;  break;}
+				if(debug)std::cout << "\t\t\t" << "pass_electron_useMiniIso_loose" <<std::endl;
+				delete elptr;
+			  }
+			}
+			else {
+			  bool cutbasedpass = false;
+			  if(UseElIDV1) cutbasedpass = _iel->electronID("cutBasedElectronID-Fall17-94X-V1-loose");
+			  else cutbasedpass = _iel->electronID("cutBasedElectronID-Fall17-94X-V2-loose");
+
+			  if(!cutbasedpass) break;
+			  if(debug)std::cout << "\t\t\t" << "pass_electron_cutbased_loose" <<std::endl;
+			}
+
+			pass_loose = true; // success
+			if(debug)std::cout << "\t\t\t" << "----> pass_loose" <<std::endl;
+			break;
+		  }
+
+		  if ( pass_loose ){
+			// save loose electron
+			vSelLooseElectrons.push_back( edm::Ptr<pat::Electron>( electronsHandle, _n_electrons) );
+			++nSelLooseElectrons;
+		  }
+		  else continue; //skip to next el if fail loose
 
 
-				if (debug) std::cout << "pt                                          = " << _iel->pt() << std::endl; //DEBUG - rizki
-				if (debug) std::cout << "|eta| ( ->superCluster()->eta(), ->eta() )  = " << fabs(_iel->superCluster()->eta()) << ", " << fabs(_iel->eta()) << std::endl; //DEBUG - rizki
-				if (debug) std::cout << "phi ( ->superCluster()->phi(), ->phi() )    = " << _iel->superCluster()->phi() << ", " << _iel->phi() << std::endl; //DEBUG - rizki
+		  //check tight
+		  while(1){
 
-                //electron cuts
-                while(1){
+			if (_iel->pt()<electron_minpt) break;
+			if(debug)std::cout << "\t\t\t" << "pass_electron_minpt" <<std::endl;
 
-                    if (_iel->pt()>electron_minpt){ }
-                    else break;
-	  
-                    if ( fabs(_iel->superCluster()->eta())<electron_maxeta ){ }
-                    else break;
+			if ( fabs(_iel->superCluster()->eta())>electron_maxeta ) break;
+			if(debug)std::cout << "\t\t\t" << "pass_electron_maxeta" <<std::endl;
 
-                    if ( fabs(_iel->superCluster()->eta())<1.4442 || fabs(_iel->superCluster()->eta())>1.566 ){ }
-                    else break;
+			if (!( fabs(_iel->superCluster()->eta())<1.4442 || fabs(_iel->superCluster()->eta())>1.566 ))break;
+			if(debug)std::cout << "\t\t\t" << "pass_electron_isEBEEGap" <<std::endl;
 
-                    if ( UseElMVA ) {
-                    
-                    	//bool mvapass = true;  // HACK FOR TESTING THE MVA EFFICIENCY
-                    	bool mvapass = false;
-                    	if(UseElIDV1) mvapass = _iel->electronID("mvaEleID-Fall17-noIso-V1-wp90");
-                    	else mvapass = _iel->electronID("mvaEleID-Fall17-noIso-V2-wp90");
-                    	
-                    	if (!mvapass) break;
-                    	
-                    	if(electron_useMiniIso){
-                    	
-                    		bool passIso = false;
-                    		pat::Electron* elptr = new pat::Electron(*_iel);
-                    		float miniIso = getPFMiniIsolation_EffectiveArea(packedPFCandsHandle, dynamic_cast<const reco::Candidate* > (elptr), 0.05, 0.2, 10., false, false,myRhoJetsNC);
-                    		
-                    		if(miniIso < electron_miniIso) passIso = true;                      
-                    		if(!passIso){delete elptr;  break;}
-                    		
-                    		delete elptr;
-                    	}
-                    }
-                    else {
-                    
-                    	bool cutbasedpass = false;
-                    	if(UseElIDV1) cutbasedpass = _iel->electronID("cutBasedElectronID-Fall17-94X-V1-tight");
-                    	else cutbasedpass = _iel->electronID("cutBasedElectronID-Fall17-94X-V2-tight");
-                    	
-                    	if(!cutbasedpass) break;
-                    }
-		    
-                    pass = true; // success
-                    break;
-                }
+			if ( UseElMVA ) {
 
-				if (debug)std::cout << " -------------------------------------------------------------------> Electron pass ? " << pass << std::endl; //DEBUG - rizki
-				if (debug)std::cout << " " << std::endl; //DEBUG - rizki
+			  bool mvapass = false;
+			  if(UseElIDV1) mvapass = _iel->electronID("mvaEleID-Fall17-noIso-V1-wp90");
+			  else mvapass = _iel->electronID("mvaEleID-Fall17-noIso-V2-wp90");
 
-                if ( pass ){
-                     ++nSelElectrons;
-                   
-                    // save every good electron
-                    vSelElectrons.push_back( edm::Ptr<pat::Electron>( electronsHandle, _n_electrons) );
-                    vSelLooseElectrons.push_back( edm::Ptr<pat::Electron>( electronsHandle, _n_electrons) );
-                }	
-                else {
-                    bool pass_loose = false;
-    
-                    //electron cuts
-                    while(1){
-    
-                        if (_iel->pt()>loose_electron_minpt){ }
-                        else break;
-    	  
-                        if ( fabs(_iel->superCluster()->eta())<loose_electron_maxeta ){ }
-                        else break;
-    
-                        if (!((*_iel).isEBEEGap())){ }
-                        else break;
+			  if (!mvapass) break;
+			  if(debug)std::cout << "\t\t\t" << "pass_electron_mva" <<std::endl;
 
-                        if ( UseElMVA ) {
-                        	//bool mvapass = true; // HACK FOR TESTING THE MVA EFFICIENCY
-                        	bool mvapass = false;
 
-							if(UseElIDV1) mvapass = _iel->electronID("mvaEleID-Fall17-noIso-V1-wpLoose");
-							else mvapass = _iel->electronID("mvaEleID-Fall17-noIso-V2-wpLoose");
+			  if(electron_useMiniIso){
 
-							if (!mvapass) break;
+				pat::Electron* elptr = new pat::Electron(*_iel);
+				float miniIso = getPFMiniIsolation_EffectiveArea(packedPFCandsHandle, dynamic_cast<const reco::Candidate* > (elptr), 0.05, 0.2, 10., false, false,myRhoJetsNC);
 
-							if(electron_useMiniIso){
-								bool passIso = false;
-								pat::Electron* elptr = new pat::Electron(*_iel);
-								float miniIso = getPFMiniIsolation_EffectiveArea(packedPFCandsHandle, dynamic_cast<const reco::Candidate* > (elptr), 0.05, 0.2, 10., false, false,myRhoJetsNC);
+				if(miniIso > electron_miniIso){delete elptr;  break;}
+				if(debug)std::cout << "\t\t\t" << "pass_electron_useMiniIso" <<std::endl;
+				delete elptr;
+			  }
+			}
+			else {
 
-								if(miniIso < loose_electron_miniIso) passIso = true;                      
-								if(!passIso){delete elptr;  break;}
-								delete elptr;
-							}
-                        }
-                        else {
-							bool cutbasedpass = false;
-							if(UseElIDV1) cutbasedpass = _iel->electronID("cutBasedElectronID-Fall17-94X-V1-loose");
-							else cutbasedpass = _iel->electronID("cutBasedElectronID-Fall17-94X-V2-loose");
+			  bool cutbasedpass = false;
+			  if(UseElIDV1) cutbasedpass = _iel->electronID("cutBasedElectronID-Fall17-94X-V1-tight");
+			  else cutbasedpass = _iel->electronID("cutBasedElectronID-Fall17-94X-V2-tight");
 
-							if(!cutbasedpass) break;
-                        }
+			  if(!cutbasedpass) break;
+			  if(debug)std::cout << "\t\t\t" << "pass_electron_cutbased" <<std::endl;
+			}
 
-                        pass_loose = true; // success
-                        break;
-                    }
-    
-                    if ( pass_loose ){
-						++nSelLooseElectrons;
-						vSelLooseElectrons.push_back( edm::Ptr<pat::Electron>( electronsHandle, _n_electrons) );
-					}
-				}
-                 	
-                _n_electrons++;
-            } // end of the electron loop
+			pass = true; // success
+			if(debug)std::cout << "\t\t\t" << "----> pass" <<std::endl;
+			break;
+		  }
 
-        } // end of electron cuts
+		  if ( pass ){
+			// save tight electron
+			vSelElectrons.push_back( edm::Ptr<pat::Electron>( electronsHandle, _n_electrons) );
+			++nSelElectrons;
+		  }
 
-		if (debug)std::cout<< "+++++++++++++++++++++++++++++++++++++++ " <<std::endl; // DEBUG - rizki
-		if (debug)std::cout<< "nSelElectrons              = " << nSelElectrons << " out of " << electronsHandle->size() <<std::endl; // DEBUG - rizki
-		if (debug)std::cout<< "+++++++++++++++++++++++++++++++++++++++ " <<std::endl; // DEBUG - rizki
-        if (debug) std::cout<<"finish electron cuts..."<<std::endl;
-        
-        return nSelLooseElectrons;
+		} // end of electron cuts
+		else{
+
+		  // save ALL electrons
+		  vSelLooseElectrons.push_back( edm::Ptr<pat::Electron>( electronsHandle, _n_electrons) );
+		  ++nSelLooseElectrons;
+		  vSelElectrons.push_back( edm::Ptr<pat::Electron>( electronsHandle, _n_electrons) );
+		  ++nSelElectrons;
+		}
+
+		_n_electrons++;
+
+	} // end of the electron loop
+
+
+	if (debug)std::cout<< "\t\t"<< "+++++++++++++++++++++++++++++++++++++++ " <<std::endl; // DEBUG - rizki
+	if (debug)std::cout<< "\t\t"<< "nSelElectrons              = " << nSelElectrons << " out of " << electronsHandle->size() <<std::endl; // DEBUG - rizki
+	if (debug)std::cout<< "\t\t"<< "+++++++++++++++++++++++++++++++++++++++ " <<std::endl; // DEBUG - rizki
+
+	return nSelLooseElectrons;
 
 }
 
