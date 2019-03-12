@@ -3,6 +3,10 @@
 #include "FWLJMET/LJMet/interface/LjmetEventContent.h"
 
 #include "SimDataFormats/PileupSummaryInfo/interface/PileupSummaryInfo.h"
+#include "FWCore/Common/interface/TriggerNames.h"
+#include "DataFormats/Common/interface/TriggerResults.h"
+#include "DataFormats/HLTReco/interface/TriggerEvent.h"
+
 
 class LjmetFactory;
 
@@ -20,6 +24,8 @@ private:
 
     edm::EDGetTokenT<std::vector<PileupSummaryInfo>>   PupInfoToken;
     edm::EDGetTokenT<std::vector<PileupSummaryInfo>>   PupInfoToken2;
+
+    edm::EDGetTokenT<edm::TriggerResults >             muflagtagToken;
 
 
 };
@@ -41,7 +47,11 @@ int MultiLepCalc::BeginJob(edm::ConsumesCollector && iC)
 
 	//PU info
 	PupInfoToken 		= iC.consumes<std::vector<PileupSummaryInfo>>(edm::InputTag("addPileupInfo"));
-	PupInfoToken2 		= iC.consumes<std::vector<PileupSummaryInfo>>(edm::InputTag("slimmedAddPileupInfo"));
+	PupInfoToken2 		= iC.consumes<std::vector<PileupSummaryInfo>>(edm::InputTag("TriggerResults::RECO"));
+	
+	//Bad, dup, mu flag
+	muflagtagToken 		= iC.consumes<edm::TriggerResults >(edm::InputTag("slimmedAddPileupInfo"));
+	
 
 	debug = mPset.getParameter<bool>("debug");
 	isMc  = mPset.getParameter<bool>("isMc");
@@ -102,6 +112,9 @@ int MultiLepCalc::AnalyzeEvent(edm::Event const & event, BaseEventSelector * sel
     //
     SetValue("nPV", (int)vSelPVs.size());
 
+    //
+    //_____PU______
+    //
     int NumTrueInts = -1;
     int NumPUInts = -1;
     if(isMc){
@@ -120,6 +133,26 @@ int MultiLepCalc::AnalyzeEvent(edm::Event const & event, BaseEventSelector * sel
     }
     SetValue("nTrueInteractions",NumTrueInts);
     SetValue("nPileupInteractions",NumPUInts);
+
+    //
+    //_____Bad & duplicate muon flags______
+    //
+    bool badmuonflag = false;
+    bool dupmuonflag = false;	  
+
+    if(!isMc){
+      edm::Handle<edm::TriggerResults > PatTriggerResults;
+      event.getByToken( muflagtagToken, PatTriggerResults );
+      const edm::TriggerNames patTrigNames = event.triggerNames(*PatTriggerResults);
+
+      for (unsigned int i=0; i<PatTriggerResults->size(); i++){
+		if (patTrigNames.triggerName(i) == "Flag_badMuons") badmuonflag = PatTriggerResults->accept(patTrigNames.triggerIndex(patTrigNames.triggerName(i)));
+		if (patTrigNames.triggerName(i) == "Flag_duplicateMuons") dupmuonflag = PatTriggerResults->accept(patTrigNames.triggerIndex(patTrigNames.triggerName(i)));
+      }
+    }
+    SetValue("flagBadMu",badmuonflag);
+    SetValue("flagDupMu",dupmuonflag);
+
 
     //
     //_____Muons______
