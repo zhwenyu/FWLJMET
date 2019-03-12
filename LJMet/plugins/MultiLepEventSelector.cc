@@ -609,24 +609,7 @@ int MultiLepEventSelector::MuonSelection(edm::Event const & event)
 		if ( muon_cuts ) {
 
 		  bool pass = false;
-
-		  bool pass_CutBasedID_tight = false;
-		  bool pass_muon_relIso = false;
-		  bool pass_muon_miniIso = false;
-		  bool pass_muon_dxy = false;
-		  bool pass_muon_dz = false;
-		  bool pass_muon_minpt = false;
-		  bool pass_muon_maxeta = false;
-
 		  bool pass_loose = false;
-
-		  bool pass_CutBasedID_loose = false;
-		  bool pass_muon_relIso_loose = false;
-		  bool pass_muon_miniIso_loose = false;
-		  bool pass_muon_dxy_loose = false;
-		  bool pass_muon_dz_loose = false;
-		  bool pass_muon_minpt_loose = false;
-		  bool pass_muon_maxeta_loose = false;
 
 		  if (debug) std::cout<< "\t\t" << "pt    = " << _imu->pt() << std::endl; //DEBUG - rizki
 		  if (debug) std::cout<< "\t\t" << "|eta| = " << fabs(_imu->eta()) << std::endl; //DEBUG - rizki
@@ -645,41 +628,38 @@ int MultiLepEventSelector::MuonSelection(edm::Event const & event)
 		  //check loose first
 		  while(1){
 
-		    if ( (*_imu).passed(reco::Muon::CutBasedIdLoose) ){ pass_CutBasedID_loose = true; }
-		    else break; // fail
+		    if ( _imu->pt()<loose_muon_minpt )break;
+		    if(debug)std::cout<< "\t\t\t" << "pass_muon_minpt_loose"<< std::endl;
 
-		    if (!muon_useMiniIso && pfIso<loose_muon_relIso) {pass_muon_relIso_loose = true;}
-		    else if (muon_useMiniIso && (*_imu).passed(reco::Muon::MiniIsoLoose) ) {pass_muon_miniIso_loose = true;}
-		    else{ break;}
+		    if ( fabs(_imu->eta())> loose_muon_maxeta )break;
+		    if(debug)std::cout<< "\t\t\t" << "pass_muon_maxeta_loose"<< std::endl;
 
-		    if (vSelPVs.size() > 0){
-		      if ( fabs((*_imu).muonBestTrack()->dxy((*vSelPVs[0]).position())) < loose_muon_dxy ){ pass_muon_dxy_loose = true; }
-		      else break;
-		      if ( fabs((*_imu).muonBestTrack()->dz((*vSelPVs[0]).position())) < loose_muon_dz ){ pass_muon_dz_loose = true; }
-		      else break;
+
+		    if ( ! (*_imu).passed(reco::Muon::CutBasedIdLoose) )break;
+		    if(debug)std::cout<< "\t\t\t" << "pass_CutBasedID_loose" << std::endl;
+
+		    if (muon_useMiniIso){
+		    	if ( ! (*_imu).passed(reco::Muon::MiniIsoLoose) ) break;
+		    	if(debug)std::cout<< "\t\t\t" << "pass_muon_miniIso_loose"<< std::endl;
+		    }
+		    else{
+		    	if ( pfIso > loose_muon_relIso) break;
+		    	if(debug)std::cout<< "\t\t\t" << "pass_muon_relIso_loose "<< std::endl;
 		    }
 
-		    if ( _imu->pt()>loose_muon_minpt ){ pass_muon_minpt_loose = true; }
-		    else break;
+		    if (vSelPVs.size() > 0){
 
-		    if ( fabs(_imu->eta())< loose_muon_maxeta ){ pass_muon_maxeta_loose = true; }
-		    else break;
+		      if ( fabs((*_imu).muonBestTrack()->dxy((*vSelPVs[0]).position())) > loose_muon_dxy )break;
+		      if(debug)std::cout<< "\t\t\t" << "pass_muon_dxy_loose"<< std::endl;
+
+		      if ( fabs((*_imu).muonBestTrack()->dz((*vSelPVs[0]).position())) > loose_muon_dz )break;
+		      if(debug)std::cout<< "\t\t\t" << "pass_muon_dz_loose" << std::endl;
+
+		    }
 
 		    pass_loose = true; // success
+		    if(debug)std::cout<< "\t\t\t" << "----> pass_loose"<< std::endl;
 		    break;
-		  }
-
-		  if(debug){
-		    std::cout<< "\t\t\t" << "pass_CutBasedID_loose   = " << pass_CutBasedID_loose << std::endl;
-		    if(muon_useMiniIso){
-		      std::cout<< "\t\t\t" << "pass_muon_miniIso_loose = " << pass_muon_miniIso_loose<< std::endl;}
-		    else{
-		      std::cout<< "\t\t\t" << "pass_muon_relIso_loose  = " << pass_muon_relIso_loose<< std::endl;}
-		    std::cout<< "\t\t\t" << "pass_muon_dxy_loose     = " << pass_muon_dxy_loose<< std::endl;
-		    std::cout<< "\t\t\t" << "pass_muon_dz_loose      = " << pass_muon_dz_loose<< std::endl;
-		    std::cout<< "\t\t\t" << "pass_muon_minpt_loose   = " << pass_muon_minpt_loose<< std::endl;
-		    std::cout<< "\t\t\t" << "pass_muon_maxeta_loose  = " << pass_muon_maxeta_loose<< std::endl;
-		    std::cout<< "\t\t\t\t" << "pass_loose              = " << pass_loose << std::endl;
 		  }
 
 		  if ( pass_loose ){
@@ -692,42 +672,39 @@ int MultiLepEventSelector::MuonSelection(edm::Event const & event)
 		  //check tight
 		  while(1){
 
-		    if ( (*_imu).passed(reco::Muon::CutBasedIdTight) ){pass_CutBasedID_tight = true;}
-		    else break; // fail
+		    if ( _imu->pt()<muon_minpt )break;
+		    if(debug)std::cout<< "\t\t\t" << "pass_muon_minpt"<< std::endl;
 
-		    if (!muon_useMiniIso && pfIso<muon_relIso ) {pass_muon_relIso = true;}
-		    else if (muon_useMiniIso && (*_imu).passed(reco::Muon::MiniIsoTight) ) {pass_muon_miniIso = true;}
-		    else{ break;}
+		    if ( fabs(_imu->eta())>muon_maxeta )break;
+		    if(debug)std::cout<< "\t\t\t" << "pass_muon_maxeta"<< std::endl;
 
-		    if (vSelPVs.size() > 0){
-		      if ( fabs((*_imu).muonBestTrack()->dxy((*vSelPVs[0]).position())) < muon_dxy ){ pass_muon_dxy = true; }
-		      else break;
-		      if ( fabs((*_imu).muonBestTrack()->dz((*vSelPVs[0]).position())) < muon_dz ){ pass_muon_dz = true;}
-		      else break;
+
+		    if ( ! (*_imu).passed(reco::Muon::CutBasedIdTight) )break;
+		    if(debug)std::cout<< "\t\t\t" << "pass_CutBasedID" << std::endl;
+
+		    if (muon_useMiniIso){
+		    	if ( ! (*_imu).passed(reco::Muon::MiniIsoTight) ) break;
+		    	if(debug)std::cout<< "\t\t\t" << "pass_muon_miniIso"<< std::endl;
+		    }
+		    else{
+		    	if ( pfIso > muon_relIso) break;
+		    	if(debug)std::cout<< "\t\t\t" << "pass_muon_relIso"<< std::endl;
 		    }
 
-		    if ( _imu->pt()>muon_minpt ){ pass_muon_minpt = true ;}
-		    else break;
 
-		    if ( fabs(_imu->eta())<muon_maxeta ){ pass_muon_maxeta = true; }
-		    else break;
+		    if (vSelPVs.size() > 0){
+
+		      if ( fabs((*_imu).muonBestTrack()->dxy((*vSelPVs[0]).position())) > muon_dxy )break;
+		      if(debug)std::cout<< "\t\t\t" << "pass_muon_dxy"<< std::endl;
+
+		      if ( fabs((*_imu).muonBestTrack()->dz((*vSelPVs[0]).position())) > muon_dz )break;
+		      if(debug)std::cout<< "\t\t\t" << "pass_muon_dz" << std::endl;
+		    }
 
 		    pass = true; // success
+		    if(debug)std::cout<< "\t\t\t" << "----> pass"<< std::endl;
 		    break;
 
-		  }
-
-		  if(debug){
-		    std::cout<< "\t\t\t" << "pass_CutBasedID_tight   = "<< pass_CutBasedID_tight<< std::endl;
-		    if(muon_useMiniIso){
-		      std::cout<< "\t\t\t" << "pass_muon_miniIso       = " << pass_muon_miniIso<< std::endl;}
-		    else{
-		      std::cout<< "\t\t\t" << "pass_muon_relIso        = " << pass_muon_relIso<< std::endl;}
-		    std::cout<< "\t\t\t" << "pass_muon_dxy           = " << pass_muon_dxy<< std::endl;
-		    std::cout<< "\t\t\t" << "pass_muon_dz            = " << pass_muon_dz<< std::endl;
-		    std::cout<< "\t\t\t" << "pass_muon_minpt         = " << pass_muon_minpt<< std::endl;
-		    std::cout<< "\t\t\t" << "pass_muon_maxeta        = " << pass_muon_maxeta<< std::endl;
-		    std::cout<< "\t\t\t\t" << "pass                    = " << pass << std::endl;
 		  }
 
 		  if ( pass ){
@@ -753,8 +730,8 @@ int MultiLepEventSelector::MuonSelection(edm::Event const & event)
 	} // end of the muon loop
 
 	if (debug) std::cout<< "\t\t"<< "+++++++++++++++++++++++++++++++++++++++++ " <<std::endl; // DEBUG - rizki
-	if (debug) std::cout<< "\t\t"<< "nSelMuons               = " << nSelMuons << " out of "<< muonsHandle->size() << std::endl; // DEBUG - rizki
 	if (debug) std::cout<< "\t\t"<< "nSelLooseMuons          = " << nSelLooseMuons << " out of "<< muonsHandle->size() << std::endl; // DEBUG - rizki
+	if (debug) std::cout<< "\t\t"<< "nSelMuons               = " << nSelMuons << " out of "<< muonsHandle->size() << std::endl; // DEBUG - rizki
 	if (debug) std::cout<< "\t\t"<< "+++++++++++++++++++++++++++++++++++++++++ " <<std::endl; // DEBUG - rizki
 
 
@@ -932,6 +909,7 @@ int MultiLepEventSelector::ElectronSelection(edm::Event const & event)
 
 
 	if (debug)std::cout<< "\t\t"<< "+++++++++++++++++++++++++++++++++++++++ " <<std::endl; // DEBUG - rizki
+	if (debug)std::cout<< "\t\t"<< "nSelLooseElectrons         = " << nSelLooseElectrons << " out of " << electronsHandle->size() <<std::endl; // DEBUG - rizki
 	if (debug)std::cout<< "\t\t"<< "nSelElectrons              = " << nSelElectrons << " out of " << electronsHandle->size() <<std::endl; // DEBUG - rizki
 	if (debug)std::cout<< "\t\t"<< "+++++++++++++++++++++++++++++++++++++++ " <<std::endl; // DEBUG - rizki
 
