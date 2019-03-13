@@ -50,13 +50,15 @@ public:
     virtual void EndJob();
     virtual void AnalyzeEvent( edm::EventBase const & event, LjmetEventContent & ec ) { }
     std::string GetName() { return mName; }
-    
+        
     std::vector<unsigned int>            const & GetSelTriggers()  const { return vSelTriggers; }
     std::vector<edm::Ptr<pat::Muon>>     const & GetSelMuons()     const { return vSelMuons; }
     std::vector<edm::Ptr<pat::Muon>>     const & GetSelLooseMuons()const { return vSelLooseMuons; }
-    std::vector<edm::Ptr<pat::Electron>> const & GetSelElectrons() const { return vSelElectrons; }
+    std::vector<edm::Ptr<pat::Electron>> const & GetSelElectrons()      const { return vSelElectrons; }
     std::vector<edm::Ptr<pat::Electron>> const & GetSelLooseElectrons() const { return vSelLooseElectrons; }
+    std::vector<edm::Ptr<pat::Jet>>      const & GetAllJets()      const { return vAllJets; }
     std::vector<edm::Ptr<pat::Jet>>      const & GetSelJets()      const { return vSelJets; }
+    std::vector<pat::Jet>                const & GetSelCorrJets()  const { return vSelCorrJets; }
     edm::Ptr<pat::MET>                   const & GetMet()          const { return pMet; }
     std::vector<edm::Ptr<reco::Vertex>>  const & GetSelPVs()       const { return vSelPVs; }
 
@@ -77,6 +79,7 @@ public:
     /// Declare a new histogram to be created for the module
     void SetHistogram(std::string name, int nbins, double low, double high) { mpEc->SetHistogram(mName, name, nbins, low, high); }
     void SetHistValue(std::string name, double value) { mpEc->SetHistValue(mName, name, value); }
+    
             
 protected:
     std::vector<unsigned int>            vSelTriggers;
@@ -84,7 +87,9 @@ protected:
     std::vector<edm::Ptr<pat::Muon>>     vSelLooseMuons;
     std::vector<edm::Ptr<pat::Electron>> vSelElectrons;
     std::vector<edm::Ptr<pat::Electron>> vSelLooseElectrons;
+    std::vector<edm::Ptr<pat::Jet>>      vAllJets;
     std::vector<edm::Ptr<pat::Jet>>      vSelJets;
+    std::vector<pat::Jet>                vSelCorrJets;
     edm::Ptr<pat::MET>                   pMet;
     std::vector<edm::Ptr<reco::Vertex>>  vSelPVs;
     
@@ -111,6 +116,7 @@ private:
  
     /// Do what any event selector must do after event processing is done, but before event content gets saved to file
     void EndEvent(edm::EventBase const & event, LjmetEventContent & ec);
+    
 };
 
 #endif

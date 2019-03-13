@@ -1,4 +1,8 @@
 import FWCore.ParameterSet.Config as cms
+import os
+
+
+relBase = os.environ['CMSSW_BASE']
 
 process = cms.Process("LJMET")
 
@@ -166,7 +170,8 @@ process.ljmet = cms.EDAnalyzer(
             UseElMVA                 = cms.bool(True),
 #             UseElIDV1                = cms.bool(False),
             UseElIDV1                = cms.bool(True),
-
+            
+            #nLeptons
             minLooseLeptons_cut = cms.bool(True), #inclusive Loose.
             minLooseLeptons     = cms.int32(2),
             maxLooseLeptons_cut = cms.bool(False),
@@ -175,6 +180,46 @@ process.ljmet = cms.EDAnalyzer(
             minLeptons          = cms.int32(2),
             maxLeptons_cut      = cms.bool(False),
             maxLeptons          = cms.int32(9999),
+            
+            #Jets
+            jet_collection           = cms.InputTag('slimmedJets'),
+            slimmedJetsAK8           = cms.InputTag('slimmedJetsAK8'),
+            JECup                    = cms.bool(False),
+            JECdown                  = cms.bool(False),
+            JERup                    = cms.bool(False),
+            JERdown                  = cms.bool(False),
+            doNewJEC                 = cms.bool(True),
+            doLepJetCleaning         = cms.bool(True),
+            CleanLooseLeptons        = cms.bool(True),
+            LepJetDR                 = cms.double(0.4),
+            LepJetDRAK8              = cms.double(0.8),
+            jet_cuts                 = cms.bool(True),
+            jet_minpt                = cms.double(30.0),
+            jet_maxeta               = cms.double(2.5),
+            jet_minpt_AK8            = cms.double(200.0),
+            jet_maxeta_AK8           = cms.double(2.4),
+            min_jet                  = cms.int32(1),
+            max_jet                  = cms.int32(4000),
+            leading_jet_pt           = cms.double(30.0),
+			# Jet corrections are read from txt files which need updating!
+			JEC_txtfile = cms.string(relBase+'/src/FWLJMET/LJMet/data/Fall17V32/Fall17_17Nov2017_V32_MC_Uncertainty_AK4PFchs.txt'),
+			JERSF_txtfile = cms.string(relBase+'/src/FWLJMET/LJMet/data/Fall17V3/Fall17_V3_MC_SF_AK4PFchs.txt'),
+			JER_txtfile = cms.string(relBase+'/src/FWLJMET/LJMet/data/Fall17V3/Fall17_V3_MC_PtResolution_AK4PFchs.txt'),
+			JERAK8_txtfile = cms.string(relBase+'/src/FWLJMET/LJMet/data/Fall17V3/Fall17_V3_MC_PtResolution_AK8PFPuppi.txt'),
+			MCL1JetPar               = cms.string(relBase+'/src/FWLJMET/LJMet/data/Fall17V32/Fall17_17Nov2017_V32_MC_L1FastJet_AK4PFchs.txt'),
+			MCL2JetPar               = cms.string(relBase+'/src/FWLJMET/LJMet/data/Fall17V32/Fall17_17Nov2017_V32_MC_L2Relative_AK4PFchs.txt'),
+			MCL3JetPar               = cms.string(relBase+'/src/FWLJMET/LJMet/data/Fall17V32/Fall17_17Nov2017_V32_MC_L3Absolute_AK4PFchs.txt'),
+			MCL1JetParAK8            = cms.string(relBase+'/src/FWLJMET/LJMet/data/Fall17V32/Fall17_17Nov2017_V32_MC_L1FastJet_AK8PFPuppi.txt'),
+			MCL2JetParAK8            = cms.string(relBase+'/src/FWLJMET/LJMet/data/Fall17V32/Fall17_17Nov2017_V32_MC_L2Relative_AK8PFPuppi.txt'),
+			MCL3JetParAK8            = cms.string(relBase+'/src/FWLJMET/LJMet/data/Fall17V32/Fall17_17Nov2017_V32_MC_L3Absolute_AK8PFPuppi.txt'),
+			DataL1JetPar             = cms.string(relBase+'/src/FWLJMET/LJMet/data/Fall17V32/Fall17_17Nov2017B_V32_DATA_L1FastJet_AK4PFchs.txt'),
+			DataL2JetPar             = cms.string(relBase+'/src/FWLJMET/LJMet/data/Fall17V32/Fall17_17Nov2017B_V32_DATA_L2Relative_AK4PFchs.txt'),
+			DataL3JetPar             = cms.string(relBase+'/src/FWLJMET/LJMet/data/Fall17V32/Fall17_17Nov2017B_V32_DATA_L3Absolute_AK4PFchs.txt'),
+			DataResJetPar            = cms.string(relBase+'/src/FWLJMET/LJMet/data/Fall17V32/Fall17_17Nov2017B_V32_DATA_L2L3Residual_AK4PFchs.txt'),
+			DataL1JetParAK8          = cms.string(relBase+'/src/FWLJMET/LJMet/data/Fall17V32/Fall17_17Nov2017B_V32_DATA_L1FastJet_AK8PFPuppi.txt'),
+			DataL2JetParAK8          = cms.string(relBase+'/src/FWLJMET/LJMet/data/Fall17V32/Fall17_17Nov2017B_V32_DATA_L2Relative_AK8PFPuppi.txt'),
+			DataL3JetParAK8          = cms.string(relBase+'/src/FWLJMET/LJMet/data/Fall17V32/Fall17_17Nov2017B_V32_DATA_L3Absolute_AK8PFPuppi.txt'),
+			DataResJetParAK8         = cms.string(relBase+'/src/FWLJMET/LJMet/data/Fall17V32/Fall17_17Nov2017B_V32_DATA_L2L3Residual_AK8PFPuppi.txt'),
 
             ),
 
