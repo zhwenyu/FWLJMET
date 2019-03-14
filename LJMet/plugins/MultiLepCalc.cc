@@ -20,6 +20,14 @@ public:
     virtual int BeginJob(edm::ConsumesCollector && iC);
     virtual int AnalyzeEvent(edm::Event const & event, BaseEventSelector * selector);
     virtual int EndJob(){return 0;};
+    
+    void AnalyzeTriggers(edm::Event const & event, BaseEventSelector * selector); 
+    void AnalyzePV(edm::Event const & event, BaseEventSelector * selector); 
+    void AnalyzePU(edm::Event const & event, BaseEventSelector * selector); 
+    void AnalyzeBadDupMu(edm::Event const & event, BaseEventSelector * selector); 
+    void AnalyzeMuon(edm::Event const & event, BaseEventSelector * selector); 
+    void AnalyzeElectron(edm::Event const & event, BaseEventSelector * selector); 
+    
 
 private:
 	bool debug;
@@ -97,10 +105,6 @@ int MultiLepCalc::AnalyzeEvent(edm::Event const & event, BaseEventSelector * sel
 	if(debug)std::cout << "Processing Event in MultiLepCalc::AnalyzeEvent" << std::endl;
 
 	// ----- Get objects from the selector -----
-	std::map<std::string, unsigned int>         const & mSelMCTriggersEl = selector->GetSelectedMCTriggersEl();
-	std::map<std::string, unsigned int>         const & mSelTriggersEl   = selector->GetSelectedTriggersEl();
-	std::map<std::string, unsigned int>         const & mSelMCTriggersMu = selector->GetSelectedMCTriggersMu();
-	std::map<std::string, unsigned int>         const & mSelTriggersMu   = selector->GetSelectedTriggersMu();
 
 	std::vector<edm::Ptr<reco::Vertex>>         const & vSelPVs       = selector->GetSelPVs();
 
@@ -108,36 +112,8 @@ int MultiLepCalc::AnalyzeEvent(edm::Event const & event, BaseEventSelector * sel
 	std::vector<edm::Ptr<pat::Electron> >       const & vSelLooseElectrons = selector->GetSelLooseElectrons();
 	std::vector<edm::Ptr<pat::Muon> >                   vSelMuons          = selector->GetSelMuons();
 	std::vector<edm::Ptr<pat::Electron> >               vSelElectrons      = selector->GetSelElectrons();
-
-	//
-	//_____Triggers______
-	//
-	std::vector<std::string> vsSelMCTriggersEl, vsSelTriggersEl, vsSelMCTriggersMu, vsSelTriggersMu;
-	std::vector<int> viSelMCTriggersEl, viSelTriggersEl, viSelMCTriggersMu, viSelTriggersMu;
-	for(std::map<std::string, unsigned int>::const_iterator j = mSelMCTriggersEl.begin(); j != mSelMCTriggersEl.end();j++) {
-	  vsSelMCTriggersEl.push_back(j->first);
-	  viSelMCTriggersEl.push_back((int)(j->second));
-	}
-	for(std::map<std::string, unsigned int>::const_iterator j = mSelTriggersEl.begin(); j != mSelTriggersEl.end();j++) {
-	  vsSelTriggersEl.push_back(j->first);
-	  viSelTriggersEl.push_back((int)(j->second));
-	}
-	for(std::map<std::string, unsigned int>::const_iterator j = mSelMCTriggersMu.begin(); j != mSelMCTriggersMu.end();j++) {
-	  vsSelMCTriggersMu.push_back(j->first);
-	  viSelMCTriggersMu.push_back((int)(j->second));
-	}
-	for(std::map<std::string, unsigned int>::const_iterator j = mSelTriggersMu.begin(); j != mSelTriggersMu.end();j++) {
-	  vsSelTriggersMu.push_back(j->first);
-	  viSelTriggersMu.push_back((int)(j->second));
-	}
-	SetValue("vsSelMCTriggersEl", vsSelMCTriggersEl);
-	SetValue("vsSelTriggersEl", vsSelTriggersEl);
-	SetValue("vsSelMCTriggersMu", vsSelMCTriggersMu);
-	SetValue("vsSelTriggersMu", vsSelTriggersMu);
-	SetValue("viSelMCTriggersEl", viSelMCTriggersEl);
-	SetValue("viSelTriggersEl", viSelTriggersEl);
-	SetValue("viSelMCTriggersMu", viSelMCTriggersMu);
-	SetValue("viSelTriggersMu", viSelTriggersMu);
+	
+	AnalyzeTriggers(event, selector);
 
 
 	//
@@ -775,6 +751,70 @@ int MultiLepCalc::AnalyzeEvent(edm::Event const & event, BaseEventSelector * sel
 
 	return 0;
 }
+
+void MultiLepCalc::AnalyzeTriggers(edm::Event const & event, BaseEventSelector * selector)
+{
+
+	// ----- Get objects from the selector -----
+	std::map<std::string, unsigned int>         const & mSelMCTriggersEl = selector->GetSelectedMCTriggersEl();
+	std::map<std::string, unsigned int>         const & mSelTriggersEl   = selector->GetSelectedTriggersEl();
+	std::map<std::string, unsigned int>         const & mSelMCTriggersMu = selector->GetSelectedMCTriggersMu();
+	std::map<std::string, unsigned int>         const & mSelTriggersMu   = selector->GetSelectedTriggersMu();
+
+	//
+	//_____Triggers______
+	//
+	std::vector<std::string> vsSelMCTriggersEl, vsSelTriggersEl, vsSelMCTriggersMu, vsSelTriggersMu;
+	std::vector<int> viSelMCTriggersEl, viSelTriggersEl, viSelMCTriggersMu, viSelTriggersMu;
+	for(std::map<std::string, unsigned int>::const_iterator j = mSelMCTriggersEl.begin(); j != mSelMCTriggersEl.end();j++) {
+	  vsSelMCTriggersEl.push_back(j->first);
+	  viSelMCTriggersEl.push_back((int)(j->second));
+	}
+	for(std::map<std::string, unsigned int>::const_iterator j = mSelTriggersEl.begin(); j != mSelTriggersEl.end();j++) {
+	  vsSelTriggersEl.push_back(j->first);
+	  viSelTriggersEl.push_back((int)(j->second));
+	}
+	for(std::map<std::string, unsigned int>::const_iterator j = mSelMCTriggersMu.begin(); j != mSelMCTriggersMu.end();j++) {
+	  vsSelMCTriggersMu.push_back(j->first);
+	  viSelMCTriggersMu.push_back((int)(j->second));
+	}
+	for(std::map<std::string, unsigned int>::const_iterator j = mSelTriggersMu.begin(); j != mSelTriggersMu.end();j++) {
+	  vsSelTriggersMu.push_back(j->first);
+	  viSelTriggersMu.push_back((int)(j->second));
+	}
+	SetValue("vsSelMCTriggersEl", vsSelMCTriggersEl);
+	SetValue("vsSelTriggersEl", vsSelTriggersEl);
+	SetValue("vsSelMCTriggersMu", vsSelMCTriggersMu);
+	SetValue("vsSelTriggersMu", vsSelTriggersMu);
+	SetValue("viSelMCTriggersEl", viSelMCTriggersEl);
+	SetValue("viSelTriggersEl", viSelTriggersEl);
+	SetValue("viSelMCTriggersMu", viSelMCTriggersMu);
+	SetValue("viSelTriggersMu", viSelTriggersMu);
+
+
+} 
+
+void MultiLepCalc::AnalyzePV(edm::Event const & event, BaseEventSelector * selector) 
+{
+//to be filled after all migration completed
+} 
+void MultiLepCalc::AnalyzePU(edm::Event const & event, BaseEventSelector * selector) 
+{
+//to be filled after all migration completed
+} 
+void MultiLepCalc::AnalyzeBadDupMu(edm::Event const & event, BaseEventSelector * selector) 
+{
+//to be filled after all migration completed
+} 
+void MultiLepCalc::AnalyzeMuon(edm::Event const & event, BaseEventSelector * selector)
+{
+//to be filled after all migration completed
+} 
+void MultiLepCalc::AnalyzeElectron(edm::Event const & event, BaseEventSelector * selector)
+{
+//to be filled after all migration completed
+}
+
 
 int MultiLepCalc::findMatch(const reco::GenParticleCollection & genParticles, int idToMatch, double eta, double phi)
 {
