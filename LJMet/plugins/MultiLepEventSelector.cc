@@ -403,11 +403,11 @@ void MultiLepEventSelector::BeginJob( const edm::ParameterSet& iConfig, edm::Con
 
 
 
-    //EVERYTHING HERE NEEDS TO BE EITHER REORGANIZED/REWRITTEN - start
-    //EVERYTHING HERE NEEDS TO BE EITHER REORGANIZED/REWRITTEN - start
-    //EVERYTHING HERE NEEDS TO BE EITHER REORGANIZED/REWRITTEN - start
-    //EVERYTHING HERE NEEDS TO BE EITHER REORGANIZED/REWRITTEN - start
-    //EVERYTHING HERE NEEDS TO BE EITHER REORGANIZED/REWRITTEN - start
+// ---------------------------------------------------------------
+// ---------------------------------------------------------------
+// NOTE: EVERYTHING BELOW NEEDS TO BE EITHER REORGANIZED/REWRITTEN - start
+// ---------------------------------------------------------------
+// ---------------------------------------------------------------
 
     MCL1JetPar               = selectorConfig.getParameter<std::string>("MCL1JetPar"),
     MCL2JetPar               = selectorConfig.getParameter<std::string>("MCL2JetPar"),
@@ -472,7 +472,7 @@ void MultiLepEventSelector::BeginJob( const edm::ParameterSet& iConfig, edm::Con
       if (doNewJEC) std::cout << mLegend << "Applying new jet energy corrections" << std::endl;
       else std::cout << mLegend << "NOT applying new jet energy corrections - ARE YOU SURE?" << std::endl;
       
-      //these statement are there originaly from oldLJMet, but its causing segfault !!!
+      //NOTE: these statement are there originaly from oldLJMet, but its causing segfault !!!
 //       delete JetCorrector;
 //       delete JetCorrectorAK8;
 
@@ -635,7 +635,7 @@ void MultiLepEventSelector::BeginJob( const edm::ParameterSet& iConfig, edm::Con
       vParAK8_F.push_back(*ResJetParAK8_F);
       
       
-      //these statement are there originaly from oldLJMet, but its causing segfault !!
+      //NOTE: these statement are there originaly from oldLJMet, but its causing segfault !!
 //       delete JetCorrector_B;
 //       delete JetCorrector_C;
 //       delete JetCorrector_DE;
@@ -655,11 +655,11 @@ void MultiLepEventSelector::BeginJob( const edm::ParameterSet& iConfig, edm::Con
       JetCorrectorAK8_F = new FactorizedJetCorrector(vParAK8_F);
 
     }
-    //EVERYTHING HERE NEEDS TO BE EITHER REORGANIZED/REWRITTEN - end
-    //EVERYTHING HERE NEEDS TO BE EITHER REORGANIZED/REWRITTEN - end
-    //EVERYTHING HERE NEEDS TO BE EITHER REORGANIZED/REWRITTEN - end
-    //EVERYTHING HERE NEEDS TO BE EITHER REORGANIZED/REWRITTEN - end
-    //EVERYTHING HERE NEEDS TO BE EITHER REORGANIZED/REWRITTEN - end
+// ---------------------------------------------------------------
+// ---------------------------------------------------------------
+// NOTE: EVERYTHING ABOVE NEEDS TO BE EITHER REORGANIZED/REWRITTEN - end
+// ---------------------------------------------------------------
+// ---------------------------------------------------------------
 
 
 
@@ -730,13 +730,15 @@ void MultiLepEventSelector::AnalyzeEvent( edm::EventBase const & event, LjmetEve
 void MultiLepEventSelector::EndJob()
 {
 
-    //EVERYTHING HERE NEEDS TO BE EITHER REORGANIZED/REWRITTEN - start
-    //EVERYTHING HERE NEEDS TO BE EITHER REORGANIZED/REWRITTEN - start
-    //EVERYTHING HERE NEEDS TO BE EITHER REORGANIZED/REWRITTEN - start
-    //EVERYTHING HERE NEEDS TO BE EITHER REORGANIZED/REWRITTEN - start
-    //EVERYTHING HERE NEEDS TO BE EITHER REORGANIZED/REWRITTEN - start
+// ---------------------------------------------------------------
+// ---------------------------------------------------------------
+// NOTE: EVERYTHING BELOW NEEDS TO BE EITHER REORGANIZED/REWRITTEN - start
+// ---------------------------------------------------------------
+// ---------------------------------------------------------------
 
-      //these statement are there originaly from oldLJMet, but its causing segfault !!
+//NOTE: about pointers, try using smart pointers which deletes itself when out of scope, or something like that.
+
+//NOTE: these statement are there originaly from oldLJMet, but its causing segfault !!
 //       delete ResJetPar;
 //       delete L3JetPar;
 //       delete L2JetPar;
@@ -791,11 +793,12 @@ void MultiLepEventSelector::EndJob()
 //       delete JetCorrectorAK8_DE;
 //       delete JetCorrector_F;
 //       delete JetCorrectorAK8_F;
-    //EVERYTHING HERE NEEDS TO BE EITHER REORGANIZED/REWRITTEN - end
-    //EVERYTHING HERE NEEDS TO BE EITHER REORGANIZED/REWRITTEN - end
-    //EVERYTHING HERE NEEDS TO BE EITHER REORGANIZED/REWRITTEN - end
-    //EVERYTHING HERE NEEDS TO BE EITHER REORGANIZED/REWRITTEN - end
-    //EVERYTHING HERE NEEDS TO BE EITHER REORGANIZED/REWRITTEN - end
+
+// ---------------------------------------------------------------
+// ---------------------------------------------------------------
+// NOTE: EVERYTHING ABOVE NEEDS TO BE EITHER REORGANIZED/REWRITTEN - end
+// ---------------------------------------------------------------
+// ---------------------------------------------------------------
 
 
 }
@@ -1743,12 +1746,13 @@ bool MultiLepEventSelector::EXAMPLESelection(edm::Event const & event)
 */
 
 
+// ---------------------------------------------------------------
+// ---------------------------------------------------------------
+// NOTE: EVERYTHING BELOW NEEDS TO BE EITHER REORGANIZED/REWRITTEN - start
+// ---------------------------------------------------------------
+// ---------------------------------------------------------------
+
 //JET CORRECTION METHODS
-//EVERYTHING HERE NEEDS TO BE EITHER REORGANIZED/REWRITTEN - start
-//EVERYTHING HERE NEEDS TO BE EITHER REORGANIZED/REWRITTEN - start
-//EVERYTHING HERE NEEDS TO BE EITHER REORGANIZED/REWRITTEN - start
-//EVERYTHING HERE NEEDS TO BE EITHER REORGANIZED/REWRITTEN - start
-//EVERYTHING HERE NEEDS TO BE EITHER REORGANIZED/REWRITTEN - start
 void MultiLepEventSelector::JECbyIOV(edm::EventBase const & event) {
 /*
  *This function takes an event, looks up the correct JEC file, and produces the correct JetCorrector for JEC corrections.
@@ -2140,8 +2144,8 @@ pat::Jet MultiLepEventSelector::correctJetReturnPatJet(const pat::Jet & jet, edm
 
     return correctedJet;
 }
-//EVERYTHING HERE NEEDS TO BE EITHER REORGANIZED/REWRITTEN - end
-//EVERYTHING HERE NEEDS TO BE EITHER REORGANIZED/REWRITTEN - end
-//EVERYTHING HERE NEEDS TO BE EITHER REORGANIZED/REWRITTEN - end
-//EVERYTHING HERE NEEDS TO BE EITHER REORGANIZED/REWRITTEN - end
-//EVERYTHING HERE NEEDS TO BE EITHER REORGANIZED/REWRITTEN - end
+// ---------------------------------------------------------------
+// ---------------------------------------------------------------
+// NOTE: EVERYTHING ABOVE NEEDS TO BE EITHER REORGANIZED/REWRITTEN - end
+// ---------------------------------------------------------------
+// ---------------------------------------------------------------
