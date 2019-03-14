@@ -183,7 +183,7 @@ process.ljmet = cms.EDAnalyzer(
             
             #Jets
             jet_collection           = cms.InputTag('slimmedJets'),
-            slimmedJetsAK8           = cms.InputTag('slimmedJetsAK8'),
+            AK8jet_collection        = cms.InputTag('slimmedJetsAK8'),
             JECup                    = cms.bool(False),
             JECdown                  = cms.bool(False),
             JERup                    = cms.bool(False),

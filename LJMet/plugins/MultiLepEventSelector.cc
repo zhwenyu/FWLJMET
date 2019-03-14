@@ -149,6 +149,7 @@ protected:
     edm::EDGetTokenT<pat::PackedCandidateCollection> PFCandToken;
     edm::EDGetTokenT<double>                         rhoJetsNC_Token;
     edm::EDGetTokenT<pat::JetCollection>             jetsToken;
+    edm::EDGetTokenT<pat::JetCollection>             AK8jetsToken;
 
 
     //Separate methods for each selction for organization
@@ -159,6 +160,7 @@ protected:
     void ElectronSelection (edm::Event const & event);
     bool LeptonsSelection  (edm::Event const & event, pat::strbitset & ret);
     bool JetSelection      (edm::Event const & event, pat::strbitset & ret);
+    void AK8JetSelection   (edm::Event const & event);
     bool METSelection      (edm::Event const & event);
 
 
@@ -390,6 +392,7 @@ void MultiLepEventSelector::BeginJob( const edm::ParameterSet& iConfig, edm::Con
 
     //Jets
     jetsToken                = iC.consumes<pat::JetCollection>(selectorConfig.getParameter<edm::InputTag>("jet_collection")),
+    AK8jetsToken             = iC.consumes<pat::JetCollection>(selectorConfig.getParameter<edm::InputTag>("AK8jet_collection")),
     JECup                    = selectorConfig.getParameter<bool>("JECup"),
     JECdown                  = selectorConfig.getParameter<bool>("JECdown"),
     JERup                    = selectorConfig.getParameter<bool>("JERup"),
@@ -790,7 +793,9 @@ bool MultiLepEventSelector::operator()( edm::Event const & event, pat::strbitset
 
     //Collect jets
     if( ! JetSelection(event, ret) ) break;
-
+    
+    //Collect AK8 jets
+    AK8JetSelection(event);
 
     if( METSelection(event) )     passCut(ret, "MET"); // this needs to be after jets.
     else break;
@@ -1544,7 +1549,7 @@ bool MultiLepEventSelector::JetSelection(edm::Event const & event, pat::strbitse
   if(!isMc) JECbyIOV(event);
 
 
-  edm::Handle<std::vector<pat::Jet> >         jetsHandle;
+  edm::Handle<std::vector<pat::Jet> > jetsHandle;
   event.getByToken( jetsToken, jetsHandle );
 
   int _n_good_jets = 0;
@@ -1588,7 +1593,7 @@ bool MultiLepEventSelector::JetSelection(edm::Event const & event, pat::strbitse
     pat::Jet corrJet = *_ijet;
 
     if ( doLepJetCleaning ){
-      if (debug) std::cout << "Checking Overlap" << std::endl;
+      if (debug) std::cout << "LepJetCleaning: Checking Overlap" << std::endl;
 
       for(unsigned int imu = 0; imu < cleaningMuons.size(); imu++){
 		if ( deltaR(cleaningMuons[imu]->p4(),_ijet->p4()) < LepJetDR) {
@@ -1677,7 +1682,7 @@ bool MultiLepEventSelector::JetSelection(edm::Event const & event, pat::strbitse
 
     _isTagged = isJetTagged(*_ijet, event);
 
-    // jet cuts  //ATTENTION: THIS IDEALLY SHOULDN'T BE HARD CODED -- Mar 13, 2019
+    // jet cuts  //NOTE: THIS IDEALLY SHOULDN'T BE HARD CODED -- Mar 13, 2019
     while(1){
 
       // PF Jet ID
@@ -1791,6 +1796,181 @@ bool MultiLepEventSelector::JetSelection(edm::Event const & event, pat::strbitse
   }
 
   return pass_jet;
+
+
+}
+
+void MultiLepEventSelector::AK8JetSelection(edm::Event const & event)
+{
+
+  if(debug)std::cout << "\t" <<" AK8 Jet Selection:"<< std::endl;
+
+	////////////////////////////////////////////////////////////////////////////////////////
+	// AK8 jets
+	////////////////////////////////////////////////////////////////////////////////////////
+	
+		edm::Handle<std::vector<pat::Jet> > AK8jetsHandle;
+        event.getByToken( AK8jetsToken, AK8jetsHandle );
+
+        int _n_good_jets_AK8 = 0;
+        int _n_jets_AK8 = 0;
+
+        vSelCorrJets_AK8.clear();
+
+		std::vector<edm::Ptr<pat::Muon>> cleaningMuons;
+		cleaningMuons = vSelMuons;
+		if(CleanLooseLeptons) cleaningMuons = vSelLooseMuons;
+
+		std::vector<edm::Ptr<pat::Electron>> cleaningElectrons;
+		cleaningElectrons = vSelElectrons;
+		if(CleanLooseLeptons) cleaningElectrons = vSelLooseElectrons;
+
+
+        for (std::vector<pat::Jet>::const_iterator _ijet = AK8jetsHandle->begin();_ijet != AK8jetsHandle->end(); ++_ijet){
+      
+      	    if(_ijet->pt() < 170) continue;
+	    	if(_ijet->correctedJet(0).pt() < 170) continue;
+
+            bool _pass = false;
+	    	bool _cleaned = false;
+
+			TLorentzVector jetP4;
+
+			pat::Jet tmpJet = _ijet->correctedJet(0);
+			pat::Jet corrJet = *_ijet;
+
+			if ( doLepJetCleaning){
+			  if (debug) std::cout << " AK8 LepJetCleaning: Checking Overlap" << std::endl;
+
+			  for(unsigned int imu = 0; imu < cleaningMuons.size(); imu++){
+				if ( deltaR(cleaningMuons[imu]->p4(),_ijet->p4()) < LepJetDRAK8) { //0.8 ){
+				  std::vector<reco::CandidatePtr> muDaughters;
+				  for ( unsigned int isrc = 0; isrc < cleaningMuons[imu]->numberOfSourceCandidatePtrs(); ++isrc ){
+					if (cleaningMuons[imu]->sourceCandidatePtr(isrc).isAvailable()) {
+					  muDaughters.push_back( cleaningMuons[imu]->sourceCandidatePtr(isrc) );
+					}
+				  }
+				  if (debug) {		    
+					std::cout << "         Muon : pT = " << cleaningMuons[imu]->pt() << " eta = " << cleaningMuons[imu]->eta() << " phi = " << cleaningMuons[imu]->phi() << " mass = " << cleaningMuons[imu]->mass() << std::endl;
+					std::cout << "      Raw Jet : pT = " << _ijet->pt() << " eta = " << _ijet->eta() << " phi = " << _ijet->phi() << " mass = " << _ijet->mass() << std::endl;
+				  }
+
+				  const std::vector<edm::Ptr<reco::Candidate> > _ijet_consts = _ijet->daughterPtrVector();
+				  for ( std::vector<edm::Ptr<reco::Candidate> >::const_iterator _i_const = _ijet_consts.begin(); _i_const != _ijet_consts.end(); ++_i_const){
+					for (unsigned int muI = 0; muI < muDaughters.size(); muI++) {
+					  if ( (*_i_const).key() == muDaughters[muI].key() ) {
+						tmpJet.setP4( tmpJet.p4() - muDaughters[muI]->p4() );
+						if (debug) std::cout << "  Cleaned Jet : pT = " << tmpJet.pt() << " eta = " << tmpJet.eta() << " phi = " << tmpJet.phi() << " mass = " << tmpJet.mass() << std::endl;
+						jetP4 = correctJet(tmpJet, event, true, true);
+						corrJet = correctJetReturnPatJet(tmpJet, event, true, true);
+						if (debug) std::cout << "Corrected Jet : pT = " << jetP4.Pt() << " eta = " << jetP4.Eta() << " phi = " << jetP4.Phi() << " mass = " << jetP4.M() << std::endl;
+						_cleaned = true;
+						muDaughters.erase( muDaughters.begin()+muI );
+						break;
+					  }
+					}
+				  }
+				}
+			  }
+			
+			  for(unsigned int iel = 0; iel < cleaningElectrons.size(); iel++){
+				if ( deltaR(cleaningElectrons[iel]->p4(),_ijet->p4()) < LepJetDRAK8){ //0.6 ){
+				  std::vector<reco::CandidatePtr> elDaughters;
+				  for ( unsigned int isrc = 0; isrc < cleaningElectrons[iel]->numberOfSourceCandidatePtrs(); ++isrc ){
+					if (cleaningElectrons[iel]->sourceCandidatePtr(isrc).isAvailable()) {
+					  elDaughters.push_back( cleaningElectrons[iel]->sourceCandidatePtr(isrc) );
+					}
+				  }
+				  if (debug) {
+					std::cout << "     Electron : pT = " << cleaningElectrons[iel]->pt() << " eta = " << cleaningElectrons[iel]->eta() << " phi = " << cleaningElectrons[iel]->phi() << " mass = " << cleaningElectrons[iel]->mass() << std::endl;
+					std::cout << "      Raw Jet : pT = " << _ijet->correctedJet(0).pt() << " eta = " << _ijet->correctedJet(0).eta() << " phi = " << _ijet->correctedJet(0).phi() << " mass = " << _ijet->correctedJet(0).mass() << std::endl;
+				  }
+				  const std::vector<edm::Ptr<reco::Candidate> > _ijet_consts = _ijet->daughterPtrVector();
+				  for ( std::vector<edm::Ptr<reco::Candidate> >::const_iterator _i_const = _ijet_consts.begin(); _i_const != _ijet_consts.end(); ++_i_const){
+					for (unsigned int elI = 0; elI < elDaughters.size(); elI++) {
+					  if ( (*_i_const).key() == elDaughters[elI].key() ) {
+						tmpJet.setP4( tmpJet.p4() - elDaughters[elI]->p4() );
+						if (debug) std::cout << "  Cleaned Jet : pT = " << tmpJet.pt() << " eta = " << tmpJet.eta() << " phi = " << tmpJet.phi() << " mass = " << tmpJet.mass() << std::endl;
+						jetP4 = correctJet(tmpJet, event, true, true);
+						corrJet = correctJetReturnPatJet(tmpJet, event, true, true);
+						if (debug) std::cout << "Corrected Jet : pT = " << jetP4.Pt() << " eta = " << jetP4.Eta() << " phi = " << jetP4.Phi() << " mass = " << jetP4.M() << std::endl;
+						_cleaned = true;
+						elDaughters.erase( elDaughters.begin()+elI );
+						break;
+					  }
+					}
+				  }
+				}
+			  }
+			}
+
+			if (!_cleaned) {
+				jetP4 = correctJet(*_ijet, event);
+				corrJet = correctJetReturnPatJet(*_ijet, event);
+			}
+
+            // jet cuts //NOTE: THIS IDEALLY SHOULDN'T BE HARD CODED -- Mar 14, 2019
+            while(1){ 
+
+			  // PF Jet ID                                                                                                                                                                     
+			  if (fabs(_ijet->correctedJet(0).eta()) < 2.4 &&
+			  _ijet->correctedJet(0).neutralHadronEnergyFraction() < 0.90 &&
+			  _ijet->correctedJet(0).neutralEmEnergyFraction() < 0.90 &&
+			  //_ijet->userFloat("patPuppiJetSpecificProducer:puppiMultiplicity") > 1 &&
+			  _ijet->correctedJet(0).chargedMultiplicity()+_ijet->correctedJet(0).neutralMultiplicity() > 1 &&
+			  _ijet->correctedJet(0).chargedHadronEnergyFraction() > 0 &&
+			  _ijet->correctedJet(0).chargedMultiplicity() > 0
+			  ){ }
+			  else if (fabs(_ijet->correctedJet(0).eta()) >= 2.4 &&
+				   fabs(_ijet->correctedJet(0).eta()) < 2.7 &&
+				   _ijet->correctedJet(0).neutralHadronEnergyFraction() < 0.90 &&
+				   _ijet->correctedJet(0).neutralEmEnergyFraction() < 0.90 &&
+				   //_ijet->userFloat("patPuppiJetSpecificProducer:puppiMultiplicity") > 1
+				   _ijet->correctedJet(0).chargedMultiplicity()+_ijet->correctedJet(0).neutralMultiplicity() > 1
+				   ){ }
+			  else if (fabs(_ijet->correctedJet(0).eta()) >= 2.7 &&
+				   fabs(_ijet->correctedJet(0).eta()) < 3.0 &&
+				   _ijet->correctedJet(0).neutralHadronEnergyFraction() < 0.99
+				   ){ }
+			  else if (fabs(_ijet->correctedJet(0).eta()) >= 3.0 &&                                                                                                                         
+				   _ijet->correctedJet(0).neutralEmEnergyFraction() < 0.9 &&                                                                                                               
+				   _ijet->correctedJet(0).neutralHadronEnergyFraction() > 0.02 &&                                                                                                          
+				   //_ijet->userFloat("patPuppiJetSpecificProducer:neutralPuppiMultiplicity") > 2 &&
+				   //_ijet->userFloat("patPuppiJetSpecificProducer:neutralPuppiMultiplicity") < 15                                                                                        
+				   _ijet->correctedJet(0).neutralMultiplicity() > 2 &&
+				   _ijet->correctedJet(0).neutralMultiplicity() < 15
+					 ){ }                                                                                                                                                                    
+			  else break; // fail
+
+			  if ( jetP4.Pt() > jet_minpt_AK8 ){ }
+			  else break; // fail 
+	
+
+			  if ( fabs(jetP4.Eta()) < jet_maxeta_AK8 ){ }
+			  else break; // fail
+
+
+			  if ( jetP4.M() >= 0 ){ }
+			  else{
+				std::cout << mLegend << " Warning : Jet mass < 0! Skipping..." << std::endl;
+				break; // fail 
+			  }
+	
+			  _pass = true;
+			  break;
+            }
+
+            if ( _pass ){
+
+				// save all the good jets
+				++_n_good_jets_AK8;
+				vSelCorrJets_AK8.push_back(corrJet);
+
+			}
+      
+            ++_n_jets_AK8; 
+      
+        } // end of loop over AK8 jets
 
 
 }
