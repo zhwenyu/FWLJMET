@@ -137,7 +137,7 @@ LJMet::LJMet(const edm::ParameterSet& iConfig)
    theSelector->Init();
 
    //Object to pass to eventSelector and Calculators access data - https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideEDMGetDataFromEvent#Consumes_and_Helpers
-   edm::ConsumesCollector && cC = consumesCollector(); // this didn work. so for now constructing twice for eventSelector and Calculator each.
+   edm::ConsumesCollector && cC = consumesCollector(); 
 
    theSelector->BeginJob(iConfig, (edm::ConsumesCollector &&)cC);
    
@@ -153,7 +153,7 @@ LJMet::LJMet(const edm::ParameterSet& iConfig)
    factory->BeginJobAllCalc((edm::ConsumesCollector &&)cC, vIncl);
 
    // set excluded calculators
-   factory->SetExcludedCalcs(vExcl); // This is silly. Need to make changes so that LJMet by default only considers included Calculators!
+   factory->SetExcludedCalcs(vExcl); 
    
 
 

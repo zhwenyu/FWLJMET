@@ -140,7 +140,7 @@ process.ljmet = cms.EDAnalyzer(
             #Muon
             muonsCollection        = cms.InputTag("slimmedMuons"),
             muon_cuts                = cms.bool(True),
-            min_muon                 = cms.int32(0),
+            min_muon                 = cms.int32(0), #not implemented in src code
             muon_minpt               = cms.double(20.0),
             muon_maxeta              = cms.double(2.4),
             muon_useMiniIso          = cms.bool(True),
@@ -159,7 +159,7 @@ process.ljmet = cms.EDAnalyzer(
             electronsCollection    = cms.InputTag("slimmedElectrons"),
 #             electronsCollection    = cms.InputTag("slimmedElectrons::LJMET"), #Egamma ID V2
             electron_cuts            = cms.bool(True),
-            min_electron             = cms.int32(0),
+            min_electron             = cms.int32(0), #not implemented in src code
             electron_minpt           = cms.double(20.0),
             electron_maxeta          = cms.double(2.4),
             electron_useMiniIso      = cms.bool(True),
