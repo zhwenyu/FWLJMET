@@ -128,10 +128,11 @@ process.ljmet = cms.EDAnalyzer(
 			METfilter_extra = cms.InputTag("ecalBadCalibReducedMINIAODFilter"),
 
 			#MET cuts
-			met_cuts       = cms.bool(False),
+			met_cuts       = cms.bool(True),
 			min_met        = cms.double(20.0),
 			max_met        = cms.double(99999999999.0),
 			met_collection = cms.InputTag('slimmedMETs'),
+			rhoJetsInputTag = cms.InputTag("fixedGridRhoFastjetAll"), #for jetmetcorrection
 
 
             PFparticlesCollection  = cms.InputTag("packedPFCandidates"),

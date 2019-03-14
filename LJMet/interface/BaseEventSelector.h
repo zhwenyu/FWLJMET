@@ -4,7 +4,7 @@
 /*
  Interface class for FWLite PAT analyzer-selectors
  Specific selectors must implement the () operator
-
+ 
  Author: Gena Kukartsev, 2010, 2012
          Orduna@2014
  */
@@ -39,9 +39,9 @@ class BaseEventSelector : public Selector<edm::Event> {
     //
     // Base class for all event selector plugins
     //
-
+    
     friend class LjmetFactory;
-
+    
 public:
     BaseEventSelector();
     virtual ~BaseEventSelector() { };
@@ -50,11 +50,11 @@ public:
     virtual void EndJob();
     virtual void AnalyzeEvent( edm::EventBase const & event, LjmetEventContent & ec ) { }
     std::string GetName() { return mName; }
-
+    
     // -----------------------------------------------------------------------------------------------------------------------------------------
-    //Note: below probably needs to be recoded so it can be written in individual Selectors, but still accessible to different calculators -start
+    // Note: below probably needs to be recoded so it can be written in individual Selectors, but still accessible to different calculators -start
     // -----------------------------------------------------------------------------------------------------------------------------------------
-
+        
     //Triggers
     std::vector<unsigned int>            const & GetSelTriggers()  const { return vSelTriggers; }
     std::map<std::string, unsigned int> const & GetSelectedTriggersEl()   const { return mvSelTriggersEl; }
@@ -73,22 +73,25 @@ public:
     std::vector<edm::Ptr<pat::Jet>>      const & GetSelJets()      const { return vSelJets; }
     std::vector<pat::Jet>                const & GetSelCorrJets()  const { return vSelCorrJets; }
     std::vector<pat::Jet>                const & GetSelBtagJets()  const { return vSelBtagJets; }
-    std::vector<std::pair<TLorentzVector, bool>>  const & GetSelCorrJetsWithBTags() const { return vSelCorrJetsWithBTags; }
+    std::vector<std::pair<TLorentzVector, bool>>         const & GetSelCorrJetsWithBTags() const { return vSelCorrJetsWithBTags; }
     std::vector<pat::Jet>                const & GetSelCorrJetsAK8()  const { return vSelCorrJets_AK8; }
 
-    //Others
+    //MET
     edm::Ptr<pat::MET>                   const & GetMet()          const { return pMet; }
+    TLorentzVector       const & GetCorrectedMet() const { return correctedMET_p4; }
+
+    //PV 
     std::vector<edm::Ptr<reco::Vertex>>  const & GetSelPVs()       const { return vSelPVs; }
 
     // -----------------------------------------------------------------------------------------------------------------------------------------
-    //Note: above probably needs to be recoded so it can be written in individual Selectors, but still accessible to different calculators - end
+    // Note: above probably needs to be recoded so it can be written in individual Selectors, but still accessible to different calculators - end
     // -----------------------------------------------------------------------------------------------------------------------------------------
 
 
 
     void SetMc(bool isMc) { mbIsMc = isMc; }
     bool IsMc() { return mbIsMc; }
-
+    
     // LJMET event content setters
     void Init( void );
     void SetEventContent(LjmetEventContent * pEc) { mpEc = pEc; }
@@ -96,12 +99,12 @@ public:
     /// Declare a new histogram to be created for the module
     void SetHistogram(std::string name, int nbins, double low, double high) { mpEc->SetHistogram(mName, name, nbins, low, high); }
     void SetHistValue(std::string name, double value) { mpEc->SetHistValue(mName, name, value); }
-
-
+    
+            
 protected:
 
     // -----------------------------------------------------------------------------------------------------------------------------------------
-    //Note: below probably needs to be recoded so it can be written in individual Selectors, but still accessible to different calculators -start
+    // Note: below probably needs to be recoded so it can be written in individual Selectors, but still accessible to different calculators -start
     // -----------------------------------------------------------------------------------------------------------------------------------------
 
     //Triggers
@@ -125,32 +128,35 @@ protected:
     std::vector<std::pair<TLorentzVector, bool>> vSelCorrJetsWithBTags;
     std::vector<pat::Jet>                vSelCorrJets_AK8;
 
-    //Others
-    edm::Ptr<pat::MET>                   pMet;
-    std::vector<edm::Ptr<reco::Vertex>>  vSelPVs;
+    //MET
+    edm::Ptr<pat::MET>     pMet;
+    TLorentzVector         correctedMET_p4;
+    
+    //PV
+    std::vector<edm::Ptr<reco::Vertex>>  vSelPVs;    
 
     // -----------------------------------------------------------------------------------------------------------------------------------------
-    //Note: above probably needs to be recoded so it can be written in individual Selectors, but still accessible to different calculators - end
+    // Note: above probably needs to be recoded so it can be written in individual Selectors, but still accessible to different calculators - end
     // -----------------------------------------------------------------------------------------------------------------------------------------
 
 
     std::string mName;
     std::string mLegend;
     bool mbIsMc;
-
+    
 private:
     LjmetEventContent * mpEc;
-
+    
     /// Private init method to be called by LjmetFactory when registering the selector
     void init() { mLegend = "[" + mName + "]: "; std::cout << mLegend << "registering " << mName << std::endl; }
     void setName(std::string name) { mName = name; }
-
+ 
     /// Do what any event selector must do before event gets checked
     void BeginEvent(edm::EventBase const & event, LjmetEventContent & ec);
-
+ 
     /// Do what any event selector must do after event processing is done, but before event content gets saved to file
     void EndEvent(edm::EventBase const & event, LjmetEventContent & ec);
-
+    
 };
 
 #endif
