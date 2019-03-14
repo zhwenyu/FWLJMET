@@ -35,8 +35,11 @@ void BaseEventSelector::EndEvent(edm::EventBase const & event, LjmetEventContent
 
 void BaseEventSelector::Init( void )
 {
-    // init sanity check histograms
+
+	// NOTE: These are used by Jets correction methods and BTag methods, but probably these can be re organized too. 
+    // init sanity check histograms 
     mpEc->SetHistogram(mName, "jes_correction", 100, 0.8, 1.2);
     mpEc->SetHistogram(mName, "met_correction", 100, 0.0, 2.0);
+    mpEc->SetHistogram(mName, "nBtagSfCorrections", 100, 0.0, 10.0);
 }
 

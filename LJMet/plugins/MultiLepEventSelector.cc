@@ -21,6 +21,12 @@
 #include <TRandom3.h>
 #include <boost/algorithm/string.hpp>
 
+#include "FWLJMET/LJMet/interface/BTagSFUtil.h"
+#include "FWLJMET/LJMet/interface/BtagHardcodedConditions.h"
+#include "CondFormats/BTauObjects/interface/BTagCalibration.h"
+#include "CondTools/BTau/interface/BTagCalibrationReader.h"
+
+
 using namespace std;
 
 class MultiLepEventSelector : public BaseEventSelector { //adapted from singleLepEventSelector.cc
@@ -158,13 +164,27 @@ protected:
 
 private:
 
-// ---------------------------------------------------------------
-// ---------------------------------------------------------------
-// NOTE: EVERYTHING BELOW NEEDS TO BE EITHER REORGANIZED/REWRITTEN - start
-// ---------------------------------------------------------------
-// ---------------------------------------------------------------
 
-	//NOTE: theres no really good reason why this is private or protected. Not planning on having child classes of this class.
+	//NOTE: theres no really good reason why there are in private or protected. Not planning on having child classes of this class.
+
+	// ---------------------------------------------------------------
+	// ---------------------------------------------------------------
+	// NOTE: EVERYTHING BELOW NEEDS TO BE EITHER REORGANIZED/REWRITTEN - start
+	// ---------------------------------------------------------------
+	// ---------------------------------------------------------------
+	
+
+    //JET correction helper methods - Ideally THESE NEEDS TO BE ON A SEPARATE DEDICATED JET CORRENTION CLASS, or something like that.
+
+    void JECbyIOV(edm::EventBase const & event); // -->> THIS IS A HACK. NEEDS TO BE REWRITTEN AND NOT HAVE THIS HERE.
+    TLorentzVector correctJet(const pat::Jet & jet, edm::EventBase const & event, bool doAK8Corr = false, bool forceCorr = false, unsigned int syst = 0);
+    pat::Jet correctJetReturnPatJet(const pat::Jet & jet, edm::EventBase const & event, bool doAK8Corr = false, bool forceCorr = false, unsigned int syst = 0);
+
+    //JET correction methods variables/parameters/object type definitions - Ideally THESE NEEDS TO BE ON A SEPARATE DEDICATED JET CORRENTION CLASS, or something like that. - but on top of that this needs to be optimized and rewritten.
+
+    int mNCorrJets; // used in correctJet method
+
+    TRandom3 JERrand;
 
     std::string MCL1JetPar;
     std::string MCL2JetPar;
@@ -189,20 +209,12 @@ private:
     std::string DataL3JetParByIOVAK8;
     std::string DataResJetParByIOVAK8;
 
-
-    //JET correction methods - Ideally THESE NEEDS TO BE ON A SEPARATE DEDICATED JET CORRENTION CLASS, or something like that.
-    TLorentzVector correctJet(const pat::Jet & jet, edm::EventBase const & event, bool doAK8Corr = false, bool forceCorr = false, unsigned int syst = 0);
-    pat::Jet correctJetReturnPatJet(const pat::Jet & jet, edm::EventBase const & event, bool doAK8Corr = false, bool forceCorr = false, unsigned int syst = 0);
-
-    void JECbyIOV(edm::EventBase const & event); // -->> THIS IS A HACK. NEEDS TO BE REWRITTEN AND NOT HAVE THIS HERE.
-
-    //JET correction methods variables - Ideally THESE NEEDS TO BE ON A SEPARATE DEDICATED JET CORRENTION CLASS, or something like that. - but on top of that this needs to be optimized and rewritten.
-    int mNCorrJets;
-    TRandom3 JERrand;
     JME::JetResolution resolution;
     JME::JetResolution resolutionAK8;
     JME::JetResolutionScaleFactor resolution_SF;
+
     JetCorrectionUncertainty *jecUnc;
+
     JetCorrectorParameters *L3JetPar;
     JetCorrectorParameters *L2JetPar;
     JetCorrectorParameters *L1JetPar;
@@ -235,29 +247,58 @@ private:
     JetCorrectorParameters *L1JetParAK8_F;
     JetCorrectorParameters *ResJetPar;
     JetCorrectorParameters *ResJetParAK8;
+
     FactorizedJetCorrector *JetCorrector;
     FactorizedJetCorrector *JetCorrectorAK8;
+
     JetCorrectorParameters *ResJetPar_B;
     JetCorrectorParameters *ResJetParAK8_B;
     FactorizedJetCorrector *JetCorrector_B;
     FactorizedJetCorrector *JetCorrectorAK8_B;
+
     JetCorrectorParameters *ResJetPar_C;
     JetCorrectorParameters *ResJetParAK8_C;
     FactorizedJetCorrector *JetCorrector_C;
     FactorizedJetCorrector *JetCorrectorAK8_C;
+
     JetCorrectorParameters *ResJetPar_DE;
     JetCorrectorParameters *ResJetParAK8_DE;
     FactorizedJetCorrector *JetCorrector_DE;
     FactorizedJetCorrector *JetCorrectorAK8_DE;
+
     JetCorrectorParameters *ResJetPar_F;
     JetCorrectorParameters *ResJetParAK8_F;
     FactorizedJetCorrector *JetCorrector_F;
     FactorizedJetCorrector *JetCorrectorAK8_F;
-// ---------------------------------------------------------------
-// ---------------------------------------------------------------
-// NOTE: EVERYTHING ABOVE NEEDS TO BE EITHER REORGANIZED/REWRITTEN - end
-// ---------------------------------------------------------------
-// ---------------------------------------------------------------
+    
+    //BTAG helper method
+    bool isJetTagged(const pat::Jet &jet, edm::EventBase const & event, bool applySF = true, int shiftflag = 0, bool subjetflag = false);
+    
+    //BTAG variables/parameters/object type definitions
+    bool        btag_cuts;
+    double      bdisc_min;
+    std::string DeepCSVfile;
+    std::string DeepCSVSubjetfile;
+    std::string btagOP;
+    double bTagCut;
+    BTagSFUtil mBtagSfUtil;
+    BtagHardcodedConditions mBtagCond;
+    bool        BTagUncertUp;
+    bool        BTagUncertDown;
+    bool        MistagUncertUp;
+    bool        MistagUncertDown;
+    BTagCalibration       calib;
+    BTagCalibration       calibsj;
+    BTagCalibrationReader reader;
+    BTagCalibrationReader readerSJ;
+
+    int mNBtagSfCorrJets; // used in isJetTagged method
+    
+    // ---------------------------------------------------------------
+    // ---------------------------------------------------------------
+    // NOTE: EVERYTHING ABOVE NEEDS TO BE EITHER REORGANIZED/REWRITTEN - end
+    // ---------------------------------------------------------------
+    // ---------------------------------------------------------------
 
 
 };
@@ -383,42 +424,13 @@ void MultiLepEventSelector::BeginJob( const edm::ParameterSet& iConfig, edm::Con
     rhoJetsNC_Token      = iC.consumes<double>(selectorConfig.getParameter<edm::InputTag>("rhoJetsNCInputTag"));
     
     
-    //-----------------------
-    // Define and Set cuts
-    //-----------------------
+    // ---------------------------------------------------------------
+    // ---------------------------------------------------------------
+    // NOTE: EVERYTHING BELOW NEEDS TO BE EITHER REORGANIZED/REWRITTEN - start
+    // ---------------------------------------------------------------
+    // ---------------------------------------------------------------
 
-    //Reference: "PhysicsTools/SelectorUtils/interface/EventSelector.h"
-    push_back("No selection");
-    push_back("Trigger");
-    push_back("Primary Vertex");
-    push_back("MET filters");
-    push_back("Min Loose Leptons");
-    push_back("Max Loose Leptons");
-    push_back("Min Leptons");
-    push_back("Max Leptons");
-    push_back("MET");
-    push_back("All cuts");
-
-    //Reference: "PhysicsTools/SelectorUtils/interface/EventSelector.h"
-    set("No selection",true);
-    set("Trigger",trigger_cut);
-    set("Primary Vertex",pv_cut);
-    set("MET filters", metfilters);
-    set("Min Loose Leptons",minLooseLeptons_cut);
-    set("Max Loose Leptons",maxLooseLeptons_cut);
-    set("Min Leptons",minLeptons_cut);
-    set("Max Leptons",maxLeptons_cut);
-    set("MET", met_cuts);
-    set("All cuts",true);
-
-
-
-
-// ---------------------------------------------------------------
-// ---------------------------------------------------------------
-// NOTE: EVERYTHING BELOW NEEDS TO BE EITHER REORGANIZED/REWRITTEN - start
-// ---------------------------------------------------------------
-// ---------------------------------------------------------------
+	//JET CORRECTION  initialization
 
     MCL1JetPar               = selectorConfig.getParameter<std::string>("MCL1JetPar"),
     MCL2JetPar               = selectorConfig.getParameter<std::string>("MCL2JetPar"),
@@ -666,11 +678,74 @@ void MultiLepEventSelector::BeginJob( const edm::ParameterSet& iConfig, edm::Con
       JetCorrectorAK8_F = new FactorizedJetCorrector(vParAK8_F);
 
     }
-// ---------------------------------------------------------------
-// ---------------------------------------------------------------
-// NOTE: EVERYTHING ABOVE NEEDS TO BE EITHER REORGANIZED/REWRITTEN - end
-// ---------------------------------------------------------------
-// ---------------------------------------------------------------
+    
+    //BTAG parameter initialization
+    btag_cuts          = selectorConfig.getParameter<bool>("btag_cuts"),
+    bdisc_min          = selectorConfig.getParameter<double>("bdisc_min"),
+    DeepCSVfile        = selectorConfig.getParameter<std::string>("DeepCSVfile"),
+    DeepCSVSubjetfile  = selectorConfig.getParameter<std::string>("DeepCSVSubjetfile"),
+    btagOP             = selectorConfig.getParameter<std::string>("btagOP"),
+    BTagUncertUp       = selectorConfig.getParameter<bool>("BTagUncertUp"),
+    BTagUncertDown     = selectorConfig.getParameter<bool>("BTagUncertDown"),
+    MistagUncertUp     = selectorConfig.getParameter<bool>("MistagUncertUp"),
+    MistagUncertDown   = selectorConfig.getParameter<bool>("MistagUncertDown"),
+
+    bTagCut = bdisc_min;
+    std::cout << mLegend << "b-tag check: DeepCSV "<<btagOP<<" > "<<bdisc_min<<std::endl;
+    std::cout << mLegend << "b-tag files: " << DeepCSVfile << ", " << DeepCSVSubjetfile << std::endl;
+    calib   = BTagCalibration("deepcsv",DeepCSVfile);
+    calibsj = BTagCalibration("deepcsvsj",DeepCSVSubjetfile);
+    if(btagOP == "LOOSE"){
+      reader   = BTagCalibrationReader(BTagEntry::OP_LOOSE, "central", {"up","down"});
+      readerSJ = BTagCalibrationReader(BTagEntry::OP_LOOSE, "central", {"up","down"});
+    }else if(btagOP == "TIGHT"){
+      reader   = BTagCalibrationReader(BTagEntry::OP_TIGHT, "central", {"up","down"});
+    }else{
+      reader   = BTagCalibrationReader(BTagEntry::OP_MEDIUM, "central", {"up","down"});
+      readerSJ = BTagCalibrationReader(BTagEntry::OP_MEDIUM, "central", {"up","down"});
+    }
+    reader.load(calib, BTagEntry::FLAV_B, "comb");
+    reader.load(calib, BTagEntry::FLAV_C, "comb");
+    reader.load(calib, BTagEntry::FLAV_UDSG, "incl");
+    readerSJ.load(calibsj, BTagEntry::FLAV_B, "lt");
+    readerSJ.load(calibsj, BTagEntry::FLAV_C, "lt");
+    readerSJ.load(calibsj, BTagEntry::FLAV_UDSG, "incl");
+    
+    
+    // ---------------------------------------------------------------
+    // ---------------------------------------------------------------
+    // NOTE: EVERYTHING ABOVE NEEDS TO BE EITHER REORGANIZED/REWRITTEN - end
+    // ---------------------------------------------------------------
+    // ---------------------------------------------------------------
+
+
+    //-----------------------
+    // Define and Set cuts
+    //-----------------------
+
+    //Reference: "PhysicsTools/SelectorUtils/interface/EventSelector.h"
+    push_back("No selection");
+    push_back("Trigger");
+    push_back("Primary Vertex");
+    push_back("MET filters");
+    push_back("Min Loose Leptons");
+    push_back("Max Loose Leptons");
+    push_back("Min Leptons");
+    push_back("Max Leptons");
+    push_back("MET");
+    push_back("All cuts");
+
+    //Reference: "PhysicsTools/SelectorUtils/interface/EventSelector.h"
+    set("No selection",true);
+    set("Trigger",trigger_cut);
+    set("Primary Vertex",pv_cut);
+    set("MET filters", metfilters);
+    set("Min Loose Leptons",minLooseLeptons_cut);
+    set("Max Loose Leptons",maxLooseLeptons_cut);
+    set("Min Leptons",minLeptons_cut);
+    set("Max Leptons",maxLeptons_cut);
+    set("MET", met_cuts);
+    set("All cuts",true);
 
 
 } // end of BeginJob()
@@ -1461,7 +1536,7 @@ void MultiLepEventSelector::JetSelection(edm::Event const & event)
 
   int _n_good_jets = 0;
   int _n_jets = 0;
-//   int nBtagJets = 0;
+  int nBtagJets = 0;
   double _leading_jet_pt = 0.0;
 
   vAllJets.clear();
@@ -1470,10 +1545,10 @@ void MultiLepEventSelector::JetSelection(edm::Event const & event)
 /*  mvCorrJets_jesup.clear();
   mvCorrJets_jesdn.clear();
   mvCorrJets_jerup.clear();
-  mvCorrJets_jerdn.clear();
-  mvCorrJetsWithBTags.clear();
-  mvSelBtagJets.clear();
-*/
+  mvCorrJets_jerdn.clear();*/
+  vSelCorrJetsWithBTags.clear();
+  vSelBtagJets.clear();
+
 
   std::vector<edm::Ptr<pat::Muon>> cleaningMuons;
   cleaningMuons = vSelMuons;
@@ -1487,7 +1562,7 @@ void MultiLepEventSelector::JetSelection(edm::Event const & event)
 
     bool _pass = false;
     bool _passpf = false;
-//     bool _isTagged = false;
+    bool _isTagged = false;
     bool _cleaned = false;
 
     TLorentzVector jetP4;
@@ -1586,9 +1661,9 @@ void MultiLepEventSelector::JetSelection(edm::Event const & event)
       }*/
       corrJet = correctJetReturnPatJet(*_ijet, event);
     }
-/*
+
     _isTagged = isJetTagged(*_ijet, event);
-*/
+
     // jet cuts  //ATTENTION: THIS IDEALLY SHOULDN'T BE HARD CODED -- Rizki Mar 13, 2019
     while(1){
 
@@ -1631,18 +1706,18 @@ void MultiLepEventSelector::JetSelection(edm::Event const & event)
       _pass = true;
       break;
     }
-/*
+
     pair<TLorentzVector,bool> jetwithtag;
     jetwithtag.first = jetP4;
     jetwithtag.second = _isTagged;
-*/
+
     if ( _pass ){
 
 
       // save all the good jets
       ++_n_good_jets;
       vSelJets.push_back(edm::Ptr<pat::Jet>( jetsHandle, _n_jets));
-      vSelCorrJets.push_back(corrJet); // error: no matching function for call to 'std::vector<edm::Ptr<pat::Jet> >::push_back(pat::Jet&)' ????
+      vSelCorrJets.push_back(corrJet);
 /*      if (mbPar["doAllJetSyst"]) {
 		mvCorrJets_jesup.push_back(jetP4_jesup);
 		mvCorrJets_jesdn.push_back(jetP4_jesdn);
@@ -1654,16 +1729,16 @@ void MultiLepEventSelector::JetSelection(edm::Event const & event)
 		mvCorrJets_jesdn.push_back(jetP4);
 		mvCorrJets_jerup.push_back(jetP4);
 		mvCorrJets_jerdn.push_back(jetP4);
-      }
-      mvCorrJetsWithBTags.push_back(jetwithtag);
-*/
+      }*/
+      vSelCorrJetsWithBTags.push_back(jetwithtag);
+
       if (jetP4.Pt() > _leading_jet_pt) _leading_jet_pt = jetP4.Pt();
-/*
+
       if (_isTagged) {
 		++nBtagJets;
 		// save all the good b-tagged jets
-		mvSelBtagJets.push_back(edm::Ptr<pat::Jet>( jetsHandle, _n_jets));
-      }*/
+		vSelBtagJets.push_back(edm::Ptr<pat::Jet>( jetsHandle, _n_jets));
+      }
     }
 
     // save all the pf jets regardless of pt or eta
@@ -1762,7 +1837,7 @@ bool MultiLepEventSelector::EXAMPLESelection(edm::Event const & event)
 // ---------------------------------------------------------------
 // ---------------------------------------------------------------
 
-//JET CORRECTION METHODS
+//JET CORRECTION HELPER METHODS
 void MultiLepEventSelector::JECbyIOV(edm::EventBase const & event)
 {
 /*
@@ -2155,6 +2230,76 @@ pat::Jet MultiLepEventSelector::correctJetReturnPatJet(const pat::Jet & jet, edm
 
     return correctedJet;
 }
+
+//BTAG HELPER METHOD
+bool MultiLepEventSelector::isJetTagged(const pat::Jet & jet, edm::EventBase const & event, bool applySF, int shiftflag, bool subjetflag)
+{
+    bool _isTagged = false;
+
+    if (jet.bDiscriminator("pfDeepCSVJetTags:probb")+jet.bDiscriminator("pfDeepCSVJetTags:probbb") > bTagCut) _isTagged = true;
+
+    if (isMc && applySF){
+      
+      TLorentzVector lvjet = correctJet(jet, event);
+        
+      int _jetFlavor = abs(jet.hadronFlavour());
+      double _heavySf = 1.0;
+      double _heavyEff = 1.0;
+      double _lightSf = 1.0;
+      double _lightEff = 1.0;
+
+      if(!subjetflag){
+
+		_heavySf = reader.eval_auto_bounds("central",BTagEntry::FLAV_B,fabs(lvjet.Eta()),lvjet.Pt());
+		if (shiftflag == 1 ||  BTagUncertUp ) _heavySf = reader.eval_auto_bounds("up",BTagEntry::FLAV_B,fabs(lvjet.Eta()),lvjet.Pt());
+		else if (shiftflag == 2 ||  BTagUncertDown ) _heavySf = reader.eval_auto_bounds("down",BTagEntry::FLAV_B,fabs(lvjet.Eta()),lvjet.Pt());
+		_heavyEff = mBtagCond.GetBtagEfficiency(lvjet.Et(), fabs(lvjet.Eta()), "DeepCSV"+btagOP);       
+	
+		if(_jetFlavor == 4){
+		  _heavySf = reader.eval_auto_bounds("central",BTagEntry::FLAV_C,fabs(lvjet.Eta()),lvjet.Pt());
+		  if (shiftflag == 1 ||  BTagUncertUp ) _heavySf = reader.eval_auto_bounds("up",BTagEntry::FLAV_C,fabs(lvjet.Eta()),lvjet.Pt());
+		  else if (shiftflag == 2 ||  BTagUncertDown ) _heavySf = reader.eval_auto_bounds("down",BTagEntry::FLAV_C,fabs(lvjet.Eta()),lvjet.Pt());
+		  _heavyEff = mBtagCond.GetBtagEfficiency(lvjet.Et(), fabs(lvjet.Eta()), "DeepCSV"+btagOP);       
+		}
+	
+		_lightSf = reader.eval_auto_bounds("central",BTagEntry::FLAV_UDSG,fabs(lvjet.Eta()),lvjet.Pt());
+		if (shiftflag == 3 || MistagUncertUp ) _lightSf = reader.eval_auto_bounds("up",BTagEntry::FLAV_UDSG,fabs(lvjet.Eta()),lvjet.Pt());
+		else if (shiftflag == 4 ||  MistagUncertDown ) _lightSf = reader.eval_auto_bounds("down",BTagEntry::FLAV_UDSG,fabs(lvjet.Eta()),lvjet.Pt());
+		_lightEff = mBtagCond.GetMistagRate(lvjet.Et(), fabs(lvjet.Eta()), "DeepCSV"+btagOP);
+	
+      }
+      else{
+
+      	_heavySf = readerSJ.eval_auto_bounds("central",BTagEntry::FLAV_B,fabs(lvjet.Eta()),lvjet.Pt());
+      	if (shiftflag == 1 ||  BTagUncertUp ) _heavySf = readerSJ.eval_auto_bounds("up",BTagEntry::FLAV_B,fabs(lvjet.Eta()),lvjet.Pt());
+      	else if (shiftflag == 2 ||  BTagUncertDown ) _heavySf = readerSJ.eval_auto_bounds("down",BTagEntry::FLAV_B,fabs(lvjet.Eta()),lvjet.Pt());
+      	_heavyEff = mBtagCond.GetBtagEfficiency(lvjet.Et(), fabs(lvjet.Eta()), "SJDeepCSV"+btagOP);       
+	
+      	if(_jetFlavor == 4){
+      	  _heavySf = readerSJ.eval_auto_bounds("central",BTagEntry::FLAV_C,fabs(lvjet.Eta()),lvjet.Pt());
+      	  if (shiftflag == 1 ||  BTagUncertUp ) _heavySf = readerSJ.eval_auto_bounds("up",BTagEntry::FLAV_C,fabs(lvjet.Eta()),lvjet.Pt());
+      	  else if (shiftflag == 2 ||  BTagUncertDown ) _heavySf = readerSJ.eval_auto_bounds("down",BTagEntry::FLAV_C,fabs(lvjet.Eta()),lvjet.Pt());
+      	  _heavyEff = mBtagCond.GetBtagEfficiency(lvjet.Et(), fabs(lvjet.Eta()), "SJDeepCSV"+btagOP);       
+      	}
+	
+      	_lightSf = readerSJ.eval_auto_bounds("central",BTagEntry::FLAV_UDSG,fabs(lvjet.Eta()),lvjet.Pt());
+      	if (shiftflag == 3 || MistagUncertUp ) _lightSf = readerSJ.eval_auto_bounds("up",BTagEntry::FLAV_UDSG,fabs(lvjet.Eta()),lvjet.Pt());
+      	else if (shiftflag == 4 ||  MistagUncertDown ) _lightSf = readerSJ.eval_auto_bounds("down",BTagEntry::FLAV_UDSG,fabs(lvjet.Eta()),lvjet.Pt());
+      	_lightEff = mBtagCond.GetMistagRate(lvjet.Et(), fabs(lvjet.Eta()), "SJDeepCSV"+btagOP);
+      }
+
+      mBtagSfUtil.SetSeed(abs(static_cast<int>(sin(jet.phi())*1e5)));
+      
+      // sanity check
+      bool _orig_tag = _isTagged;      
+      mBtagSfUtil.modifyBTagsWithSF(_isTagged, _jetFlavor, _heavySf, _heavyEff, _lightSf, _lightEff);     
+      if (_isTagged != _orig_tag) ++mNBtagSfCorrJets;
+      
+    } // end of btag scale factor corrections
+
+    return _isTagged;
+}
+
 
 // ---------------------------------------------------------------
 // ---------------------------------------------------------------

@@ -76,8 +76,8 @@ process.ljmet = cms.EDAnalyzer(
             isMc  = cms.bool(isMC),
 
 			# Trigger cuts
-            HLTcollection       = cms.InputTag("TriggerResults","","HLT"),
 			trigger_cut  = cms.bool(True),
+            HLTcollection= cms.InputTag("TriggerResults","","HLT"),
 			dump_trigger = cms.bool(True),
 			mctrigger_path_el = cms.vstring(
 				'HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_v',  #exists in 2017
@@ -113,7 +113,7 @@ process.ljmet = cms.EDAnalyzer(
 			trigger_path_mu = cms.vstring(''),
 
 			# PV cuts
-			pv_cut         = cms.bool(True),
+			pv_cut     = cms.bool(True),
 			pvSelector = cms.PSet( # taken from https://github.com/cms-sw/cmssw/blob/CMSSW_9_4_X/PhysicsTools/SelectorUtils/python/pvSelector_cfi.py
 				NPV     = cms.int32(1),
 				pvSrc   = cms.InputTag('offlineSlimmedPrimaryVertices'),
@@ -128,18 +128,18 @@ process.ljmet = cms.EDAnalyzer(
 			METfilter_extra = cms.InputTag("ecalBadCalibReducedMINIAODFilter"),
 
 			#MET cuts
-			met_cuts    = cms.bool(False),
-			min_met     = cms.double(20.0),
-			max_met     = cms.double(99999999999.0),
-			met_collection           = cms.InputTag('slimmedMETs'),
+			met_cuts       = cms.bool(False),
+			min_met        = cms.double(20.0),
+			max_met        = cms.double(99999999999.0),
+			met_collection = cms.InputTag('slimmedMETs'),
 
 
             PFparticlesCollection  = cms.InputTag("packedPFCandidates"),
             rhoJetsNCInputTag            = cms.InputTag("fixedGridRhoFastjetCentralNeutral",""),
 
             #Muon
-            muonsCollection        = cms.InputTag("slimmedMuons"),
             muon_cuts                = cms.bool(True),
+            muonsCollection          = cms.InputTag("slimmedMuons"),
             min_muon                 = cms.int32(0), #not implemented in src code
             muon_minpt               = cms.double(20.0),
             muon_maxeta              = cms.double(2.4),
@@ -156,9 +156,9 @@ process.ljmet = cms.EDAnalyzer(
             loose_muon_relIso        = cms.double(0.4),
 
             # Electon
-            electronsCollection    = cms.InputTag("slimmedElectrons"),
-#             electronsCollection    = cms.InputTag("slimmedElectrons::LJMET"), #Egamma ID V2
             electron_cuts            = cms.bool(True),
+            electronsCollection      = cms.InputTag("slimmedElectrons"),
+#             electronsCollection    = cms.InputTag("slimmedElectrons::LJMET"), #Egamma ID V2
             min_electron             = cms.int32(0), #not implemented in src code
             electron_minpt           = cms.double(20.0),
             electron_maxeta          = cms.double(2.4),
@@ -182,6 +182,7 @@ process.ljmet = cms.EDAnalyzer(
             maxLeptons          = cms.int32(9999),
             
             #Jets
+            jet_cuts                 = cms.bool(True),
             jet_collection           = cms.InputTag('slimmedJets'),
             slimmedJetsAK8           = cms.InputTag('slimmedJetsAK8'),
             JECup                    = cms.bool(False),
@@ -193,7 +194,6 @@ process.ljmet = cms.EDAnalyzer(
             CleanLooseLeptons        = cms.bool(True),
             LepJetDR                 = cms.double(0.4),
             LepJetDRAK8              = cms.double(0.8),
-            jet_cuts                 = cms.bool(True),
             jet_minpt                = cms.double(30.0),
             jet_maxeta               = cms.double(2.5),
             jet_minpt_AK8            = cms.double(200.0),
@@ -220,6 +220,20 @@ process.ljmet = cms.EDAnalyzer(
 			DataL2JetParAK8          = cms.string(relBase+'/src/FWLJMET/LJMet/data/Fall17V32/Fall17_17Nov2017B_V32_DATA_L2Relative_AK8PFPuppi.txt'),
 			DataL3JetParAK8          = cms.string(relBase+'/src/FWLJMET/LJMet/data/Fall17V32/Fall17_17Nov2017B_V32_DATA_L3Absolute_AK8PFPuppi.txt'),
 			DataResJetParAK8         = cms.string(relBase+'/src/FWLJMET/LJMet/data/Fall17V32/Fall17_17Nov2017B_V32_DATA_L2L3Residual_AK8PFPuppi.txt'),
+			
+			
+			#Btag
+			btag_cuts                = cms.bool(False),
+			btagOP                   = cms.string('MEDIUM'),
+			bdisc_min                = cms.double(0.4941),
+			DeepCSVfile              = cms.string(relBase+'/src/FWLJMET/LJMet/data/DeepCSV_94XSF_V3_B_F.csv'),
+			DeepCSVSubjetfile        = cms.string(relBase+'/src/FWLJMET/LJMet/data/subjet_DeepCSV_94XSF_V3_B_F.csv'),
+			BTagUncertUp             = cms.bool(False), # no longer needed
+			BTagUncertDown           = cms.bool(False), # no longer needed
+			MistagUncertUp           = cms.bool(False), # no longer needed
+			MistagUncertDown          = cms.bool(False), # no longer needed
+			
+			
 
             ),
 
