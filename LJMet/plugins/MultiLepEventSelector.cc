@@ -153,11 +153,11 @@ protected:
 
 private:
 
-    //EVERYTHING HERE NEEDS TO BE EITHER REORGANIZED/REWRITTEN - start
-    //EVERYTHING HERE NEEDS TO BE EITHER REORGANIZED/REWRITTEN - start
-    //EVERYTHING HERE NEEDS TO BE EITHER REORGANIZED/REWRITTEN - start
-    //EVERYTHING HERE NEEDS TO BE EITHER REORGANIZED/REWRITTEN - start
-    //EVERYTHING HERE NEEDS TO BE EITHER REORGANIZED/REWRITTEN - start
+// ---------------------------------------------------------------
+// ---------------------------------------------------------------
+// NOTE: EVERYTHING BELOW NEEDS TO BE EITHER REORGANIZED/REWRITTEN - start
+// ---------------------------------------------------------------
+// ---------------------------------------------------------------
 
     std::string MCL1JetPar;
     std::string MCL2JetPar;
@@ -246,11 +246,11 @@ private:
     JetCorrectorParameters *ResJetParAK8_F;
     FactorizedJetCorrector *JetCorrector_F;
     FactorizedJetCorrector *JetCorrectorAK8_F;
-    //EVERYTHING HERE NEEDS TO BE EITHER REORGANIZED/REWRITTEN - end
-    //EVERYTHING HERE NEEDS TO BE EITHER REORGANIZED/REWRITTEN - end
-    //EVERYTHING HERE NEEDS TO BE EITHER REORGANIZED/REWRITTEN - end
-    //EVERYTHING HERE NEEDS TO BE EITHER REORGANIZED/REWRITTEN - end
-    //EVERYTHING HERE NEEDS TO BE EITHER REORGANIZED/REWRITTEN - end
+// ---------------------------------------------------------------
+// ---------------------------------------------------------------
+// NOTE: EVERYTHING ABOVE NEEDS TO BE EITHER REORGANIZED/REWRITTEN - end
+// ---------------------------------------------------------------
+// ---------------------------------------------------------------
 
 
 };
