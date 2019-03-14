@@ -158,7 +158,7 @@ protected:
     void MuonSelection     (edm::Event const & event);
     void ElectronSelection (edm::Event const & event);
     bool LeptonsSelection  (edm::Event const & event, pat::strbitset & ret);
-    void JetSelection      (edm::Event const & event);
+    bool JetSelection      (edm::Event const & event, pat::strbitset & ret);
     bool METSelection      (edm::Event const & event);
 
 
@@ -732,6 +732,9 @@ void MultiLepEventSelector::BeginJob( const edm::ParameterSet& iConfig, edm::Con
     push_back("Max Loose Leptons");
     push_back("Min Leptons");
     push_back("Max Leptons");
+	push_back("Min jet multiplicity");
+	push_back("Max jet multiplicity");
+	push_back("Leading jet pt");
     push_back("MET");
     push_back("All cuts");
 
@@ -744,6 +747,16 @@ void MultiLepEventSelector::BeginJob( const edm::ParameterSet& iConfig, edm::Con
     set("Max Loose Leptons",maxLooseLeptons_cut);
     set("Min Leptons",minLeptons_cut);
     set("Max Leptons",maxLeptons_cut);
+    if (jet_cuts){
+        set("Min jet multiplicity", min_jet);
+        set("Max jet multiplicity", max_jet);
+        set("Leading jet pt", leading_jet_pt);
+        }
+    else{
+        set("Min jet multiplicity", false);
+        set("Max jet multiplicity", false);
+        set("Leading jet pt", false);
+        }
     set("MET", met_cuts);
     set("All cuts",true);
 
@@ -776,7 +789,7 @@ bool MultiLepEventSelector::operator()( edm::Event const & event, pat::strbitset
     if( ! LeptonsSelection(event, ret) ) break;
 
 	//Collect jets
-	JetSelection(event);
+    if( ! JetSelection(event, ret) ) break;
 
 
     if( METSelection(event) )     passCut(ret, "MET"); // this needs to be after jets.
@@ -1518,7 +1531,7 @@ bool MultiLepEventSelector::LeptonsSelection(edm::Event const & event, pat::strb
 	return pass;
 }
 
-void MultiLepEventSelector::JetSelection(edm::Event const & event)
+bool MultiLepEventSelector::JetSelection(edm::Event const & event, pat::strbitset & ret)
 {
 
   //
@@ -1748,6 +1761,36 @@ void MultiLepEventSelector::JetSelection(edm::Event const & event)
     ++_n_jets;
 
   } // end of loop over jets
+  
+  
+  // SELECT EVENTS BASES ON JETS
+  
+  bool pass_jet = false;
+  
+  while(1){
+  
+	  if ( jet_cuts ) {
+	    
+		  if ( ignoreCut("Min jet multiplicity") || _n_good_jets >= cut("Min jet multiplicity",int()) ) passCut(ret, "Min jet multiplicity");
+		  else break;
+  
+		  if ( ignoreCut("Max jet multiplicity") || _n_good_jets <= cut("Max jet multiplicity",int()) ) passCut(ret, "Max jet multiplicity");
+		  else break; 
+  
+		  if ( ignoreCut("Leading jet pt") ||  _leading_jet_pt >= cut("Leading jet pt",double()) ) passCut(ret, "Leading jet pt");
+		  else break;
+		  
+		  if(debug) std::cout << "\t\t\t" << "pass_jet"<<std::endl;
+
+	  }
+	  else if(debug) std::cout << "\t\t\t" << "IGNORING jet_cuts "<<std::endl;
+	  
+	  pass_jet = true ;
+	  break;
+  
+  }
+  
+  return pass_jet;
 
 
 }

@@ -182,7 +182,6 @@ process.ljmet = cms.EDAnalyzer(
             maxLeptons          = cms.int32(9999),
             
             #Jets
-            jet_cuts                 = cms.bool(True),
             jet_collection           = cms.InputTag('slimmedJets'),
             slimmedJetsAK8           = cms.InputTag('slimmedJetsAK8'),
             JECup                    = cms.bool(False),
@@ -194,12 +193,13 @@ process.ljmet = cms.EDAnalyzer(
             CleanLooseLeptons        = cms.bool(True),
             LepJetDR                 = cms.double(0.4),
             LepJetDRAK8              = cms.double(0.8),
+            jet_cuts                 = cms.bool(True),
             jet_minpt                = cms.double(30.0),
             jet_maxeta               = cms.double(2.5),
             jet_minpt_AK8            = cms.double(200.0),
             jet_maxeta_AK8           = cms.double(2.4),
             min_jet                  = cms.int32(1),
-            max_jet                  = cms.int32(4000),
+            max_jet                  = cms.int32(9999),
             leading_jet_pt           = cms.double(30.0),
 			# Jet corrections are read from txt files which need updating!
 			JEC_txtfile = cms.string(relBase+'/src/FWLJMET/LJMet/data/Fall17V32/Fall17_17Nov2017_V32_MC_Uncertainty_AK4PFchs.txt'),
@@ -223,7 +223,7 @@ process.ljmet = cms.EDAnalyzer(
 			
 			
 			#Btag
-			btag_cuts                = cms.bool(False),
+			btag_cuts                = cms.bool(False), #not implemented
 			btagOP                   = cms.string('MEDIUM'),
 			bdisc_min                = cms.double(0.4941),
 			DeepCSVfile              = cms.string(relBase+'/src/FWLJMET/LJMet/data/DeepCSV_94XSF_V3_B_F.csv'),
