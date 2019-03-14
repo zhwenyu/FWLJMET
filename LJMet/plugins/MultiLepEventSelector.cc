@@ -56,7 +56,7 @@ protected:
     bool bFirstEntry;
     bool debug;
     bool isMc;
-    
+
     //Trigger
     bool trigger_cut;
     bool dump_trigger;
@@ -76,7 +76,7 @@ protected:
     bool   met_cuts;
     double min_met;
     double max_met;
-    
+
     //Muon
     bool   muon_cuts;
     int    min_muon;
@@ -137,7 +137,7 @@ protected:
     std::string JERSF_txtfile;
     std::string JER_txtfile;
     std::string JERAK8_txtfile;
-    
+
     //Tokens
     edm::EDGetTokenT<edm::TriggerResults>            triggersToken;
     edm::EDGetTokenT<reco::VertexCollection>         PVToken;
@@ -165,14 +165,14 @@ protected:
 private:
 
 
-	//NOTE: theres no really good reason why there are in private or protected. Not planning on having child classes of this class.
+    //NOTE: theres no really good reason why there are in private or protected. Not planning on having child classes of this class.
 
-	// ---------------------------------------------------------------
-	// ---------------------------------------------------------------
-	// NOTE: EVERYTHING BELOW NEEDS TO BE EITHER REORGANIZED/REWRITTEN - start
-	// ---------------------------------------------------------------
-	// ---------------------------------------------------------------
-	
+    // ---------------------------------------------------------------
+    // ---------------------------------------------------------------
+    // NOTE: EVERYTHING BELOW NEEDS TO BE EITHER REORGANIZED/REWRITTEN - start
+    // ---------------------------------------------------------------
+    // ---------------------------------------------------------------
+
 
     //JET correction helper methods - Ideally THESE NEEDS TO BE ON A SEPARATE DEDICATED JET CORRENTION CLASS, or something like that.
 
@@ -270,10 +270,10 @@ private:
     JetCorrectorParameters *ResJetParAK8_F;
     FactorizedJetCorrector *JetCorrector_F;
     FactorizedJetCorrector *JetCorrectorAK8_F;
-    
+
     //BTAG helper method
     bool isJetTagged(const pat::Jet &jet, edm::EventBase const & event, bool applySF = true, int shiftflag = 0, bool subjetflag = false);
-    
+
     //BTAG variables/parameters/object type definitions
     bool        btag_cuts;
     double      bdisc_min;
@@ -293,7 +293,7 @@ private:
     BTagCalibrationReader readerSJ;
 
     int mNBtagSfCorrJets; // used in isJetTagged method
-    
+
     // ---------------------------------------------------------------
     // ---------------------------------------------------------------
     // NOTE: EVERYTHING ABOVE NEEDS TO BE EITHER REORGANIZED/REWRITTEN - end
@@ -422,15 +422,15 @@ void MultiLepEventSelector::BeginJob( const edm::ParameterSet& iConfig, edm::Con
     //Misc
     PFCandToken          = iC.consumes<pat::PackedCandidateCollection>(selectorConfig.getParameter<edm::InputTag>("PFparticlesCollection"));
     rhoJetsNC_Token      = iC.consumes<double>(selectorConfig.getParameter<edm::InputTag>("rhoJetsNCInputTag"));
-    
-    
+
+
     // ---------------------------------------------------------------
     // ---------------------------------------------------------------
     // NOTE: EVERYTHING BELOW NEEDS TO BE EITHER REORGANIZED/REWRITTEN - start
     // ---------------------------------------------------------------
     // ---------------------------------------------------------------
 
-	//JET CORRECTION  initialization
+    //JET CORRECTION  initialization
 
     MCL1JetPar               = selectorConfig.getParameter<std::string>("MCL1JetPar"),
     MCL2JetPar               = selectorConfig.getParameter<std::string>("MCL2JetPar"),
@@ -494,7 +494,7 @@ void MultiLepEventSelector::BeginJob( const edm::ParameterSet& iConfig, edm::Con
 
       if (doNewJEC) std::cout << mLegend << "Applying new jet energy corrections" << std::endl;
       else std::cout << mLegend << "NOT applying new jet energy corrections - ARE YOU SURE?" << std::endl;
-      
+
       //NOTE: these statement are there originaly from oldLJMet, but its causing segfault !!!
 //       delete JetCorrector;
 //       delete JetCorrectorAK8;
@@ -656,8 +656,8 @@ void MultiLepEventSelector::BeginJob( const edm::ParameterSet& iConfig, edm::Con
       vParAK8_F.push_back(*L2JetParAK8_F);
       vParAK8_F.push_back(*L3JetParAK8_F);
       vParAK8_F.push_back(*ResJetParAK8_F);
-      
-      
+
+
       //NOTE: these statement are there originaly from oldLJMet, but its causing segfault !!
 //       delete JetCorrector_B;
 //       delete JetCorrector_C;
@@ -678,7 +678,7 @@ void MultiLepEventSelector::BeginJob( const edm::ParameterSet& iConfig, edm::Con
       JetCorrectorAK8_F = new FactorizedJetCorrector(vParAK8_F);
 
     }
-    
+
     //BTAG parameter initialization
     btag_cuts          = selectorConfig.getParameter<bool>("btag_cuts"),
     bdisc_min          = selectorConfig.getParameter<double>("bdisc_min"),
@@ -710,8 +710,8 @@ void MultiLepEventSelector::BeginJob( const edm::ParameterSet& iConfig, edm::Con
     readerSJ.load(calibsj, BTagEntry::FLAV_B, "lt");
     readerSJ.load(calibsj, BTagEntry::FLAV_C, "lt");
     readerSJ.load(calibsj, BTagEntry::FLAV_UDSG, "incl");
-    
-    
+
+
     // ---------------------------------------------------------------
     // ---------------------------------------------------------------
     // NOTE: EVERYTHING ABOVE NEEDS TO BE EITHER REORGANIZED/REWRITTEN - end
@@ -783,12 +783,12 @@ bool MultiLepEventSelector::operator()( edm::Event const & event, pat::strbitset
     if( METfilter(event) )        passCut(ret, "MET filters");
     else break;
 
-	//Collect selected leptons
+    //Collect selected leptons
     MuonSelection(event);
     ElectronSelection(event);
     if( ! LeptonsSelection(event, ret) ) break;
 
-	//Collect jets
+    //Collect jets
     if( ! JetSelection(event, ret) ) break;
 
 
@@ -845,7 +845,7 @@ void MultiLepEventSelector::EndJob()
 //       delete L3JetParAK8;
 //       delete L2JetParAK8;
 //       delete L1JetParAK8;
-// 
+//
 //       delete ResJetPar_B;
 //       delete L3JetPar_B;
 //       delete L2JetPar_B;
@@ -878,7 +878,7 @@ void MultiLepEventSelector::EndJob()
 //       delete L3JetParAK8_F;
 //       delete L2JetParAK8_F;
 //       delete L1JetParAK8_F;
-// 
+//
 //       delete jecUnc;
 
 //       delete JetCorrector;
@@ -1677,7 +1677,7 @@ bool MultiLepEventSelector::JetSelection(edm::Event const & event, pat::strbitse
 
     _isTagged = isJetTagged(*_ijet, event);
 
-    // jet cuts  //ATTENTION: THIS IDEALLY SHOULDN'T BE HARD CODED -- Rizki Mar 13, 2019
+    // jet cuts  //ATTENTION: THIS IDEALLY SHOULDN'T BE HARD CODED -- Mar 13, 2019
     while(1){
 
       // PF Jet ID
@@ -1761,35 +1761,35 @@ bool MultiLepEventSelector::JetSelection(edm::Event const & event, pat::strbitse
     ++_n_jets;
 
   } // end of loop over jets
-  
-  
+
+
   // SELECT EVENTS BASES ON JETS
-  
+
   bool pass_jet = false;
-  
+
   while(1){
-  
+
 	  if ( jet_cuts ) {
-	    
+
 		  if ( ignoreCut("Min jet multiplicity") || _n_good_jets >= cut("Min jet multiplicity",int()) ) passCut(ret, "Min jet multiplicity");
 		  else break;
-  
+
 		  if ( ignoreCut("Max jet multiplicity") || _n_good_jets <= cut("Max jet multiplicity",int()) ) passCut(ret, "Max jet multiplicity");
-		  else break; 
-  
+		  else break;
+
 		  if ( ignoreCut("Leading jet pt") ||  _leading_jet_pt >= cut("Leading jet pt",double()) ) passCut(ret, "Leading jet pt");
 		  else break;
-		  
+
 		  if(debug) std::cout << "\t\t\t" << "pass_jet"<<std::endl;
 
 	  }
 	  else if(debug) std::cout << "\t\t\t" << "IGNORING jet_cuts "<<std::endl;
-	  
+
 	  pass_jet = true ;
 	  break;
-  
+
   }
-  
+
   return pass_jet;
 
 
@@ -2282,9 +2282,9 @@ bool MultiLepEventSelector::isJetTagged(const pat::Jet & jet, edm::EventBase con
     if (jet.bDiscriminator("pfDeepCSVJetTags:probb")+jet.bDiscriminator("pfDeepCSVJetTags:probbb") > bTagCut) _isTagged = true;
 
     if (isMc && applySF){
-      
+
       TLorentzVector lvjet = correctJet(jet, event);
-        
+
       int _jetFlavor = abs(jet.hadronFlavour());
       double _heavySf = 1.0;
       double _heavyEff = 1.0;
@@ -2296,35 +2296,35 @@ bool MultiLepEventSelector::isJetTagged(const pat::Jet & jet, edm::EventBase con
 		_heavySf = reader.eval_auto_bounds("central",BTagEntry::FLAV_B,fabs(lvjet.Eta()),lvjet.Pt());
 		if (shiftflag == 1 ||  BTagUncertUp ) _heavySf = reader.eval_auto_bounds("up",BTagEntry::FLAV_B,fabs(lvjet.Eta()),lvjet.Pt());
 		else if (shiftflag == 2 ||  BTagUncertDown ) _heavySf = reader.eval_auto_bounds("down",BTagEntry::FLAV_B,fabs(lvjet.Eta()),lvjet.Pt());
-		_heavyEff = mBtagCond.GetBtagEfficiency(lvjet.Et(), fabs(lvjet.Eta()), "DeepCSV"+btagOP);       
-	
+		_heavyEff = mBtagCond.GetBtagEfficiency(lvjet.Et(), fabs(lvjet.Eta()), "DeepCSV"+btagOP);
+
 		if(_jetFlavor == 4){
 		  _heavySf = reader.eval_auto_bounds("central",BTagEntry::FLAV_C,fabs(lvjet.Eta()),lvjet.Pt());
 		  if (shiftflag == 1 ||  BTagUncertUp ) _heavySf = reader.eval_auto_bounds("up",BTagEntry::FLAV_C,fabs(lvjet.Eta()),lvjet.Pt());
 		  else if (shiftflag == 2 ||  BTagUncertDown ) _heavySf = reader.eval_auto_bounds("down",BTagEntry::FLAV_C,fabs(lvjet.Eta()),lvjet.Pt());
-		  _heavyEff = mBtagCond.GetBtagEfficiency(lvjet.Et(), fabs(lvjet.Eta()), "DeepCSV"+btagOP);       
+		  _heavyEff = mBtagCond.GetBtagEfficiency(lvjet.Et(), fabs(lvjet.Eta()), "DeepCSV"+btagOP);
 		}
-	
+
 		_lightSf = reader.eval_auto_bounds("central",BTagEntry::FLAV_UDSG,fabs(lvjet.Eta()),lvjet.Pt());
 		if (shiftflag == 3 || MistagUncertUp ) _lightSf = reader.eval_auto_bounds("up",BTagEntry::FLAV_UDSG,fabs(lvjet.Eta()),lvjet.Pt());
 		else if (shiftflag == 4 ||  MistagUncertDown ) _lightSf = reader.eval_auto_bounds("down",BTagEntry::FLAV_UDSG,fabs(lvjet.Eta()),lvjet.Pt());
 		_lightEff = mBtagCond.GetMistagRate(lvjet.Et(), fabs(lvjet.Eta()), "DeepCSV"+btagOP);
-	
+
       }
       else{
 
       	_heavySf = readerSJ.eval_auto_bounds("central",BTagEntry::FLAV_B,fabs(lvjet.Eta()),lvjet.Pt());
       	if (shiftflag == 1 ||  BTagUncertUp ) _heavySf = readerSJ.eval_auto_bounds("up",BTagEntry::FLAV_B,fabs(lvjet.Eta()),lvjet.Pt());
       	else if (shiftflag == 2 ||  BTagUncertDown ) _heavySf = readerSJ.eval_auto_bounds("down",BTagEntry::FLAV_B,fabs(lvjet.Eta()),lvjet.Pt());
-      	_heavyEff = mBtagCond.GetBtagEfficiency(lvjet.Et(), fabs(lvjet.Eta()), "SJDeepCSV"+btagOP);       
-	
+      	_heavyEff = mBtagCond.GetBtagEfficiency(lvjet.Et(), fabs(lvjet.Eta()), "SJDeepCSV"+btagOP);
+
       	if(_jetFlavor == 4){
       	  _heavySf = readerSJ.eval_auto_bounds("central",BTagEntry::FLAV_C,fabs(lvjet.Eta()),lvjet.Pt());
       	  if (shiftflag == 1 ||  BTagUncertUp ) _heavySf = readerSJ.eval_auto_bounds("up",BTagEntry::FLAV_C,fabs(lvjet.Eta()),lvjet.Pt());
       	  else if (shiftflag == 2 ||  BTagUncertDown ) _heavySf = readerSJ.eval_auto_bounds("down",BTagEntry::FLAV_C,fabs(lvjet.Eta()),lvjet.Pt());
-      	  _heavyEff = mBtagCond.GetBtagEfficiency(lvjet.Et(), fabs(lvjet.Eta()), "SJDeepCSV"+btagOP);       
+      	  _heavyEff = mBtagCond.GetBtagEfficiency(lvjet.Et(), fabs(lvjet.Eta()), "SJDeepCSV"+btagOP);
       	}
-	
+
       	_lightSf = readerSJ.eval_auto_bounds("central",BTagEntry::FLAV_UDSG,fabs(lvjet.Eta()),lvjet.Pt());
       	if (shiftflag == 3 || MistagUncertUp ) _lightSf = readerSJ.eval_auto_bounds("up",BTagEntry::FLAV_UDSG,fabs(lvjet.Eta()),lvjet.Pt());
       	else if (shiftflag == 4 ||  MistagUncertDown ) _lightSf = readerSJ.eval_auto_bounds("down",BTagEntry::FLAV_UDSG,fabs(lvjet.Eta()),lvjet.Pt());
@@ -2332,12 +2332,12 @@ bool MultiLepEventSelector::isJetTagged(const pat::Jet & jet, edm::EventBase con
       }
 
       mBtagSfUtil.SetSeed(abs(static_cast<int>(sin(jet.phi())*1e5)));
-      
+
       // sanity check
-      bool _orig_tag = _isTagged;      
-      mBtagSfUtil.modifyBTagsWithSF(_isTagged, _jetFlavor, _heavySf, _heavyEff, _lightSf, _lightEff);     
+      bool _orig_tag = _isTagged;
+      mBtagSfUtil.modifyBTagsWithSF(_isTagged, _jetFlavor, _heavySf, _heavyEff, _lightSf, _lightEff);
       if (_isTagged != _orig_tag) ++mNBtagSfCorrJets;
-      
+
     } // end of btag scale factor corrections
 
     return _isTagged;
