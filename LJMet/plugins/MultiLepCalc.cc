@@ -100,19 +100,24 @@ int MultiLepCalc::BeginJob(edm::ConsumesCollector && iC)
 
 int MultiLepCalc::AnalyzeEvent(edm::Event const & event, BaseEventSelector * selector)
 {
+	
 	//NOTE: THIS IS ALL BECOMING TOO LONG. NEEDS TO BE BROKEN DOWN SOMEHOW. IDEALLY PER OBJECTS. modularize! 
 
 	if(debug)std::cout << "Processing Event in MultiLepCalc::AnalyzeEvent" << std::endl;
 
 	// ----- Get objects from the selector -----
 
-	std::vector<edm::Ptr<reco::Vertex>>         const & vSelPVs       = selector->GetSelPVs();
-
+	std::vector<edm::Ptr<reco::Vertex>>         const & vSelPVs            = selector->GetSelPVs();
 	std::vector<edm::Ptr<pat::Muon> >           const & vSelLooseMuons     = selector->GetSelLooseMuons();
 	std::vector<edm::Ptr<pat::Electron> >       const & vSelLooseElectrons = selector->GetSelLooseElectrons();
 	std::vector<edm::Ptr<pat::Muon> >                   vSelMuons          = selector->GetSelMuons();
 	std::vector<edm::Ptr<pat::Electron> >               vSelElectrons      = selector->GetSelElectrons();
-	
+    std::vector<pat::Jet>                       const & vSelCorrJets       = selector->GetSelCorrJets();
+    std::vector<pat::Jet>                       const & vSelCorrJets_AK8   = selector->GetSelCorrJetsAK8();
+    std::vector<std::pair<TLorentzVector,bool>> const & vCorrBtagJets      = selector->GetSelCorrJetsWithBTags();
+    edm::Ptr<pat::MET>                          const & pMet               = selector->GetMet();	
+
+
 	AnalyzeTriggers(event, selector);
 
 
@@ -747,6 +752,205 @@ int MultiLepCalc::AnalyzeEvent(edm::Event const & event, BaseEventSelector * sel
     SetValue("elMatchedEta", elMatchedEta);
     SetValue("elMatchedPhi", elMatchedPhi);
     SetValue("elMatchedEnergy", elMatchedEnergy);
+
+
+
+
+    //
+    //_____ Jets ______________________________
+    //
+
+    
+    //Get AK4 Jets
+    //Four std::vector
+    std::vector <double> AK4JetPt;
+//     std::vector <double> AK4JetPt_jesup;
+//     std::vector <double> AK4JetPt_jesdn;
+//     std::vector <double> AK4JetPt_jerup;
+//     std::vector <double> AK4JetPt_jerdn;
+    std::vector <double> AK4JetEta;
+    std::vector <double> AK4JetPhi;
+    std::vector <double> AK4JetEnergy;
+//     std::vector <double> AK4JetEnergy_jesup;
+//     std::vector <double> AK4JetEnergy_jesdn;
+//     std::vector <double> AK4JetEnergy_jerup;
+//     std::vector <double> AK4JetEnergy_jerdn;
+
+    std::vector <int>    AK4JetBTag;
+//     std::vector <int>    AK4JetBTag_bSFup;
+//     std::vector <int>    AK4JetBTag_bSFdn;
+//     std::vector <int>    AK4JetBTag_lSFup;
+//     std::vector <int>    AK4JetBTag_lSFdn;
+    std::vector <double> AK4JetBDisc;
+    std::vector <double> AK4JetBDeepCSVb;
+    std::vector <double> AK4JetBDeepCSVbb;
+    std::vector <double> AK4JetBDeepCSVc;
+    std::vector <double> AK4JetBDeepCSVudsg;
+    std::vector <int>    AK4JetFlav;
+
+    //std::vector <double> AK4JetRCN;   
+    double AK4HT =.0;
+    for (std::vector<pat::Jet>::const_iterator ii = vSelCorrJets.begin(); ii != vSelCorrJets.end(); ii++){
+      int index = (int)(ii-vSelCorrJets.begin());
+
+      AK4JetPt     . push_back(ii->pt());
+      AK4JetEta    . push_back(ii->eta());
+      AK4JetPhi    . push_back(ii->phi());
+      AK4JetEnergy . push_back(ii->energy());
+
+      AK4JetBTag   . push_back(vCorrBtagJets[index].second);
+//       AK4JetBTag_bSFup.push_back(selector->isJetTagged(*ii, event, true, 1));
+//       AK4JetBTag_bSFdn.push_back(selector->isJetTagged(*ii, event, true, 2));
+//       AK4JetBTag_lSFup.push_back(selector->isJetTagged(*ii, event, true, 3));
+//       AK4JetBTag_lSFdn.push_back(selector->isJetTagged(*ii, event, true, 4));
+
+      //AK4JetRCN        . push_back(((*ijet)->chargedEmEnergy()+(*ijet)->chargedHadronEnergy()) / ((*ijet)->neutralEmEnergy()+(*ijet)->neutralHadronEnergy()));
+      AK4JetBDisc        . push_back(ii->bDiscriminator( "pfCombinedInclusiveSecondaryVertexV2BJetTags" ));
+      AK4JetBDeepCSVb    . push_back(ii->bDiscriminator( "pfDeepCSVJetTags:probb" ));
+      AK4JetBDeepCSVbb   . push_back(ii->bDiscriminator( "pfDeepCSVJetTags:probbb" ));
+      AK4JetBDeepCSVc    . push_back(ii->bDiscriminator( "pfDeepCSVJetTags:probc" ));
+      AK4JetBDeepCSVudsg . push_back(ii->bDiscriminator( "pfDeepCSVJetTags:probudsg" ));
+      AK4JetFlav         . push_back(abs(ii->hadronFlavour()));
+
+      //HT
+      AK4HT += ii->pt(); 
+    }
+    
+//     double AK4HT_jesup =.0;
+//     double AK4HT_jesdn =.0;
+//     double AK4HT_jerup =.0;
+//     double AK4HT_jerdn =.0;
+//     if (doAllJetSyst) {
+//         for (std::vector<TLorentzVector>::const_iterator ii_jesup = vSelCorrJets_jesup.begin(); ii_jesup != vSelCorrJets_jesup.end(); ii_jesup++){
+//           AK4JetPt_jesup     . push_back(ii_jesup->Pt());
+//           AK4JetEnergy_jesup  . push_back(ii_jesup->Energy());
+//           //HT
+//           AK4HT_jesup += ii_jesup->Pt(); 
+//         }
+//     
+//         for (std::vector<TLorentzVector>::const_iterator ii_jesdn = vSelCorrJets_jesdn.begin(); ii_jesdn != vSelCorrJets_jesdn.end(); ii_jesdn++){
+//           AK4JetPt_jesdn     . push_back(ii_jesdn->Pt());
+//           AK4JetEnergy_jesdn . push_back(ii_jesdn->Energy());
+//           //HT
+//           AK4HT_jesdn += ii_jesdn->Pt(); 
+//         }
+//     
+//         for (std::vector<TLorentzVector>::const_iterator ii_jerup = vSelCorrJets_jerup.begin(); ii_jerup != vSelCorrJets_jerup.end(); ii_jerup++){
+//           AK4JetPt_jerup     . push_back(ii_jerup->Pt());
+//           AK4JetEnergy_jerup . push_back(ii_jerup->Energy());
+//           //HT
+//           AK4HT_jerup += ii_jerup->Pt(); 
+//         }
+//     
+//         for (std::vector<TLorentzVector>::const_iterator ii_jerdn = vSelCorrJets_jerdn.begin(); ii_jerdn != vSelCorrJets_jerdn.end(); ii_jerdn++){
+//           AK4JetPt_jerdn     . push_back(ii_jerdn->Pt());
+//           AK4JetEnergy_jerdn . push_back(ii_jerdn->Energy());
+//           //HT
+//           AK4HT_jerdn += ii_jerdn->Pt(); 
+//         }
+//     }
+
+    //Four std::vector
+    SetValue("AK4JetPt"     , AK4JetPt);
+    SetValue("AK4JetEta"    , AK4JetEta);
+    SetValue("AK4JetPhi"    , AK4JetPhi);
+    SetValue("AK4JetEnergy" , AK4JetEnergy);
+//     if(doAllJetSyst){
+//       SetValue("AK4JetPt_jesup"     , AK4JetPt_jesup);
+//       SetValue("AK4JetPt_jesdn"     , AK4JetPt_jesdn);
+//       SetValue("AK4JetPt_jerup"     , AK4JetPt_jerup);
+//       SetValue("AK4JetPt_jerdn"     , AK4JetPt_jerdn);
+//       SetValue("AK4JetEnergy_jesup"     , AK4JetEnergy_jesup);
+//       SetValue("AK4JetEnergy_jesdn"     , AK4JetEnergy_jesdn);
+//       SetValue("AK4JetEnergy_jerup"     , AK4JetEnergy_jerup);
+//       SetValue("AK4JetEnergy_jerdn"     , AK4JetEnergy_jerdn);
+//       SetValue("AK4HT_jesup"     , AK4HT_jesup);
+//       SetValue("AK4HT_jesdn"     , AK4HT_jesdn);
+//       SetValue("AK4HT_jerup"     , AK4HT_jerup);
+//       SetValue("AK4HT_jerdn"     , AK4HT_jerdn);
+//     }
+    SetValue("AK4HT"        , AK4HT);
+    SetValue("AK4JetBTag"   , AK4JetBTag);
+//     SetValue("AK4JetBTag_bSFup"   , AK4JetBTag_bSFup);
+//     SetValue("AK4JetBTag_bSFdn"   , AK4JetBTag_bSFdn);
+//     SetValue("AK4JetBTag_lSFup"   , AK4JetBTag_lSFup);
+//     SetValue("AK4JetBTag_lSFdn"   , AK4JetBTag_lSFdn);
+    //SetValue("AK4JetRCN"          , AK4JetRCN);
+    SetValue("AK4JetBDisc"          , AK4JetBDisc);
+    SetValue("AK4JetBDeepCSVb"      , AK4JetBDeepCSVb);
+    SetValue("AK4JetBDeepCSVbb"     , AK4JetBDeepCSVbb);
+    SetValue("AK4JetBDeepCSVc"      , AK4JetBDeepCSVc);
+    SetValue("AK4JetBDeepCSVudsg"   , AK4JetBDeepCSVudsg);
+    SetValue("AK4JetFlav"           , AK4JetFlav);
+
+
+
+    //Get all AK8 jets (not just for W and Top) -- now done in selector
+
+    //Four std::vector
+    std::vector <double> AK8JetPt;
+//     std::vector <double> AK8JetPt_jesup;
+//     std::vector <double> AK8JetPt_jesdn;
+//     std::vector <double> AK8JetPt_jerup;
+//     std::vector <double> AK8JetPt_jerdn;
+    std::vector <double> AK8JetEta;
+    std::vector <double> AK8JetPhi;
+    std::vector <double> AK8JetEnergy;
+//     std::vector <double> AK8JetEnergy_jesup;
+//     std::vector <double> AK8JetEnergy_jesdn;
+//     std::vector <double> AK8JetEnergy_jerup;
+//     std::vector <double> AK8JetEnergy_jerdn;
+
+    std::vector <double> AK8JetCSV;
+    std::vector <double> AK8JetDoubleB;       
+    
+    for (std::vector<pat::Jet>::const_iterator ii = vSelCorrJets_AK8.begin(); ii != vSelCorrJets_AK8.end(); ii++){
+      
+      if(ii->pt() < 170) continue; // not all info there for lower pt
+
+//       if (doAllJetSyst) {
+// 	TLorentzVector lvak8_jesup = selector->correctJet(*ii, event,true,false,1);
+// 	TLorentzVector lvak8_jesdn = selector->correctJet(*ii, event,true,false,2);
+// 	TLorentzVector lvak8_jerup = selector->correctJet(*ii, event,true,false,3);
+// 	TLorentzVector lvak8_jerdn = selector->correctJet(*ii, event,true,false,4);
+// 	AK8JetPt_jesup     . push_back(lvak8_jesup.Pt());
+// 	AK8JetPt_jesdn     . push_back(lvak8_jesdn.Pt());
+// 	AK8JetPt_jerup     . push_back(lvak8_jerup.Pt());
+// 	AK8JetPt_jerdn     . push_back(lvak8_jerdn.Pt());
+// 	AK8JetEnergy_jesup     . push_back(lvak8_jesup.Energy());
+// 	AK8JetEnergy_jesdn     . push_back(lvak8_jesdn.Energy());
+// 	AK8JetEnergy_jerup     . push_back(lvak8_jerup.Energy());
+// 	AK8JetEnergy_jerdn     . push_back(lvak8_jerdn.Energy());
+//       }
+      
+      //Four std::vector
+      AK8JetPt     . push_back(ii->pt());
+      AK8JetEta    . push_back(ii->eta());
+      AK8JetPhi    . push_back(ii->phi());
+      AK8JetEnergy . push_back(ii->energy());
+      
+      AK8JetCSV    . push_back(ii->bDiscriminator( "pfCombinedInclusiveSecondaryVertexV2BJetTags" ));
+      AK8JetDoubleB. push_back(ii->bDiscriminator("pfBoostedDoubleSecondaryVertexAK8BJetTags"));
+      //     AK8JetRCN    . push_back((ijet->chargedEmEnergy()+ijet->chargedHadronEnergy()) / (ijet->neutralEmEnergy()+ijet->neutralHadronEnergy()));
+    }
+ 
+    //Four std::vector
+    SetValue("AK8JetPt"     , AK8JetPt);
+    SetValue("AK8JetEta"    , AK8JetEta);
+    SetValue("AK8JetPhi"    , AK8JetPhi);
+    SetValue("AK8JetEnergy" , AK8JetEnergy);
+//     if(doAllJetSyst){
+//       SetValue("AK8JetPt_jesup"     , AK8JetPt_jesup);
+//       SetValue("AK8JetPt_jesdn"     , AK8JetPt_jesdn);
+//       SetValue("AK8JetPt_jerup"     , AK8JetPt_jerup);
+//       SetValue("AK8JetPt_jerdn"     , AK8JetPt_jerdn);
+//       SetValue("AK8JetEnergy_jesup"     , AK8JetEnergy_jesup);
+//       SetValue("AK8JetEnergy_jesdn"     , AK8JetEnergy_jesdn);
+//       SetValue("AK8JetEnergy_jerup"     , AK8JetEnergy_jerup);
+//       SetValue("AK8JetEnergy_jerdn"     , AK8JetEnergy_jerdn);
+//     }
+    SetValue("AK8JetCSV"     , AK8JetCSV);
+    SetValue("AK8JetDoubleB" , AK8JetDoubleB);
 
 
 	return 0;

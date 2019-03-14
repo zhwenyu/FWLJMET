@@ -178,7 +178,7 @@ private:
 
 
 
-    //JET correction helper methods - Ideally THESE NEEDS TO BE ON A SEPARATE DEDICATED JET CORRENTION CLASS, or something like that.
+    //JETMET correction helper methods - Ideally THESE NEEDS TO BE ON A SEPARATE DEDICATED JET CORRENTION CLASS, or something like that.
     //ISSUE: These methods currently needs to be accessed by calculators. So here is not the place to put it. But right now as a first pass they are put here.
     void JECbyIOV(edm::EventBase const & event); // -->> THIS IS A HACK. NEEDS TO BE REWRITTEN AND NOT HAVE THIS HERE.
     TLorentzVector correctJet(const pat::Jet & jet, edm::Event const & event, bool doAK8Corr = false, bool forceCorr = false, unsigned int syst = 0);
