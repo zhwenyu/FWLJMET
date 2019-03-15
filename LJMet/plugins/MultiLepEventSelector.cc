@@ -181,8 +181,20 @@ private:
     //JETMET correction helper methods - Ideally THESE NEEDS TO BE ON A SEPARATE DEDICATED JET CORRENTION CLASS, or something like that.
     //ISSUE: These methods currently needs to be accessed by calculators. So here is not the place to put it. But right now as a first pass they are put here.
     void JECbyIOV(edm::EventBase const & event); // -->> THIS IS A HACK. NEEDS TO BE REWRITTEN AND NOT HAVE THIS HERE.
-    TLorentzVector correctJet(const pat::Jet & jet, edm::Event const & event, bool doAK8Corr = false, bool forceCorr = false, unsigned int syst = 0);
-    pat::Jet correctJetReturnPatJet(const pat::Jet & jet, edm::Event const & event, bool doAK8Corr = false, bool forceCorr = false, unsigned int syst = 0);
+    TLorentzVector correctJet(const pat::Jet & jet, 
+                              edm::Event const & event, 
+                              bool isMc, 
+                              edm::EDGetTokenT<double> rhoJetsToken, 
+                              bool doAK8Corr=false, 
+                              bool reCorrectJet=false, 
+                              unsigned int syst=0);
+    pat::Jet correctJetReturnPatJet(const pat::Jet & jet, 
+                                    edm::Event const & event, 
+                                    bool isMc, 
+                                    edm::EDGetTokenT<double> rhoJetsToken, 
+                                    bool doAK8Corr=false, 
+                                    bool reCorrectJet=false, 
+                                    unsigned int syst=0);
     TLorentzVector correctMet(const pat::MET & met, edm::Event const & event, unsigned int syst = 0, bool useHF = true);
     TLorentzVector correctJetForMet(const pat::Jet & jet, edm::Event const & event, unsigned int syst = 0);
 
@@ -278,7 +290,13 @@ private:
     FactorizedJetCorrector *JetCorrectorAK8_F;
 
     //BTAG helper method
-    bool isJetTagged(const pat::Jet &jet, edm::Event const & event, bool applySF = true, int shiftflag = 0, bool subjetflag = false);
+    bool isJetTagged(const pat::Jet &jet, 
+                     TLorentzVector correctedJet_lv, 
+                     edm::Event const & event, 
+                     bool isMc, 
+                     bool applySF = true, 
+                     int shiftflag = 0, 
+                     bool subjetflag = false);
 
     //BTAG variables/parameters/object type definitions
     bool        btag_cuts;
@@ -1037,9 +1055,9 @@ bool MultiLepEventSelector::TriggerSelection(edm::Event const & event)
 bool MultiLepEventSelector::PVSelection(edm::Event const & event)
 {
 
-	bool pass = false;
+    bool pass = false;
 
-	//
+    //
     //_____ Primary Vertex cuts __________________________________
     //
     vSelPVs.clear();
@@ -1057,13 +1075,13 @@ bool MultiLepEventSelector::PVSelection(edm::Event const & event)
     	}
 
     }
-	else{
+    else{
 
-		if(debug)std::cout << "\t" <<"IGNORING PVSelection"<< std::endl;
+         if(debug)std::cout << "\t" <<"IGNORING PVSelection"<< std::endl;
 
-		pass = true;
+	 pass = true;
 
-	}
+    }
 
     return pass;
 
@@ -1582,6 +1600,16 @@ bool MultiLepEventSelector::JetSelection(edm::Event const & event, pat::strbitse
   std::vector<edm::Ptr<pat::Electron>> cleaningElectrons;
   cleaningElectrons = vSelElectrons;
   if(CleanLooseLeptons) cleaningElectrons = vSelLooseElectrons;
+  
+  //for jet correction
+  bool isAK8 = false;
+  bool reCorrectJet = doNewJEC;
+  unsigned int syst;
+  if (JECup){syst=1;}
+  else if (JECdown){syst=2;}
+  else if (JERup){syst=3;}
+  else if (JERdown){syst=4;}
+  else syst = 0; //nominal
 
   for (std::vector<pat::Jet>::const_iterator _ijet = jetsHandle->begin();_ijet != jetsHandle->end(); ++_ijet){
 
@@ -1598,6 +1626,7 @@ bool MultiLepEventSelector::JetSelection(edm::Event const & event, pat::strbitse
 */
     pat::Jet tmpJet = _ijet->correctedJet(0);
     pat::Jet corrJet = *_ijet;
+
 
     if ( doLepJetCleaning ){
       if (debug) std::cout << "LepJetCleaning: Checking Overlap" << std::endl;
@@ -1621,14 +1650,14 @@ bool MultiLepEventSelector::JetSelection(edm::Event const & event, pat::strbitse
 			  if ( (*_i_const).key() == muDaughters[muI].key() ) {
 				tmpJet.setP4( tmpJet.p4() - muDaughters[muI]->p4() );
 				if (debug) std::cout << "  Cleaned Jet : pT = " << tmpJet.pt() << " eta = " << tmpJet.eta() << " phi = " << tmpJet.phi() << std::endl;
-				jetP4 = correctJet(tmpJet, event, false, true); //THIS SEEMS REDUNDANT WITH correctJetReturnPatJet METHOD, CAN CALCULATE P4 FROM OUTPUT OF correctJetReturnPatJet RATHER THAN DOING EXACTLY EVERYTHING correctJetReturnPatJet IS DOING. FIX!!!! -- MAR 15,2019 
+				jetP4 = correctJet(tmpJet, event, isMc, rhoJetsToken, isAK8, reCorrectJet, syst); //THIS SEEMS REDUNDANT WITH correctJetReturnPatJet METHOD, CAN CALCULATE P4 FROM OUTPUT OF correctJetReturnPatJet RATHER THAN DOING EXACTLY EVERYTHING correctJetReturnPatJet IS DOING. FIX!!!! -- MAR 15,2019
 /*				if (mbPar["doAllJetSyst"]) {
-				  jetP4_jesup = correctJet(tmpJet, event,false,true,1);
-				  jetP4_jesdn = correctJet(tmpJet, event,false,true,2);
-				  jetP4_jerup = correctJet(tmpJet, event,false,true,3);
-				  jetP4_jerdn = correctJet(tmpJet, event,false,true,4);
+				  jetP4_jesup = correctJet(tmpJet, event, isMc, rhoJetsToken, isAK8, reCorrectJet,1);
+				  jetP4_jesdn = correctJet(tmpJet, event, isMc, rhoJetsToken, isAK8, reCorrectJet,2);
+				  jetP4_jerup = correctJet(tmpJet, event, isMc, rhoJetsToken, isAK8, reCorrectJet,3);
+				  jetP4_jerdn = correctJet(tmpJet, event, isMc, rhoJetsToken, isAK8, reCorrectJet,4);
 				}*/
-				corrJet = correctJetReturnPatJet(tmpJet, event, false, true); //THIS SEEMS REDUNDANT WITH correctJet METHOD ! FIX !!!
+				corrJet = correctJetReturnPatJet(tmpJet, event, isMc, rhoJetsToken, isAK8, reCorrectJet, syst); //THIS SEEMS REDUNDANT WITH correctJet METHOD ! FIX !!!
 				if (debug) std::cout << "Corrected Jet : pT = " << jetP4.Pt() << " eta = " << jetP4.Eta() << " phi = " << jetP4.Phi() << std::endl;
 				_cleaned = true;
 				muDaughters.erase( muDaughters.begin()+muI );
@@ -1657,14 +1686,14 @@ bool MultiLepEventSelector::JetSelection(edm::Event const & event, pat::strbitse
 			  if ( (*_i_const).key() == elDaughters[elI].key() ) {
 				tmpJet.setP4( tmpJet.p4() - elDaughters[elI]->p4() );
 				if (debug) std::cout << "  Cleaned Jet : pT = " << tmpJet.pt() << " eta = " << tmpJet.eta() << " phi = " << tmpJet.phi() << std::endl;
-				jetP4 = correctJet(tmpJet, event, false, true); //THIS SEEMS REDUNDANT WITH correctJetReturnPatJet METHOD, CAN CALCULATE P4 FROM OUTPUT OF correctJetReturnPatJet RATHER THAN DOING EXACTLY EVERYTHING correctJetReturnPatJet IS DOING. FIX!!!! -- MAR 15,2019 
+				jetP4 = correctJet(tmpJet, event, isMc, rhoJetsToken, isAK8, reCorrectJet, syst); //THIS SEEMS REDUNDANT WITH correctJetReturnPatJet METHOD, CAN CALCULATE P4 FROM OUTPUT OF correctJetReturnPatJet RATHER THAN DOING EXACTLY EVERYTHING correctJetReturnPatJet IS DOING. FIX!!!! -- MAR 15,2019
 /*				if (mbPar["doAllJetSyst"]) {
-				  jetP4_jesup = correctJet(tmpJet, event,false,true,1);
-				  jetP4_jesdn = correctJet(tmpJet, event,false,true,2);
-				  jetP4_jerup = correctJet(tmpJet, event,false,true,3);
-				  jetP4_jerdn = correctJet(tmpJet, event,false,true,4);
+				  jetP4_jesup = correctJet(tmpJet, event, isMc, rhoJetsToken, isAK8, reCorrectJet,1);
+				  jetP4_jesdn = correctJet(tmpJet, event, isMc, rhoJetsToken, isAK8, reCorrectJet,2);
+				  jetP4_jerup = correctJet(tmpJet, event, isMc, rhoJetsToken, isAK8, reCorrectJet,3);
+				  jetP4_jerdn = correctJet(tmpJet, event, isMc, rhoJetsToken, isAK8, reCorrectJet,4);
 				}*/
-				corrJet = correctJetReturnPatJet(tmpJet, event, false, true); //THIS SEEMS REDUNDANT WITH correctJet METHOD ! FIX!!!! -- MAR 15,2019 
+				corrJet = correctJetReturnPatJet(tmpJet, event, isMc, rhoJetsToken, isAK8, reCorrectJet, syst); //THIS SEEMS REDUNDANT WITH correctJet METHOD ! FIX!!!! -- MAR 15,2019
 				if (debug) std::cout << "Corrected Jet : pT = " << jetP4.Pt() << " eta = " << jetP4.Eta() << " phi = " << jetP4.Phi() << std::endl;
 				_cleaned = true;
 				elDaughters.erase( elDaughters.begin()+elI );
@@ -1677,17 +1706,17 @@ bool MultiLepEventSelector::JetSelection(edm::Event const & event, pat::strbitse
     }
 
     if (!_cleaned) {
-      jetP4 = correctJet(*_ijet, event);
+      jetP4 = correctJet(*_ijet, event, isMc, rhoJetsToken, isAK8, reCorrectJet, syst);
 /*      if (mbPar["doAllJetSyst"]) {
-		jetP4_jesup = correctJet(*_ijet, event,false,true,1);
-		jetP4_jesdn = correctJet(*_ijet, event,false,true,2);
-		jetP4_jerup = correctJet(*_ijet, event,false,true,3);
-		jetP4_jerdn = correctJet(*_ijet, event,false,true,4);
+		jetP4_jesup = correctJet(*_ijet, event, isMc, rhoJetsToken, isAK8, reCorrectJet,1);
+		jetP4_jesdn = correctJet(*_ijet, event, isMc, rhoJetsToken, isAK8, reCorrectJet,2);
+		jetP4_jerup = correctJet(*_ijet, event, isMc, rhoJetsToken, isAK8, reCorrectJet,3);
+		jetP4_jerdn = correctJet(*_ijet, event, isMc, rhoJetsToken, isAK8, reCorrectJet,4);
       }*/
-      corrJet = correctJetReturnPatJet(*_ijet, event);
+      corrJet = correctJetReturnPatJet(*_ijet, event, isMc, rhoJetsToken, isAK8, reCorrectJet, syst);
     }
 
-    _isTagged = isJetTagged(*_ijet, event);
+    _isTagged = isJetTagged(*_ijet, jetP4, event, isMc);
 
     // jet cuts  //NOTE: THIS IDEALLY SHOULDN'T BE HARD CODED -- Mar 13, 2019
     while(1){
@@ -1812,172 +1841,174 @@ void MultiLepEventSelector::AK8JetSelection(edm::Event const & event)
 
   if(debug)std::cout << "\t" <<" AK8 Jet Selection:"<< std::endl;
 
-	////////////////////////////////////////////////////////////////////////////////////////
-	// AK8 jets
-	////////////////////////////////////////////////////////////////////////////////////////
+  ////////////////////////////////////////////////////////////////////////////////////////
+  // AK8 jets
+  ////////////////////////////////////////////////////////////////////////////////////////
 
-		edm::Handle<std::vector<pat::Jet> > AK8jetsHandle;
-        event.getByToken( AK8jetsToken, AK8jetsHandle );
+  edm::Handle<std::vector<pat::Jet> > AK8jetsHandle;
+  event.getByToken( AK8jetsToken, AK8jetsHandle );
 
-        int _n_good_jets_AK8 = 0;
-        int _n_jets_AK8 = 0;
+  int _n_good_jets_AK8 = 0;
+  int _n_jets_AK8 = 0;
 
-        vSelCorrJets_AK8.clear();
+  vSelCorrJets_AK8.clear();
 
-	std::vector<edm::Ptr<pat::Muon>> cleaningMuons;
-	cleaningMuons = vSelMuons;
-	if(CleanLooseLeptons) cleaningMuons = vSelLooseMuons;
+  std::vector<edm::Ptr<pat::Muon>> cleaningMuons;
+  cleaningMuons = vSelMuons;
+  if(CleanLooseLeptons) cleaningMuons = vSelLooseMuons;
 
-	std::vector<edm::Ptr<pat::Electron>> cleaningElectrons;
-	cleaningElectrons = vSelElectrons;
-	if(CleanLooseLeptons) cleaningElectrons = vSelLooseElectrons;
+  std::vector<edm::Ptr<pat::Electron>> cleaningElectrons;
+  cleaningElectrons = vSelElectrons;
+  if(CleanLooseLeptons) cleaningElectrons = vSelLooseElectrons;
 
+  bool isAK8 = true;
+  bool reCorrectJet = doNewJEC;
 
-        for (std::vector<pat::Jet>::const_iterator _ijet = AK8jetsHandle->begin();_ijet != AK8jetsHandle->end(); ++_ijet){
+  for (std::vector<pat::Jet>::const_iterator _ijet = AK8jetsHandle->begin();_ijet != AK8jetsHandle->end(); ++_ijet){
 
-      	    if(_ijet->pt() < 170) continue;
-	    if(_ijet->correctedJet(0).pt() < 170) continue;
+    if(_ijet->pt() < 170) continue;
+    if(_ijet->correctedJet(0).pt() < 170) continue;
 
-            bool _pass = false;
-	    bool _cleaned = false;
+    bool _pass = false;
+    bool _cleaned = false;
 
-	    TLorentzVector jetP4;
+    TLorentzVector jetP4;
 
-	    pat::Jet tmpJet = _ijet->correctedJet(0);
-	    pat::Jet corrJet = *_ijet;
+    pat::Jet tmpJet = _ijet->correctedJet(0);
+    pat::Jet corrJet = *_ijet;
 
-	    if ( doLepJetCleaning){
-	      if (debug) std::cout << " AK8 LepJetCleaning: Checking Overlap" << std::endl;
+    if ( doLepJetCleaning){
+      if (debug) std::cout << " AK8 LepJetCleaning: Checking Overlap" << std::endl;
 
-	      for(unsigned int imu = 0; imu < cleaningMuons.size(); imu++){
+      for(unsigned int imu = 0; imu < cleaningMuons.size(); imu++){
 		if ( deltaR(cleaningMuons[imu]->p4(),_ijet->p4()) < LepJetDRAK8) { //0.8 ){
 		  std::vector<reco::CandidatePtr> muDaughters;
 		  for ( unsigned int isrc = 0; isrc < cleaningMuons[imu]->numberOfSourceCandidatePtrs(); ++isrc ){
-		    if (cleaningMuons[imu]->sourceCandidatePtr(isrc).isAvailable()) {
-		      muDaughters.push_back( cleaningMuons[imu]->sourceCandidatePtr(isrc) );
-		    }
+			if (cleaningMuons[imu]->sourceCandidatePtr(isrc).isAvailable()) {
+			  muDaughters.push_back( cleaningMuons[imu]->sourceCandidatePtr(isrc) );
+			}
 		  }
 		  if (debug) {
-		    std::cout << "         Muon : pT = " << cleaningMuons[imu]->pt() << " eta = " << cleaningMuons[imu]->eta() << " phi = " << cleaningMuons[imu]->phi() << " mass = " << cleaningMuons[imu]->mass() << std::endl;
-		    std::cout << "      Raw Jet : pT = " << _ijet->pt() << " eta = " << _ijet->eta() << " phi = " << _ijet->phi() << " mass = " << _ijet->mass() << std::endl;
+			std::cout << "         Muon : pT = " << cleaningMuons[imu]->pt() << " eta = " << cleaningMuons[imu]->eta() << " phi = " << cleaningMuons[imu]->phi() << " mass = " << cleaningMuons[imu]->mass() << std::endl;
+			std::cout << "      Raw Jet : pT = " << _ijet->pt() << " eta = " << _ijet->eta() << " phi = " << _ijet->phi() << " mass = " << _ijet->mass() << std::endl;
 		  }
 
 		  const std::vector<edm::Ptr<reco::Candidate> > _ijet_consts = _ijet->daughterPtrVector();
 		  for ( std::vector<edm::Ptr<reco::Candidate> >::const_iterator _i_const = _ijet_consts.begin(); _i_const != _ijet_consts.end(); ++_i_const){
-		    for (unsigned int muI = 0; muI < muDaughters.size(); muI++) {
-		      if ( (*_i_const).key() == muDaughters[muI].key() ) {
-			tmpJet.setP4( tmpJet.p4() - muDaughters[muI]->p4() );
-			if (debug) std::cout << "  Cleaned Jet : pT = " << tmpJet.pt() << " eta = " << tmpJet.eta() << " phi = " << tmpJet.phi() << " mass = " << tmpJet.mass() << std::endl;
-			jetP4 = correctJet(tmpJet, event, true, true);
-			corrJet = correctJetReturnPatJet(tmpJet, event, true, true);
-			if (debug) std::cout << "Corrected Jet : pT = " << jetP4.Pt() << " eta = " << jetP4.Eta() << " phi = " << jetP4.Phi() << " mass = " << jetP4.M() << std::endl;
-			_cleaned = true;
-			muDaughters.erase( muDaughters.begin()+muI );
-			break;
-		      }
-		    }
+			for (unsigned int muI = 0; muI < muDaughters.size(); muI++) {
+			  if ( (*_i_const).key() == muDaughters[muI].key() ) {
+				tmpJet.setP4( tmpJet.p4() - muDaughters[muI]->p4() );
+				if (debug) std::cout << "  Cleaned Jet : pT = " << tmpJet.pt() << " eta = " << tmpJet.eta() << " phi = " << tmpJet.phi() << " mass = " << tmpJet.mass() << std::endl;
+				jetP4 = correctJet(tmpJet, event, isMc, rhoJetsToken, isAK8, reCorrectJet);
+				corrJet = correctJetReturnPatJet(tmpJet, event, isMc, rhoJetsToken, isAK8, reCorrectJet);
+				if (debug) std::cout << "Corrected Jet : pT = " << jetP4.Pt() << " eta = " << jetP4.Eta() << " phi = " << jetP4.Phi() << " mass = " << jetP4.M() << std::endl;
+				_cleaned = true;
+				muDaughters.erase( muDaughters.begin()+muI );
+				break;
+			  }
+			}
 		  }
 		}
-	      }
+      }
 
-	      for(unsigned int iel = 0; iel < cleaningElectrons.size(); iel++){
+      for(unsigned int iel = 0; iel < cleaningElectrons.size(); iel++){
 		if ( deltaR(cleaningElectrons[iel]->p4(),_ijet->p4()) < LepJetDRAK8){ //0.6 ){
 		  std::vector<reco::CandidatePtr> elDaughters;
 		  for ( unsigned int isrc = 0; isrc < cleaningElectrons[iel]->numberOfSourceCandidatePtrs(); ++isrc ){
-		    if (cleaningElectrons[iel]->sourceCandidatePtr(isrc).isAvailable()) {
-		      elDaughters.push_back( cleaningElectrons[iel]->sourceCandidatePtr(isrc) );
-		    }
+			if (cleaningElectrons[iel]->sourceCandidatePtr(isrc).isAvailable()) {
+			  elDaughters.push_back( cleaningElectrons[iel]->sourceCandidatePtr(isrc) );
+			}
 		  }
 		  if (debug) {
-		    std::cout << "     Electron : pT = " << cleaningElectrons[iel]->pt() << " eta = " << cleaningElectrons[iel]->eta() << " phi = " << cleaningElectrons[iel]->phi() << " mass = " << cleaningElectrons[iel]->mass() << std::endl;
-		    std::cout << "      Raw Jet : pT = " << _ijet->correctedJet(0).pt() << " eta = " << _ijet->correctedJet(0).eta() << " phi = " << _ijet->correctedJet(0).phi() << " mass = " << _ijet->correctedJet(0).mass() << std::endl;
+			std::cout << "     Electron : pT = " << cleaningElectrons[iel]->pt() << " eta = " << cleaningElectrons[iel]->eta() << " phi = " << cleaningElectrons[iel]->phi() << " mass = " << cleaningElectrons[iel]->mass() << std::endl;
+			std::cout << "      Raw Jet : pT = " << _ijet->correctedJet(0).pt() << " eta = " << _ijet->correctedJet(0).eta() << " phi = " << _ijet->correctedJet(0).phi() << " mass = " << _ijet->correctedJet(0).mass() << std::endl;
 		  }
 		  const std::vector<edm::Ptr<reco::Candidate> > _ijet_consts = _ijet->daughterPtrVector();
 		  for ( std::vector<edm::Ptr<reco::Candidate> >::const_iterator _i_const = _ijet_consts.begin(); _i_const != _ijet_consts.end(); ++_i_const){
-		    for (unsigned int elI = 0; elI < elDaughters.size(); elI++) {
-		      if ( (*_i_const).key() == elDaughters[elI].key() ) {
-			tmpJet.setP4( tmpJet.p4() - elDaughters[elI]->p4() );
-			if (debug) std::cout << "  Cleaned Jet : pT = " << tmpJet.pt() << " eta = " << tmpJet.eta() << " phi = " << tmpJet.phi() << " mass = " << tmpJet.mass() << std::endl;
-			jetP4 = correctJet(tmpJet, event, true, true);
-			corrJet = correctJetReturnPatJet(tmpJet, event, true, true);
-			if (debug) std::cout << "Corrected Jet : pT = " << jetP4.Pt() << " eta = " << jetP4.Eta() << " phi = " << jetP4.Phi() << " mass = " << jetP4.M() << std::endl;
-			_cleaned = true;
-			elDaughters.erase( elDaughters.begin()+elI );
-			break;
-		      }
-		    }
+			for (unsigned int elI = 0; elI < elDaughters.size(); elI++) {
+			  if ( (*_i_const).key() == elDaughters[elI].key() ) {
+				tmpJet.setP4( tmpJet.p4() - elDaughters[elI]->p4() );
+				if (debug) std::cout << "  Cleaned Jet : pT = " << tmpJet.pt() << " eta = " << tmpJet.eta() << " phi = " << tmpJet.phi() << " mass = " << tmpJet.mass() << std::endl;
+				jetP4 = correctJet(tmpJet, event, isMc, rhoJetsToken, isAK8, reCorrectJet);
+				corrJet = correctJetReturnPatJet(tmpJet, event, isMc, rhoJetsToken, isAK8, reCorrectJet);
+				if (debug) std::cout << "Corrected Jet : pT = " << jetP4.Pt() << " eta = " << jetP4.Eta() << " phi = " << jetP4.Phi() << " mass = " << jetP4.M() << std::endl;
+				_cleaned = true;
+				elDaughters.erase( elDaughters.begin()+elI );
+				break;
+			  }
+			}
 		  }
 		}
-	      }
-	    }
+      }
+    }
 
-	    if (!_cleaned) {
-	      jetP4 = correctJet(*_ijet, event);
-	      corrJet = correctJetReturnPatJet(*_ijet, event);
-	    }
+    if (!_cleaned) {
+      jetP4 = correctJet(*_ijet, event, isMc, rhoJetsToken, isAK8, reCorrectJet);
+      corrJet = correctJetReturnPatJet(*_ijet, event, isMc, rhoJetsToken, isAK8, reCorrectJet);
+    }
 
-            // jet cuts //NOTE: THIS IDEALLY SHOULDN'T BE HARD CODED -- Mar 14, 2019
-            while(1){
+    // jet cuts //NOTE: THIS IDEALLY SHOULDN'T BE HARD CODED -- Mar 14, 2019
+    while(1){
 
-	      // PF Jet ID
-	      if (fabs(_ijet->correctedJet(0).eta()) < 2.4 &&
-		  _ijet->correctedJet(0).neutralHadronEnergyFraction() < 0.90 &&
-		  _ijet->correctedJet(0).neutralEmEnergyFraction() < 0.90 &&
-		  //_ijet->userFloat("patPuppiJetSpecificProducer:puppiMultiplicity") > 1 &&
-		  _ijet->correctedJet(0).chargedMultiplicity()+_ijet->correctedJet(0).neutralMultiplicity() > 1 &&
-		  _ijet->correctedJet(0).chargedHadronEnergyFraction() > 0 &&
-		  _ijet->correctedJet(0).chargedMultiplicity() > 0
-		  ){ }
-	      else if (fabs(_ijet->correctedJet(0).eta()) >= 2.4 &&
-		       fabs(_ijet->correctedJet(0).eta()) < 2.7 &&
-		       _ijet->correctedJet(0).neutralHadronEnergyFraction() < 0.90 &&
-		       _ijet->correctedJet(0).neutralEmEnergyFraction() < 0.90 &&
-		       //_ijet->userFloat("patPuppiJetSpecificProducer:puppiMultiplicity") > 1
-		       _ijet->correctedJet(0).chargedMultiplicity()+_ijet->correctedJet(0).neutralMultiplicity() > 1
-		       ){ }
-	      else if (fabs(_ijet->correctedJet(0).eta()) >= 2.7 &&
-		       fabs(_ijet->correctedJet(0).eta()) < 3.0 &&
-		       _ijet->correctedJet(0).neutralHadronEnergyFraction() < 0.99
-		       ){ }
-	      else if (fabs(_ijet->correctedJet(0).eta()) >= 3.0 &&
-		       _ijet->correctedJet(0).neutralEmEnergyFraction() < 0.9 &&
-		       _ijet->correctedJet(0).neutralHadronEnergyFraction() > 0.02 &&
-		       //_ijet->userFloat("patPuppiJetSpecificProducer:neutralPuppiMultiplicity") > 2 &&
-		       //_ijet->userFloat("patPuppiJetSpecificProducer:neutralPuppiMultiplicity") < 15
-		       _ijet->correctedJet(0).neutralMultiplicity() > 2 &&
-		       _ijet->correctedJet(0).neutralMultiplicity() < 15
-		       ){ }
-	      else break; // fail
+      // PF Jet ID
+      if (fabs(_ijet->correctedJet(0).eta()) < 2.4 &&
+	  _ijet->correctedJet(0).neutralHadronEnergyFraction() < 0.90 &&
+	  _ijet->correctedJet(0).neutralEmEnergyFraction() < 0.90 &&
+	  //_ijet->userFloat("patPuppiJetSpecificProducer:puppiMultiplicity") > 1 &&
+	  _ijet->correctedJet(0).chargedMultiplicity()+_ijet->correctedJet(0).neutralMultiplicity() > 1 &&
+	  _ijet->correctedJet(0).chargedHadronEnergyFraction() > 0 &&
+	  _ijet->correctedJet(0).chargedMultiplicity() > 0
+	  ){ }
+      else if (fabs(_ijet->correctedJet(0).eta()) >= 2.4 &&
+	       fabs(_ijet->correctedJet(0).eta()) < 2.7 &&
+	       _ijet->correctedJet(0).neutralHadronEnergyFraction() < 0.90 &&
+	       _ijet->correctedJet(0).neutralEmEnergyFraction() < 0.90 &&
+	       //_ijet->userFloat("patPuppiJetSpecificProducer:puppiMultiplicity") > 1
+	       _ijet->correctedJet(0).chargedMultiplicity()+_ijet->correctedJet(0).neutralMultiplicity() > 1
+	       ){ }
+      else if (fabs(_ijet->correctedJet(0).eta()) >= 2.7 &&
+	       fabs(_ijet->correctedJet(0).eta()) < 3.0 &&
+	       _ijet->correctedJet(0).neutralHadronEnergyFraction() < 0.99
+	       ){ }
+      else if (fabs(_ijet->correctedJet(0).eta()) >= 3.0 &&
+	       _ijet->correctedJet(0).neutralEmEnergyFraction() < 0.9 &&
+	       _ijet->correctedJet(0).neutralHadronEnergyFraction() > 0.02 &&
+	       //_ijet->userFloat("patPuppiJetSpecificProducer:neutralPuppiMultiplicity") > 2 &&
+	       //_ijet->userFloat("patPuppiJetSpecificProducer:neutralPuppiMultiplicity") < 15
+	       _ijet->correctedJet(0).neutralMultiplicity() > 2 &&
+	       _ijet->correctedJet(0).neutralMultiplicity() < 15
+	       ){ }
+      else break; // fail
 
-	      if ( jetP4.Pt() > jet_minpt_AK8 ){ }
-	      else break; // fail
-
-
-	      if ( fabs(jetP4.Eta()) < jet_maxeta_AK8 ){ }
-	      else break; // fail
+      if ( jetP4.Pt() > jet_minpt_AK8 ){ }
+      else break; // fail
 
 
-	      if ( jetP4.M() >= 0 ){ }
-	      else{
+      if ( fabs(jetP4.Eta()) < jet_maxeta_AK8 ){ }
+      else break; // fail
+
+
+      if ( jetP4.M() >= 0 ){ }
+      else{
 		std::cout << mLegend << " Warning : Jet mass < 0! Skipping..." << std::endl;
 		break; // fail
-	      }
+      }
 
-	      _pass = true;
-	      break;
-            }
+      _pass = true;
+      break;
+    }
 
-            if ( _pass ){
+    if ( _pass ){
 
-	      // save all the good jets
-	      ++_n_good_jets_AK8;
-	      vSelCorrJets_AK8.push_back(corrJet);
+      // save all the good jets
+      ++_n_good_jets_AK8;
+      vSelCorrJets_AK8.push_back(corrJet);
 
-	    }
+    }
 
-            ++_n_jets_AK8;
+    ++_n_jets_AK8;
 
-        } // end of loop over AK8 jets
+  } // end of loop over AK8 jets
 
 
 }
@@ -2089,12 +2120,18 @@ void MultiLepEventSelector::JECbyIOV(edm::EventBase const & event)
 
 }
 
-TLorentzVector MultiLepEventSelector::correctJet(const pat::Jet & jet, edm::Event const & event, bool doAK8Corr, bool forceCorr, unsigned int syst)
+TLorentzVector MultiLepEventSelector::correctJet(const pat::Jet & jet, 
+                                                 edm::Event const & event, 
+                                                 bool isMc, 
+                                                 edm::EDGetTokenT<double> rhoJetsToken, 
+                                                 bool doAK8Corr, 
+                                                 bool reCorrectJet, 
+                                                 unsigned int syst)
 {
 
   // JES and JES systematics
   pat::Jet correctedJet;
-  if (doNewJEC || forceCorr)correctedJet = jet.correctedJet(0);                 //copy original jet
+  if (reCorrectJet)correctedJet = jet.correctedJet(0);                 //copy original jet
   else correctedJet = jet;                                 //copy default corrected jet
 
   double ptscale = 1.0;
@@ -2108,7 +2145,7 @@ TLorentzVector MultiLepEventSelector::correctJet(const pat::Jet & jet, edm::Even
 
   if ( isMc ){
 
-    if (doNewJEC || forceCorr) {
+    if (reCorrectJet) {
       // We need to undo the default corrections and then apply the new ones
 
       double pt_raw = jet.correctedJet(0).pt();
@@ -2149,8 +2186,8 @@ TLorentzVector MultiLepEventSelector::correctJet(const pat::Jet & jet, edm::Even
     }
 
     Variation JERsystematic = Variation::NOMINAL;
-    if(JERup || syst==3) JERsystematic = Variation::UP;
-    if(JERdown || syst==4) JERsystematic = Variation::DOWN;
+    if( syst==3) JERsystematic = Variation::UP;
+    if( syst==4) JERsystematic = Variation::DOWN;
 
     JME::JetParameters parameters;
     parameters.setJetPt(pt);
@@ -2167,11 +2204,11 @@ TLorentzVector MultiLepEventSelector::correctJet(const pat::Jet & jet, edm::Even
       double deltaPt = fabs(genJet->pt() - pt);
       double deltaR = reco::deltaR(genJet->p4(),correctedJet.p4());
       if (deltaR < ((doAK8Corr) ? 0.4 : 0.2) && deltaPt <= 3*pt*res){
-	double gen_pt = genJet->pt();
-	double reco_pt = pt;
-	double deltapt = (reco_pt - gen_pt) * factor;
-	ptscale = max(0.0, (reco_pt + deltapt) / reco_pt);
-	smeared = true;
+		double gen_pt = genJet->pt();
+		double reco_pt = pt;
+		double deltapt = (reco_pt - gen_pt) * factor;
+		ptscale = max(0.0, (reco_pt + deltapt) / reco_pt);
+		smeared = true;
       }
     }
     if (!smeared && factor>0) {
@@ -2218,41 +2255,41 @@ TLorentzVector MultiLepEventSelector::correctJet(const pat::Jet & jet, edm::Even
   }
   else if (!isMc) {
 
-    if (doNewJEC || forceCorr) {
+    if (reCorrectJet) {
 
       double pt_raw = jet.correctedJet(0).pt();
       // We need to undo the default corrections and then apply the new ones
 
       if (doAK8Corr){
-	JetCorrectorAK8->setJetEta(jet.eta());
-	JetCorrectorAK8->setJetPt(pt_raw);
-	JetCorrectorAK8->setJetA(jet.jetArea());
-	JetCorrectorAK8->setRho(rho);
+		JetCorrectorAK8->setJetEta(jet.eta());
+		JetCorrectorAK8->setJetPt(pt_raw);
+		JetCorrectorAK8->setJetA(jet.jetArea());
+		JetCorrectorAK8->setRho(rho);
 
-	try{
-	  correction = JetCorrectorAK8->getCorrection();
-	}
-	catch(...){
-	  std::cout << mLegend << "WARNING! Exception thrown by JetCorrectionUncertainty!" << std::endl;
-	  std::cout << mLegend << "WARNING! Possibly, trying to correct a jet/MET outside correction range." << std::endl;
-	  std::cout << mLegend << "WARNING! Jet/MET will remain uncorrected." << std::endl;
-	}
+		try{
+		  correction = JetCorrectorAK8->getCorrection();
+		}
+		catch(...){
+		  std::cout << mLegend << "WARNING! Exception thrown by JetCorrectionUncertainty!" << std::endl;
+		  std::cout << mLegend << "WARNING! Possibly, trying to correct a jet/MET outside correction range." << std::endl;
+		  std::cout << mLegend << "WARNING! Jet/MET will remain uncorrected." << std::endl;
+		}
       }
 
       else{
-	JetCorrector->setJetEta(jet.eta());
-	JetCorrector->setJetPt(pt_raw);
-	JetCorrector->setJetA(jet.jetArea());
-	JetCorrector->setRho(rho);
+		JetCorrector->setJetEta(jet.eta());
+		JetCorrector->setJetPt(pt_raw);
+		JetCorrector->setJetA(jet.jetArea());
+		JetCorrector->setRho(rho);
 
-	try{
-	  correction = JetCorrector->getCorrection();
-	}
-	catch(...){
-	  std::cout << mLegend << "WARNING! Exception thrown by JetCorrectionUncertainty!" << std::endl;
-	  std::cout << mLegend << "WARNING! Possibly, trying to correct a jet/MET outside correction range." << std::endl;
-	  std::cout << mLegend << "WARNING! Jet/MET will remain uncorrected." << std::endl;
-	}
+		try{
+		  correction = JetCorrector->getCorrection();
+		}
+		catch(...){
+		  std::cout << mLegend << "WARNING! Exception thrown by JetCorrectionUncertainty!" << std::endl;
+		  std::cout << mLegend << "WARNING! Possibly, trying to correct a jet/MET outside correction range." << std::endl;
+		  std::cout << mLegend << "WARNING! Jet/MET will remain uncorrected." << std::endl;
+		}
 
       }
       correctedJet.scaleEnergy(correction);
@@ -2281,12 +2318,18 @@ TLorentzVector MultiLepEventSelector::correctJet(const pat::Jet & jet, edm::Even
   return jetP4;
 }
 
-pat::Jet MultiLepEventSelector::correctJetReturnPatJet(const pat::Jet & jet, edm::Event const & event, bool doAK8Corr, bool forceCorr, unsigned int syst)
+pat::Jet MultiLepEventSelector::correctJetReturnPatJet(const pat::Jet & jet, 
+                                                       edm::Event const & event, 
+                                                       bool isMc, 
+                                                       edm::EDGetTokenT<double> rhoJetsToken, 
+                                                       bool doAK8Corr, 
+                                                       bool reCorrectJet, 
+                                                       unsigned int syst)
 {
 
   // JES and JES systematics
   pat::Jet correctedJet;
-  if (doNewJEC || forceCorr)
+  if (reCorrectJet)
     correctedJet = jet.correctedJet(0);                 //copy original jet
   else
     correctedJet = jet;                                 //copy default corrected jet
@@ -2302,51 +2345,51 @@ pat::Jet MultiLepEventSelector::correctJetReturnPatJet(const pat::Jet & jet, edm
 
     if ( isMc ){
 
-      if (doNewJEC || forceCorr) {
-	// We need to undo the default corrections and then apply the new ones
+      if (reCorrectJet) {
+		// We need to undo the default corrections and then apply the new ones
 
-	double pt_raw = jet.correctedJet(0).pt();
+		double pt_raw = jet.correctedJet(0).pt();
 
-	if (doAK8Corr){
-	  JetCorrectorAK8->setJetEta(jet.eta());
-	  JetCorrectorAK8->setJetPt(pt_raw);
-	  JetCorrectorAK8->setJetA(jet.jetArea());
-	  JetCorrectorAK8->setRho(rho);
+		if (doAK8Corr){
+		  JetCorrectorAK8->setJetEta(jet.eta());
+		  JetCorrectorAK8->setJetPt(pt_raw);
+		  JetCorrectorAK8->setJetA(jet.jetArea());
+		  JetCorrectorAK8->setRho(rho);
 
-	  try{
-	    correction = JetCorrectorAK8->getCorrection();
-	  }
-	  catch(...){
-	    std::cout << mLegend << "WARNING! Exception thrown by JetCorrectionUncertainty!" << std::endl;
-	    std::cout << mLegend << "WARNING! Possibly, trying to correct a jet/MET outside correction range." << std::endl;
-	    std::cout << mLegend << "WARNING! Jet/MET will remain uncorrected." << std::endl;
-	  }
-	}
+		  try{
+			correction = JetCorrectorAK8->getCorrection();
+		  }
+		  catch(...){
+			std::cout << mLegend << "WARNING! Exception thrown by JetCorrectionUncertainty!" << std::endl;
+			std::cout << mLegend << "WARNING! Possibly, trying to correct a jet/MET outside correction range." << std::endl;
+			std::cout << mLegend << "WARNING! Jet/MET will remain uncorrected." << std::endl;
+		  }
+		}
 
-	else{
-	  JetCorrector->setJetEta(jet.eta());
-	  JetCorrector->setJetPt(pt_raw);
-	  JetCorrector->setJetA(jet.jetArea());
-	  JetCorrector->setRho(rho);
+		else{
+		  JetCorrector->setJetEta(jet.eta());
+		  JetCorrector->setJetPt(pt_raw);
+		  JetCorrector->setJetA(jet.jetArea());
+		  JetCorrector->setRho(rho);
 
-	  try{
-	    correction = JetCorrector->getCorrection();
-	  }
-	  catch(...){
-	    std::cout << mLegend << "WARNING! Exception thrown by JetCorrectionUncertainty!" << std::endl;
-	    std::cout << mLegend << "WARNING! Possibly, trying to correct a jet/MET outside correction range." << std::endl;
-	    std::cout << mLegend << "WARNING! Jet/MET will remain uncorrected." << std::endl;
-	  }
-	}
+		  try{
+			correction = JetCorrector->getCorrection();
+		  }
+		  catch(...){
+			std::cout << mLegend << "WARNING! Exception thrown by JetCorrectionUncertainty!" << std::endl;
+			std::cout << mLegend << "WARNING! Possibly, trying to correct a jet/MET outside correction range." << std::endl;
+			std::cout << mLegend << "WARNING! Jet/MET will remain uncorrected." << std::endl;
+		  }
+		}
 
-	correctedJet.scaleEnergy(correction);
-	pt = correctedJet.pt();
+		correctedJet.scaleEnergy(correction);
+		pt = correctedJet.pt();
 
       }
 
       Variation JERsystematic = Variation::NOMINAL;
-      if(JERup || syst==3) JERsystematic = Variation::UP;
-      if(JERdown || syst==4) JERsystematic = Variation::DOWN;
+      if( syst==3) JERsystematic = Variation::UP;
+      if( syst==4) JERsystematic = Variation::DOWN;
 
       JME::JetParameters parameters;
       parameters.setJetPt(pt);
@@ -2360,52 +2403,52 @@ pat::Jet MultiLepEventSelector::correctJetReturnPatJet(const pat::Jet & jet, edm
       const reco::GenJet * genJet = jet.genJet();
       bool smeared = false;
       if(genJet){
-	double deltaPt = fabs(genJet->pt() - pt);
-	double deltaR = reco::deltaR(genJet->p4(),correctedJet.p4());
-	if (deltaR < ((doAK8Corr) ? 0.4 : 0.2) && deltaPt <= 3*pt*res){
-	  double gen_pt = genJet->pt();
-	  double reco_pt = pt;
-	  double deltapt = (reco_pt - gen_pt) * factor;
-	  ptscale = max(0.0, (reco_pt + deltapt) / reco_pt);
-	  smeared = true;
-	}
+		double deltaPt = fabs(genJet->pt() - pt);
+		double deltaR = reco::deltaR(genJet->p4(),correctedJet.p4());
+		if (deltaR < ((doAK8Corr) ? 0.4 : 0.2) && deltaPt <= 3*pt*res){
+		  double gen_pt = genJet->pt();
+		  double reco_pt = pt;
+		  double deltapt = (reco_pt - gen_pt) * factor;
+		  ptscale = max(0.0, (reco_pt + deltapt) / reco_pt);
+		  smeared = true;
+		}
       }
       if (!smeared && factor>0) {
-	JERrand.SetSeed(abs(static_cast<int>(jet.phi()*1e4)));
-	ptscale = max(0.0, JERrand.Gaus(pt,sqrt(factor*(factor+2))*res*pt)/pt);
+		JERrand.SetSeed(abs(static_cast<int>(jet.phi()*1e4)));
+		ptscale = max(0.0, JERrand.Gaus(pt,sqrt(factor*(factor+2))*res*pt)/pt);
       }
 
       if ( JECup || JECdown || syst==1 || syst==2) {
-	jecUnc->setJetEta(jet.eta());
-	jecUnc->setJetPt(pt*ptscale);
+		jecUnc->setJetEta(jet.eta());
+		jecUnc->setJetPt(pt*ptscale);
 
-	if (JECup || syst==1) {
-	  try{
-	    unc = jecUnc->getUncertainty(true);
-	  }
-	  catch(...){ // catch all exceptions. Jet Uncertainty tool throws when binning out of range
-	    std::cout << mLegend << "WARNING! Exception thrown by JetCorrectionUncertainty!" << std::endl;
-	    std::cout << mLegend << "WARNING! Possibly, trying to correct a jet/MET outside correction range." << std::endl;
-	    std::cout << mLegend << "WARNING! Jet/MET will remain uncorrected." << std::endl;
-	    unc = 0.0;
-	  }
-	  unc = 1 + unc;
-	}
-	else {
-	  try{
-	    unc = jecUnc->getUncertainty(false);
-	  }
-	  catch(...){
-	    std::cout << mLegend << "WARNING! Exception thrown by JetCorrectionUncertainty!" << std::endl;
-	    std::cout << mLegend << "WARNING! Possibly, trying to correct a jet/MET outside correction range." << std::endl;
-	    std::cout << mLegend << "WARNING! Jet/MET will remain uncorrected." << std::endl;
-	    unc = 0.0;
-	  }
-	  unc = 1 - unc;
-	}
+		if (JECup || syst==1) {
+		  try{
+			unc = jecUnc->getUncertainty(true);
+		  }
+		  catch(...){ // catch all exceptions. Jet Uncertainty tool throws when binning out of range
+			std::cout << mLegend << "WARNING! Exception thrown by JetCorrectionUncertainty!" << std::endl;
+			std::cout << mLegend << "WARNING! Possibly, trying to correct a jet/MET outside correction range." << std::endl;
+			std::cout << mLegend << "WARNING! Jet/MET will remain uncorrected." << std::endl;
+			unc = 0.0;
+		  }
+		  unc = 1 + unc;
+		}
+		else {
+		  try{
+			unc = jecUnc->getUncertainty(false);
+		  }
+		  catch(...){
+			std::cout << mLegend << "WARNING! Exception thrown by JetCorrectionUncertainty!" << std::endl;
+			std::cout << mLegend << "WARNING! Possibly, trying to correct a jet/MET outside correction range." << std::endl;
+			std::cout << mLegend << "WARNING! Jet/MET will remain uncorrected." << std::endl;
+			unc = 0.0;
+		  }
+		  unc = 1 - unc;
+		}
 
-	if (pt*ptscale < 10.0 && (JECup || syst==1)) unc = 2.0;
-	if (pt*ptscale < 10.0 && (JECdown || syst==2)) unc = 0.01;
+		if (pt*ptscale < 10.0 && (JECup || syst==1)) unc = 2.0;
+		if (pt*ptscale < 10.0 && (JECdown || syst==2)) unc = 0.01;
 
       }
 
@@ -2414,44 +2457,44 @@ pat::Jet MultiLepEventSelector::correctJetReturnPatJet(const pat::Jet & jet, edm
     }
     else if (!isMc) {
 
-      if (doNewJEC || forceCorr) {
+      if (reCorrectJet) {
 
-	double pt_raw = jet.correctedJet(0).pt();
-	// We need to undo the default corrections and then apply the new ones
+		double pt_raw = jet.correctedJet(0).pt();
+		// We need to undo the default corrections and then apply the new ones
 
-	if (doAK8Corr){
-	  JetCorrectorAK8->setJetEta(jet.eta());
-	  JetCorrectorAK8->setJetPt(pt_raw);
-	  JetCorrectorAK8->setJetA(jet.jetArea());
-	  JetCorrectorAK8->setRho(rho);
+		if (doAK8Corr){
+		  JetCorrectorAK8->setJetEta(jet.eta());
+		  JetCorrectorAK8->setJetPt(pt_raw);
+		  JetCorrectorAK8->setJetA(jet.jetArea());
+		  JetCorrectorAK8->setRho(rho);
 
-	  try{
-	    correction = JetCorrectorAK8->getCorrection();
-	  }
-	  catch(...){
-	    std::cout << mLegend << "WARNING! Exception thrown by JetCorrectionUncertainty!" << std::endl;
-	    std::cout << mLegend << "WARNING! Possibly, trying to correct a jet/MET outside correction range." << std::endl;
-	    std::cout << mLegend << "WARNING! Jet/MET will remain uncorrected." << std::endl;
-	  }
-	}
+		  try{
+			correction = JetCorrectorAK8->getCorrection();
+		  }
+		  catch(...){
+			std::cout << mLegend << "WARNING! Exception thrown by JetCorrectionUncertainty!" << std::endl;
+			std::cout << mLegend << "WARNING! Possibly, trying to correct a jet/MET outside correction range." << std::endl;
+			std::cout << mLegend << "WARNING! Jet/MET will remain uncorrected." << std::endl;
+		  }
+		}
 
-	else{
-	  JetCorrector->setJetEta(jet.eta());
-	  JetCorrector->setJetPt(pt_raw);
-	  JetCorrector->setJetA(jet.jetArea());
-	  JetCorrector->setRho(rho);
+		else{
+		  JetCorrector->setJetEta(jet.eta());
+		  JetCorrector->setJetPt(pt_raw);
+		  JetCorrector->setJetA(jet.jetArea());
+		  JetCorrector->setRho(rho);
 
-	  try{
-	    correction = JetCorrector->getCorrection();
-	  }
-	  catch(...){
-	    std::cout << mLegend << "WARNING! Exception thrown by JetCorrectionUncertainty!" << std::endl;
-	    std::cout << mLegend << "WARNING! Possibly, trying to correct a jet/MET outside correction range." << std::endl;
-	    std::cout << mLegend << "WARNING! Jet/MET will remain uncorrected." << std::endl;
-	  }
-	}
-	correctedJet.scaleEnergy(correction);
-	pt = correctedJet.pt();
+		  try{
+			correction = JetCorrector->getCorrection();
+		  }
+		  catch(...){
+			std::cout << mLegend << "WARNING! Exception thrown by JetCorrectionUncertainty!" << std::endl;
+			std::cout << mLegend << "WARNING! Possibly, trying to correct a jet/MET outside correction range." << std::endl;
+			std::cout << mLegend << "WARNING! Jet/MET will remain uncorrected." << std::endl;
+		  }
+		}
+		correctedJet.scaleEnergy(correction);
+		pt = correctedJet.pt();
 
       }
     }
@@ -2546,7 +2589,7 @@ TLorentzVector MultiLepEventSelector::correctJetForMet(const pat::Jet & jet, edm
         pt = jetP4.Pt();
 
         Variation JERsystematic = Variation::NOMINAL;
-        if(JERup|| syst==3) JERsystematic = Variation::UP;
+        if(JERup || syst==3) JERsystematic = Variation::UP;
         if(JERdown || syst==4) JERsystematic = Variation::DOWN;
 
 	JME::JetParameters parameters;
@@ -2646,7 +2689,13 @@ TLorentzVector MultiLepEventSelector::correctJetForMet(const pat::Jet & jet, edm
 
 
 //BTAG HELPER METHOD
-bool MultiLepEventSelector::isJetTagged(const pat::Jet & jet, edm::Event const & event, bool applySF, int shiftflag, bool subjetflag)
+bool MultiLepEventSelector::isJetTagged(const pat::Jet & jet, 
+                                        TLorentzVector correctedJet_lv, 
+                                        edm::Event const & event, 
+                                        bool isMc, 
+                                        bool applySF, 
+                                        int shiftflag, 
+                                        bool subjetflag)
 {
     bool _isTagged = false;
 
@@ -2654,7 +2703,8 @@ bool MultiLepEventSelector::isJetTagged(const pat::Jet & jet, edm::Event const &
 
     if (isMc && applySF){
 
-      TLorentzVector lvjet = correctJet(jet, event);
+      //TLorentzVector lvjet = correctJet(jet, event);
+      TLorentzVector lvjet = correctedJet_lv;
 
       int _jetFlavor = abs(jet.hadronFlavour());
       double _heavySf = 1.0;
@@ -2664,22 +2714,22 @@ bool MultiLepEventSelector::isJetTagged(const pat::Jet & jet, edm::Event const &
 
       if(!subjetflag){
 
-	_heavySf = reader.eval_auto_bounds("central",BTagEntry::FLAV_B,fabs(lvjet.Eta()),lvjet.Pt());
-	if (shiftflag == 1 ||  BTagUncertUp ) _heavySf = reader.eval_auto_bounds("up",BTagEntry::FLAV_B,fabs(lvjet.Eta()),lvjet.Pt());
-	else if (shiftflag == 2 ||  BTagUncertDown ) _heavySf = reader.eval_auto_bounds("down",BTagEntry::FLAV_B,fabs(lvjet.Eta()),lvjet.Pt());
-	_heavyEff = mBtagCond.GetBtagEfficiency(lvjet.Et(), fabs(lvjet.Eta()), "DeepCSV"+btagOP);
+		_heavySf = reader.eval_auto_bounds("central",BTagEntry::FLAV_B,fabs(lvjet.Eta()),lvjet.Pt());
+		if (shiftflag == 1 ||  BTagUncertUp ) _heavySf = reader.eval_auto_bounds("up",BTagEntry::FLAV_B,fabs(lvjet.Eta()),lvjet.Pt());
+		else if (shiftflag == 2 ||  BTagUncertDown ) _heavySf = reader.eval_auto_bounds("down",BTagEntry::FLAV_B,fabs(lvjet.Eta()),lvjet.Pt());
+		_heavyEff = mBtagCond.GetBtagEfficiency(lvjet.Et(), fabs(lvjet.Eta()), "DeepCSV"+btagOP);
 
-	if(_jetFlavor == 4){
-	  _heavySf = reader.eval_auto_bounds("central",BTagEntry::FLAV_C,fabs(lvjet.Eta()),lvjet.Pt());
-	  if (shiftflag == 1 ||  BTagUncertUp ) _heavySf = reader.eval_auto_bounds("up",BTagEntry::FLAV_C,fabs(lvjet.Eta()),lvjet.Pt());
-	  else if (shiftflag == 2 ||  BTagUncertDown ) _heavySf = reader.eval_auto_bounds("down",BTagEntry::FLAV_C,fabs(lvjet.Eta()),lvjet.Pt());
-	  _heavyEff = mBtagCond.GetBtagEfficiency(lvjet.Et(), fabs(lvjet.Eta()), "DeepCSV"+btagOP);
-	}
+		if(_jetFlavor == 4){
+		  _heavySf = reader.eval_auto_bounds("central",BTagEntry::FLAV_C,fabs(lvjet.Eta()),lvjet.Pt());
+		  if (shiftflag == 1 ||  BTagUncertUp ) _heavySf = reader.eval_auto_bounds("up",BTagEntry::FLAV_C,fabs(lvjet.Eta()),lvjet.Pt());
+		  else if (shiftflag == 2 ||  BTagUncertDown ) _heavySf = reader.eval_auto_bounds("down",BTagEntry::FLAV_C,fabs(lvjet.Eta()),lvjet.Pt());
+		  _heavyEff = mBtagCond.GetBtagEfficiency(lvjet.Et(), fabs(lvjet.Eta()), "DeepCSV"+btagOP);
+		}
 
-	_lightSf = reader.eval_auto_bounds("central",BTagEntry::FLAV_UDSG,fabs(lvjet.Eta()),lvjet.Pt());
-	if (shiftflag == 3 || MistagUncertUp ) _lightSf = reader.eval_auto_bounds("up",BTagEntry::FLAV_UDSG,fabs(lvjet.Eta()),lvjet.Pt());
-	else if (shiftflag == 4 ||  MistagUncertDown ) _lightSf = reader.eval_auto_bounds("down",BTagEntry::FLAV_UDSG,fabs(lvjet.Eta()),lvjet.Pt());
-	_lightEff = mBtagCond.GetMistagRate(lvjet.Et(), fabs(lvjet.Eta()), "DeepCSV"+btagOP);
+		_lightSf = reader.eval_auto_bounds("central",BTagEntry::FLAV_UDSG,fabs(lvjet.Eta()),lvjet.Pt());
+		if (shiftflag == 3 || MistagUncertUp ) _lightSf = reader.eval_auto_bounds("up",BTagEntry::FLAV_UDSG,fabs(lvjet.Eta()),lvjet.Pt());
+		else if (shiftflag == 4 ||  MistagUncertDown ) _lightSf = reader.eval_auto_bounds("down",BTagEntry::FLAV_UDSG,fabs(lvjet.Eta()),lvjet.Pt());
+		_lightEff = mBtagCond.GetMistagRate(lvjet.Et(), fabs(lvjet.Eta()), "DeepCSV"+btagOP);
 
       }
       else{
