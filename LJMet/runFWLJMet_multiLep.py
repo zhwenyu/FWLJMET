@@ -14,7 +14,7 @@ process.MessageLogger.cerr.FwkReport.reportEvery = 20
 process.options = cms.untracked.PSet( wantSummary = cms.untracked.bool(False) )
 
 ## Maximal Number of Events
-MAXEVENTS = 200
+MAXEVENTS = 100
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(MAXEVENTS) )
 
 ## Source / Input
@@ -59,7 +59,8 @@ setupEgammaPostRecoSeq(process,
 process.ljmet = cms.EDAnalyzer(
 	'LJMet',
 
-	debug         = cms.bool(True),
+	debug         = cms.bool(False),
+	verbosity     = cms.int32(1),
 	selector      = cms.string('MultiLepSelector'),
 	include_calcs = cms.vstring(
 			'MultiLepCalc',
@@ -71,14 +72,14 @@ process.ljmet = cms.EDAnalyzer(
 
 	MultiLepSelector = cms.PSet( # name has to match the name as registered in BeginJob of  EventSelector.cc
 
-            debug  = cms.bool(True),
+            debug  = cms.bool(False),
 
             isMc  = cms.bool(isMC),
 
 			# Trigger cuts
 			trigger_cut  = cms.bool(True),
             HLTcollection= cms.InputTag("TriggerResults","","HLT"),
-			dump_trigger = cms.bool(True),
+			dump_trigger = cms.bool(False),
 			mctrigger_path_el = cms.vstring(
 				'HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_v',  #exists in 2017
 				'HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v', #exists in 2017
@@ -174,11 +175,11 @@ process.ljmet = cms.EDAnalyzer(
             
             #nLeptons
             minLooseLeptons_cut = cms.bool(True), #inclusive Loose.
-            minLooseLeptons     = cms.int32(2),
+            minLooseLeptons     = cms.int32(3),
             maxLooseLeptons_cut = cms.bool(False),
             maxLooseLeptons     = cms.int32(9999),
             minLeptons_cut      = cms.bool(False),
-            minLeptons          = cms.int32(2),
+            minLeptons          = cms.int32(3),
             maxLeptons_cut      = cms.bool(False),
             maxLeptons          = cms.int32(9999),
             
@@ -241,7 +242,7 @@ process.ljmet = cms.EDAnalyzer(
 
 	MultiLepCalc = cms.PSet( # name has to match the calculator name as registered in Calc.cc
 
-            debug                  = cms.bool(True),
+            debug                  = cms.bool(False),
             isMc                   = cms.bool(isMC),
             saveLooseLeps          = cms.bool(True),  
             keepFullMChistory      = cms.bool(isMC),

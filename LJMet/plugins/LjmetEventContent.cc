@@ -10,22 +10,23 @@ mVerbosity(0)
 std::cout<<"INSIDE LjmetEventContent::LjmetEventContent()"<<std::endl; // DELETE THIS LINE WHEN DONE
 }
 
-LjmetEventContent::LjmetEventContent(std::map<std::string, edm::ParameterSet const> mPar):
+LjmetEventContent::LjmetEventContent(edm::ParameterSet const iConfig):
 mName("LjmetEventContent"),
 mLegend("[LjmetEventContent]: "),
 mpTree(0),
 mFirstEntry(true),
 mVerbosity(0)
 {
-    if (mPar.find("ljmet") != mPar.end()) {
-        if (mPar["ljmet"].exists("verbosity")) {
-            mVerbosity = mPar["ljmet"].getParameter<int>("verbosity");
-        }
-    }
+	mVerbosity = iConfig.getParameter<int>("verbosity");
 }
 
 LjmetEventContent::~LjmetEventContent()
 {
+}
+
+void LjmetEventContent::SetVerbosity(int verbosity)
+{
+    mVerbosity = verbosity;
 }
 
 void LjmetEventContent::SetTree(TTree * tree)

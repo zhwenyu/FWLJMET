@@ -50,10 +50,11 @@ public:
     };
     
     LjmetEventContent();
-    LjmetEventContent(std::map<std::string, edm::ParameterSet const> mPar);
+    LjmetEventContent(edm::ParameterSet const iConfig);
     virtual ~LjmetEventContent();
     LjmetEventContent(const LjmetEventContent &); // stop default
     
+    void SetVerbosity(int verbosity);
     void SetTree(TTree * tree);
     
     /// Create histogram entry in event content, so it is created by the LjmetFactory

@@ -85,6 +85,7 @@ class LJMet : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
 
 
       bool debug;
+      int verbosity;
       std::string selection;
       std::vector<std::string> vExcl;
       std::vector<std::string> vIncl;
@@ -107,7 +108,8 @@ LJMet::LJMet(const edm::ParameterSet& iConfig)
 {
    //now do what ever initialization is needed
 
-   debug      = iConfig.getParameter<bool>("debug");
+   debug      = iConfig.getParameter<bool>("debug"); //this is debug feature from new ljmet, only on and off.
+   verbosity  = iConfig.getParameter<int>("verbosity"); // this is debug feature from old ljmet. this has levels, which is better. Need to utilize both old and new ! #TODO.
    selection  = iConfig.getParameter<std::string>("selector");
    vExcl      = iConfig.getParameter<std::vector<std::string>>("exclude_calcs");
    vIncl      = iConfig.getParameter<std::vector<std::string>>("include_calcs");
@@ -123,6 +125,7 @@ LJMet::LJMet(const edm::ParameterSet& iConfig)
    _tree = fs->make<TTree>(_treename.c_str(), _treename.c_str(), 64000000);
 
    // internal LJMet event content
+   ec.SetVerbosity(verbosity);
    ec.SetTree(_tree);
 
    // The factory for event selector and calculator plugins
