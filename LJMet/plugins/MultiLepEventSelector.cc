@@ -2216,7 +2216,7 @@ TLorentzVector MultiLepEventSelector::correctJet(const pat::Jet & jet,
       ptscale = max(0.0, JERrand.Gaus(pt,sqrt(factor*(factor+2))*res*pt)/pt);
     }
 
-    if ( JECup || JECdown || syst==1 || syst==2) {
+    if (  syst==1 || syst==2) {
       jecUnc->setJetEta(jet.eta());
       jecUnc->setJetPt(pt*ptscale);
 
@@ -2418,7 +2418,7 @@ pat::Jet MultiLepEventSelector::correctJetReturnPatJet(const pat::Jet & jet,
 		ptscale = max(0.0, JERrand.Gaus(pt,sqrt(factor*(factor+2))*res*pt)/pt);
       }
 
-      if ( JECup || JECdown || syst==1 || syst==2) {
+      if (  syst==1 || syst==2) {
 		jecUnc->setJetEta(jet.eta());
 		jecUnc->setJetPt(pt*ptscale);
 
