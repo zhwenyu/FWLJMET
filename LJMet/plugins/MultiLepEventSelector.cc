@@ -327,7 +327,9 @@ void MultiLepEventSelector::BeginJob( const edm::ParameterSet& iConfig, edm::Con
     std::cout << mLegend << "initializing MultiLepEventSelector selection" << std::endl;
 
     BaseEventSelector::BeginJob(iConfig,(edm::ConsumesCollector &&)iC);
-    const edm::ParameterSet& selectorConfig = iConfig.getParameterSet("MultiLepSelector") ;
+
+    std::string thisSelectorName = GetName();
+    const edm::ParameterSet& selectorConfig = iConfig.getParameterSet( thisSelectorName ) ;
 
     debug               = selectorConfig.getParameter<bool>("debug");
     isMc                = selectorConfig.getParameter<bool>("isMc");
@@ -1619,14 +1621,14 @@ bool MultiLepEventSelector::JetSelection(edm::Event const & event, pat::strbitse
 			  if ( (*_i_const).key() == muDaughters[muI].key() ) {
 				tmpJet.setP4( tmpJet.p4() - muDaughters[muI]->p4() );
 				if (debug) std::cout << "  Cleaned Jet : pT = " << tmpJet.pt() << " eta = " << tmpJet.eta() << " phi = " << tmpJet.phi() << std::endl;
-				jetP4 = correctJet(tmpJet, event, false, true);
+				jetP4 = correctJet(tmpJet, event, false, true); //THIS SEEMS REDUNDANT WITH correctJetReturnPatJet METHOD, CAN CALCULATE P4 FROM OUTPUT OF correctJetReturnPatJet RATHER THAN DOING EXACTLY EVERYTHING correctJetReturnPatJet IS DOING. FIX!!!! -- MAR 15,2019 
 /*				if (mbPar["doAllJetSyst"]) {
 				  jetP4_jesup = correctJet(tmpJet, event,false,true,1);
 				  jetP4_jesdn = correctJet(tmpJet, event,false,true,2);
 				  jetP4_jerup = correctJet(tmpJet, event,false,true,3);
 				  jetP4_jerdn = correctJet(tmpJet, event,false,true,4);
 				}*/
-				corrJet = correctJetReturnPatJet(tmpJet, event, false, true);
+				corrJet = correctJetReturnPatJet(tmpJet, event, false, true); //THIS SEEMS REDUNDANT WITH correctJet METHOD ! FIX !!!
 				if (debug) std::cout << "Corrected Jet : pT = " << jetP4.Pt() << " eta = " << jetP4.Eta() << " phi = " << jetP4.Phi() << std::endl;
 				_cleaned = true;
 				muDaughters.erase( muDaughters.begin()+muI );
@@ -1655,14 +1657,14 @@ bool MultiLepEventSelector::JetSelection(edm::Event const & event, pat::strbitse
 			  if ( (*_i_const).key() == elDaughters[elI].key() ) {
 				tmpJet.setP4( tmpJet.p4() - elDaughters[elI]->p4() );
 				if (debug) std::cout << "  Cleaned Jet : pT = " << tmpJet.pt() << " eta = " << tmpJet.eta() << " phi = " << tmpJet.phi() << std::endl;
-				jetP4 = correctJet(tmpJet, event, false, true);
+				jetP4 = correctJet(tmpJet, event, false, true); //THIS SEEMS REDUNDANT WITH correctJetReturnPatJet METHOD, CAN CALCULATE P4 FROM OUTPUT OF correctJetReturnPatJet RATHER THAN DOING EXACTLY EVERYTHING correctJetReturnPatJet IS DOING. FIX!!!! -- MAR 15,2019 
 /*				if (mbPar["doAllJetSyst"]) {
 				  jetP4_jesup = correctJet(tmpJet, event,false,true,1);
 				  jetP4_jesdn = correctJet(tmpJet, event,false,true,2);
 				  jetP4_jerup = correctJet(tmpJet, event,false,true,3);
 				  jetP4_jerdn = correctJet(tmpJet, event,false,true,4);
 				}*/
-				corrJet = correctJetReturnPatJet(tmpJet, event, false, true);
+				corrJet = correctJetReturnPatJet(tmpJet, event, false, true); //THIS SEEMS REDUNDANT WITH correctJet METHOD ! FIX!!!! -- MAR 15,2019 
 				if (debug) std::cout << "Corrected Jet : pT = " << jetP4.Pt() << " eta = " << jetP4.Eta() << " phi = " << jetP4.Phi() << std::endl;
 				_cleaned = true;
 				elDaughters.erase( elDaughters.begin()+elI );
@@ -1773,7 +1775,7 @@ bool MultiLepEventSelector::JetSelection(edm::Event const & event, pat::strbitse
   } // end of loop over jets
 
 
-  // SELECT EVENTS BASES ON JETS
+  // SELECT EVENTS BASED ON JETS
 
   bool pass_jet = false;
 
