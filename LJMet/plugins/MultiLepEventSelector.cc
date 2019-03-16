@@ -2220,7 +2220,7 @@ TLorentzVector MultiLepEventSelector::correctJet(const pat::Jet & jet,
       jecUnc->setJetEta(jet.eta());
       jecUnc->setJetPt(pt*ptscale);
 
-      if (JECup || syst==1) {
+      if ( syst==1) {
 	try{
 	  unc = jecUnc->getUncertainty(true);
 	}
@@ -2245,8 +2245,8 @@ TLorentzVector MultiLepEventSelector::correctJet(const pat::Jet & jet,
 	unc = 1 - unc;
       }
 
-      if (pt*ptscale < 10.0 && (JECup || syst==1)) unc = 2.0;
-      if (pt*ptscale < 10.0 && (JECdown || syst==2)) unc = 0.01;
+      if (pt*ptscale < 10.0 && ( syst==1)) unc = 2.0;
+      if (pt*ptscale < 10.0 && ( syst==2)) unc = 0.01;
 
     }
 
@@ -2422,7 +2422,7 @@ pat::Jet MultiLepEventSelector::correctJetReturnPatJet(const pat::Jet & jet,
 		jecUnc->setJetEta(jet.eta());
 		jecUnc->setJetPt(pt*ptscale);
 
-		if (JECup || syst==1) {
+		if ( syst==1) {
 		  try{
 			unc = jecUnc->getUncertainty(true);
 		  }
@@ -2447,8 +2447,8 @@ pat::Jet MultiLepEventSelector::correctJetReturnPatJet(const pat::Jet & jet,
 		  unc = 1 - unc;
 		}
 
-		if (pt*ptscale < 10.0 && (JECup || syst==1)) unc = 2.0;
-		if (pt*ptscale < 10.0 && (JECdown || syst==2)) unc = 0.01;
+		if (pt*ptscale < 10.0 && ( syst==1)) unc = 2.0;
+		if (pt*ptscale < 10.0 && ( syst==2)) unc = 0.01;
 
       }
 
