@@ -23,6 +23,7 @@
 #include "JetMETCorrections/Modules/interface/JetResolution.h"
 #include <TRandom3.h>
 #include <boost/algorithm/string.hpp>
+#include <regex>
 
 #include "FWLJMET/LJMet/interface/BTagSFUtil.h"
 #include "FWLJMET/LJMet/interface/BtagHardcodedConditions.h"
@@ -182,10 +183,9 @@ private:
     // ---------------------------------------------------------------
 
 
-
     //JETMET correction helper methods - Ideally THESE NEEDS TO BE ON A SEPARATE DEDICATED JET CORRENTION CLASS, or something like that.
     //ISSUE: These methods currently needs to be accessed by calculators. So here is not the place to put it. But right now as a first pass they are put here.
-    void JECbyIOV(edm::EventBase const & event); // -->> THIS IS A HACK. NEEDS TO BE REWRITTEN AND NOT HAVE THIS HERE.
+    void SetFacJetCorr(edm::EventBase const & event); // -->> THIS IS A HACK. NEEDS TO BE REWRITTEN AND NOT HAVE THIS HERE.
     TLorentzVector correctJet(const pat::Jet & jet,
                               edm::Event const & event,
                               bool isMc,
@@ -207,90 +207,29 @@ private:
 
     TRandom3 JERrand;
 
-    std::string MCL1JetPar;
-    std::string MCL2JetPar;
-    std::string MCL3JetPar;
-    std::string MCL1JetParAK8;
-    std::string MCL2JetParAK8;
-    std::string MCL3JetParAK8;
-    std::string DataL1JetPar;
-    std::string DataL2JetPar;
-    std::string DataL3JetPar;
-    std::string DataResJetPar;
-    std::string DataL1JetParAK8;
-    std::string DataL2JetParAK8;
-    std::string DataL3JetParAK8;
-    std::string DataResJetParAK8;
-    std::string DataL1JetParByIOV;
-    std::string DataL2JetParByIOV;
-    std::string DataL3JetParByIOV;
-    std::string DataResJetParByIOV;
-    std::string DataL1JetParByIOVAK8;
-    std::string DataL2JetParByIOVAK8;
-    std::string DataL3JetParByIOVAK8;
-    std::string DataResJetParByIOVAK8;
+    JetCorrectionUncertainty *jecUnc;
 
     JME::JetResolution resolution;
     JME::JetResolution resolutionAK8;
     JME::JetResolutionScaleFactor resolution_SF;
 
-    JetCorrectionUncertainty *jecUnc;
-
-    JetCorrectorParameters *L3JetPar;
-    JetCorrectorParameters *L2JetPar;
-    JetCorrectorParameters *L1JetPar;
-    JetCorrectorParameters *L3JetParAK8;
-    JetCorrectorParameters *L2JetParAK8;
-    JetCorrectorParameters *L1JetParAK8;
-    JetCorrectorParameters *L3JetPar_B;
-    JetCorrectorParameters *L2JetPar_B;
-    JetCorrectorParameters *L1JetPar_B;
-    JetCorrectorParameters *L3JetParAK8_B;
-    JetCorrectorParameters *L2JetParAK8_B;
-    JetCorrectorParameters *L1JetParAK8_B;
-    JetCorrectorParameters *L3JetPar_C;
-    JetCorrectorParameters *L2JetPar_C;
-    JetCorrectorParameters *L1JetPar_C;
-    JetCorrectorParameters *L3JetParAK8_C;
-    JetCorrectorParameters *L2JetParAK8_C;
-    JetCorrectorParameters *L1JetParAK8_C;
-    JetCorrectorParameters *L3JetPar_DE;
-    JetCorrectorParameters *L2JetPar_DE;
-    JetCorrectorParameters *L1JetPar_DE;
-    JetCorrectorParameters *L3JetParAK8_DE;
-    JetCorrectorParameters *L2JetParAK8_DE;
-    JetCorrectorParameters *L1JetParAK8_DE;
-    JetCorrectorParameters *L3JetPar_F;
-    JetCorrectorParameters *L2JetPar_F;
-    JetCorrectorParameters *L1JetPar_F;
-    JetCorrectorParameters *L3JetParAK8_F;
-    JetCorrectorParameters *L2JetParAK8_F;
-    JetCorrectorParameters *L1JetParAK8_F;
-    JetCorrectorParameters *ResJetPar;
-    JetCorrectorParameters *ResJetParAK8;
-
+    std::vector<JetCorrectorParameters> vPar;
+    std::vector<JetCorrectorParameters> vParAK8;
     FactorizedJetCorrector *JetCorrector;
     FactorizedJetCorrector *JetCorrectorAK8;
 
-    JetCorrectorParameters *ResJetPar_B;
-    JetCorrectorParameters *ResJetParAK8_B;
-    FactorizedJetCorrector *JetCorrector_B;
-    FactorizedJetCorrector *JetCorrectorAK8_B;
+    std::map<std::string,std::string> mJetParStr;
+    
+    std::map<std::string, std::vector<JetCorrectorParameters> > mEraVPar;
+    std::map<std::string, std::vector<JetCorrectorParameters> > mEraVParAK8;    
+    std::map<std::string, JetCorrectorParameters*> mStrJetCorPar; 
 
-    JetCorrectorParameters *ResJetPar_C;
-    JetCorrectorParameters *ResJetParAK8_C;
-    FactorizedJetCorrector *JetCorrector_C;
-    FactorizedJetCorrector *JetCorrectorAK8_C;
-
-    JetCorrectorParameters *ResJetPar_DE;
-    JetCorrectorParameters *ResJetParAK8_DE;
-    FactorizedJetCorrector *JetCorrector_DE;
-    FactorizedJetCorrector *JetCorrectorAK8_DE;
-
-    JetCorrectorParameters *ResJetPar_F;
-    JetCorrectorParameters *ResJetParAK8_F;
-    FactorizedJetCorrector *JetCorrector_F;
-    FactorizedJetCorrector *JetCorrectorAK8_F;
+    std::map<std::string, std::map<std::string, JetCorrectorParameters*> > mEra_mStrJetCorPar; 
+    std::map<std::string, std::map<std::string, std::string>>              mEraJetParStr;
+    std::map<std::string, std::string> mEraReplaceStr;
+    
+    std::map<std::string, FactorizedJetCorrector*> mEraFacJetCorr;
+    std::map<std::string, FactorizedJetCorrector*> mEraFacJetCorrAK8;
 
     //BTAG helper method
     bool isJetTagged(const pat::Jet &jet,
@@ -363,8 +302,8 @@ void MultiLepEventSelector::BeginJob( const edm::ParameterSet& iConfig, edm::Con
     dump_trigger        = selectorConfig.getParameter<bool>("dump_trigger");
     mctrigger_path_el   = selectorConfig.getParameter<std::vector<std::string>>("mctrigger_path_el");
     mctrigger_path_mu   = selectorConfig.getParameter<std::vector<std::string>>("mctrigger_path_mu");
-    trigger_path_el     = selectorConfig.getParameter<std::vector<std::string>>("trigger_path_el");
-    trigger_path_mu     = selectorConfig.getParameter<std::vector<std::string>>("trigger_path_mu");
+    trigger_path_el     = mctrigger_path_el;
+    trigger_path_mu     = mctrigger_path_el;
 
     //PV
     const edm::ParameterSet& PVconfig = selectorConfig.getParameterSet("pvSelector") ;
@@ -464,28 +403,20 @@ void MultiLepEventSelector::BeginJob( const edm::ParameterSet& iConfig, edm::Con
 
     //JET CORRECTION  initialization
 
-    MCL1JetPar               = selectorConfig.getParameter<std::string>("MCL1JetPar"),
-    MCL2JetPar               = selectorConfig.getParameter<std::string>("MCL2JetPar"),
-    MCL3JetPar               = selectorConfig.getParameter<std::string>("MCL3JetPar"),
-    MCL1JetParAK8            = selectorConfig.getParameter<std::string>("MCL1JetParAK8"),
-    MCL2JetParAK8            = selectorConfig.getParameter<std::string>("MCL2JetParAK8"),
-    MCL3JetParAK8            = selectorConfig.getParameter<std::string>("MCL3JetParAK8"),
-    DataL1JetPar             = selectorConfig.getParameter<std::string>("DataL1JetPar"),
-    DataL2JetPar             = selectorConfig.getParameter<std::string>("DataL2JetPar"),
-    DataL3JetPar             = selectorConfig.getParameter<std::string>("DataL3JetPar"),
-    DataResJetPar            = selectorConfig.getParameter<std::string>("DataResJetPar"),
-    DataL1JetParAK8          = selectorConfig.getParameter<std::string>("DataL1JetParAK8"),
-    DataL2JetParAK8          = selectorConfig.getParameter<std::string>("DataL2JetParAK8"),
-    DataL3JetParAK8          = selectorConfig.getParameter<std::string>("DataL3JetParAK8"),
-    DataResJetParAK8         = selectorConfig.getParameter<std::string>("DataResJetParAK8"),
-    DataL1JetParByIOV        = DataL1JetPar;
-    DataL2JetParByIOV        = DataL2JetPar;
-    DataL3JetParByIOV        = DataL3JetPar;
-    DataResJetParByIOV       = DataResJetPar;
-    DataL1JetParByIOVAK8     = DataL1JetParAK8;
-    DataL2JetParByIOVAK8     = DataL2JetParAK8;
-    DataL3JetParByIOVAK8     = DataL3JetParAK8;
-    DataResJetParByIOVAK8    = DataResJetParAK8;
+    mJetParStr["MCL1JetPar"] = selectorConfig.getParameter<std::string>("MCL1JetPar");
+    mJetParStr["MCL2JetPar"] = selectorConfig.getParameter<std::string>("MCL2JetPar");
+    mJetParStr["MCL3JetPar"] = selectorConfig.getParameter<std::string>("MCL3JetPar");
+    mJetParStr["MCL1JetParAK8"] = selectorConfig.getParameter<std::string>("MCL1JetParAK8");
+    mJetParStr["MCL2JetParAK8"] = selectorConfig.getParameter<std::string>("MCL2JetParAK8");
+    mJetParStr["MCL3JetParAK8"] = selectorConfig.getParameter<std::string>("MCL3JetParAK8");
+    mJetParStr["DataL1JetPar"] = selectorConfig.getParameter<std::string>("DataL1JetPar");
+    mJetParStr["DataL2JetPar"] = selectorConfig.getParameter<std::string>("DataL2JetPar");
+    mJetParStr["DataL3JetPar"] = selectorConfig.getParameter<std::string>("DataL3JetPar");
+    mJetParStr["DataResJetPar"] = selectorConfig.getParameter<std::string>("DataResJetPar");
+    mJetParStr["DataL1JetParAK8"] = selectorConfig.getParameter<std::string>("DataL1JetParAK8");
+    mJetParStr["DataL2JetParAK8"] = selectorConfig.getParameter<std::string>("DataL2JetParAK8");
+    mJetParStr["DataL3JetParAK8"] = selectorConfig.getParameter<std::string>("DataL3JetParAK8");
+    mJetParStr["DataResJetParAK8"] = selectorConfig.getParameter<std::string>("DataResJetParAK8");
 
     if ( isMc ) jecUnc = new JetCorrectionUncertainty(JEC_txtfile);
 
@@ -493,221 +424,97 @@ void MultiLepEventSelector::BeginJob( const edm::ParameterSet& iConfig, edm::Con
     resolutionAK8 = JME::JetResolution(JERAK8_txtfile);
     resolution_SF = JME::JetResolutionScaleFactor(JERSF_txtfile);
 
-    std::vector<JetCorrectorParameters> vPar;
-    std::vector<JetCorrectorParameters> vParAK8;
-    std::vector<JetCorrectorParameters> vPar_B;
-    std::vector<JetCorrectorParameters> vParAK8_B;
-    std::vector<JetCorrectorParameters> vPar_C;
-    std::vector<JetCorrectorParameters> vParAK8_C;
-    std::vector<JetCorrectorParameters> vPar_DE;
-    std::vector<JetCorrectorParameters> vParAK8_DE;
-    std::vector<JetCorrectorParameters> vPar_F;
-    std::vector<JetCorrectorParameters> vParAK8_F;
-
     if ( isMc ) {
+    
+
       // Create the JetCorrectorParameter objects, the order does not matter.
+      // NOTE: Need to be careful about these as they are pointers. where to delete? how to use smart pointers?
+      mStrJetCorPar["L3JetPar"]  = new JetCorrectorParameters(mJetParStr["MCL3JetPar"]);
+      mStrJetCorPar["L2JetPar"]  = new JetCorrectorParameters(mJetParStr["MCL2JetPar"]);
+      mStrJetCorPar["L1JetPar"]  = new JetCorrectorParameters(mJetParStr["MCL1JetPar"]);
+      mStrJetCorPar["L3JetParAK8"]  = new JetCorrectorParameters(mJetParStr["MCL3JetParAK8"]);
+      mStrJetCorPar["L2JetParAK8"]  = new JetCorrectorParameters(mJetParStr["MCL2JetParAK8"]);
+      mStrJetCorPar["L1JetParAK8"]  = new JetCorrectorParameters(mJetParStr["MCL1JetParAK8"]);
 
-      L3JetPar  = new JetCorrectorParameters(MCL3JetPar);
-      L2JetPar  = new JetCorrectorParameters(MCL2JetPar);
-      L1JetPar  = new JetCorrectorParameters(MCL1JetPar);
-
-      L3JetParAK8  = new JetCorrectorParameters(MCL3JetParAK8);
-      L2JetParAK8  = new JetCorrectorParameters(MCL2JetParAK8);
-      L1JetParAK8  = new JetCorrectorParameters(MCL1JetParAK8);
       // Load the JetCorrectorParameter objects into a std::vector,
       // IMPORTANT: THE ORDER MATTERS HERE !!!!
-      vPar.push_back(*L1JetPar);
-      vPar.push_back(*L2JetPar);
-      vPar.push_back(*L3JetPar);
+      vPar.push_back(*mStrJetCorPar["L1JetPar"]);
+      vPar.push_back(*mStrJetCorPar["L2JetPar"]);
+      vPar.push_back(*mStrJetCorPar["L3JetPar"]);
 
-      vParAK8.push_back(*L1JetParAK8);
-      vParAK8.push_back(*L2JetParAK8);
-      vParAK8.push_back(*L3JetParAK8);
+      vParAK8.push_back(*mStrJetCorPar["L1JetParAK8"]);
+      vParAK8.push_back(*mStrJetCorPar["L2JetParAK8"]);
+      vParAK8.push_back(*mStrJetCorPar["L3JetParAK8"]);
 
       if (doNewJEC) std::cout << mLegend << "Applying new jet energy corrections" << std::endl;
       else std::cout << mLegend << "NOT applying new jet energy corrections - ARE YOU SURE?" << std::endl;
 
-      //NOTE: these statement are there originaly from oldLJMet, but its causing segfault !!!
-//       delete JetCorrector;
-//       delete JetCorrectorAK8;
-
+      // NOTE: Need to be careful about these as they are pointers. where to delete? how to use smart pointers?
       JetCorrector = new FactorizedJetCorrector(vPar);
       JetCorrectorAK8 = new FactorizedJetCorrector(vParAK8);
 
     }
     else if ( !isMc ) {
       // Create the JetCorrectorParameter objects, the order does not matter.
+      
+      mEraReplaceStr["B"] = "B_V";
+      mEraReplaceStr["C"] = "C_V";
+      mEraReplaceStr["DE"] = "DE_V";
+      mEraReplaceStr["F"] = "F_V";
+      
+      for (std::map<std::string,std::string>::iterator it=mEraReplaceStr.begin();it!=mEraReplaceStr.end();it++){
+          
+          std::string era = it->first;
+          std::string replaceStr = it->second;
+                    
+          mEraJetParStr[era]["DataL1JetParByIOV"]  = std::regex_replace(mJetParStr["DataL1JetPar"],std::regex("B_V"), replaceStr);
+          mEraJetParStr[era]["DataL2JetParByIOV"]  = std::regex_replace(mJetParStr["DataL2JetPar"],std::regex("B_V"), replaceStr);
+          mEraJetParStr[era]["DataL3JetParByIOV"]  = std::regex_replace(mJetParStr["DataL3JetPar"],std::regex("B_V"), replaceStr);
+          mEraJetParStr[era]["DataResJetParByIOV"]  = std::regex_replace(mJetParStr["DataResJetPar"],std::regex("B_V"), replaceStr);
 
-      std::string strB;
-      std::string strC;
-      std::string strDE;
-      std::string strF;
+          mEraJetParStr[era]["DataL1JetParAK8ByIOV"]  = std::regex_replace(mJetParStr["DataL1JetParAK8"],std::regex("B_V"), replaceStr);
+          mEraJetParStr[era]["DataL2JetParAK8ByIOV"]  = std::regex_replace(mJetParStr["DataL2JetParAK8"],std::regex("B_V"), replaceStr);
+          mEraJetParStr[era]["DataL3JetParAK8ByIOV"]  = std::regex_replace(mJetParStr["DataL3JetParAK8"],std::regex("B_V"), replaceStr);
+          mEraJetParStr[era]["DataResJetParAK8ByIOV"]  = std::regex_replace(mJetParStr["DataResJetParAK8"],std::regex("B_V"), replaceStr);
 
-      strB  = DataL1JetPar;
-      strC  = strB; boost::replace_first(strC,"B_V","C_V");
-      strDE = strB; boost::replace_first(strDE,"B_V","DE_V");
-      strF  = strB; boost::replace_first(strF,"B_V","F_V");
-      std::string DataL1JetParByIOV_B = strB;
-      std::string DataL1JetParByIOV_C = strC;
-      std::string DataL1JetParByIOV_DE = strDE;
-      std::string DataL1JetParByIOV_F = strF;
+          if(debug) std::cout << mLegend << "Using JEC files DataL1JetParByIOV : era "+era+": " <<  mEraJetParStr[era]["DataL1JetParByIOV"] << std::endl;
+          if(debug) std::cout << mLegend << "Using JEC files DataL2JetParByIOV : era "+era+": " <<  mEraJetParStr[era]["DataL2JetParByIOV"] << std::endl;
+          if(debug) std::cout << mLegend << "Using JEC files DataL3JetParByIOV : era "+era+": " <<  mEraJetParStr[era]["DataL3JetParByIOV"] << std::endl;
+          if(debug) std::cout << mLegend << "Using JEC files DataResJetParByIOV : era "+era+": " <<  mEraJetParStr[era]["DataResJetParByIOV"] << std::endl;
 
-      strB = DataL2JetPar;
-      strC = strB; boost::replace_first(strC,"B_V","C_V");
-      strDE = strB; boost::replace_first(strDE,"B_V","DE_V");
-      strF = strB; boost::replace_first(strF,"B_V","F_V");
-      std::string DataL2JetParByIOV_B = strB;
-      std::string DataL2JetParByIOV_C = strC;
-      std::string DataL2JetParByIOV_DE = strDE;
-      std::string DataL2JetParByIOV_F = strF;
+          if(debug) std::cout << mLegend << "Using JEC files DataL1JetParAK8ByIOV : era "+era+": " <<  mEraJetParStr[era]["DataL1JetParAK8ByIOV"] << std::endl;
+          if(debug) std::cout << mLegend << "Using JEC files DataL2JetParAK8ByIOV : era "+era+": " <<  mEraJetParStr[era]["DataL2JetParAK8ByIOV"] << std::endl;
+          if(debug) std::cout << mLegend << "Using JEC files DataL3JetParAK8ByIOV : era "+era+": " <<  mEraJetParStr[era]["DataL3JetParAK8ByIOV"] << std::endl;
+          if(debug) std::cout << mLegend << "Using JEC files DataResJetParAK8ByIOV : era "+era+": " <<  mEraJetParStr[era]["DataResJetParAK8ByIOV"] << std::endl;
+          
+          
+          // NOTE: Need to be careful about these as they are pointers. where to delete? how to use smart pointers?
+          mEra_mStrJetCorPar[era]["ResJetPar"] = new JetCorrectorParameters(mEraJetParStr[era]["DataResJetParByIOV"]);
+          mEra_mStrJetCorPar[era]["L3JetPar"]  = new JetCorrectorParameters(mEraJetParStr[era]["DataL3JetParByIOV"]);
+          mEra_mStrJetCorPar[era]["L2JetPar"]  = new JetCorrectorParameters(mEraJetParStr[era]["DataL2JetParByIOV"]);
+          mEra_mStrJetCorPar[era]["L1JetPar"]  = new JetCorrectorParameters(mEraJetParStr[era]["DataL1JetParByIOV"]);
+          mEra_mStrJetCorPar[era]["ResJetParAK8"] = new JetCorrectorParameters(mEraJetParStr[era]["DataResJetParAK8ByIOV"]);
+          mEra_mStrJetCorPar[era]["L3JetParAK8"]  = new JetCorrectorParameters(mEraJetParStr[era]["DataL3JetParAK8ByIOV"]);
+          mEra_mStrJetCorPar[era]["L2JetParAK8"]  = new JetCorrectorParameters(mEraJetParStr[era]["DataL2JetParAK8ByIOV"]);
+          mEra_mStrJetCorPar[era]["L1JetParAK8"]  = new JetCorrectorParameters(mEraJetParStr[era]["DataL1JetParAK8ByIOV"]);
 
-      strB = DataL3JetPar;
-      strC = strB; boost::replace_first(strC,"B_V","C_V");
-      strDE = strB; boost::replace_first(strDE,"B_V","DE_V");
-      strF = strB; boost::replace_first(strF,"B_V","F_V");
-      std::string DataL3JetParByIOV_B = strB;
-      std::string DataL3JetParByIOV_C = strC;
-      std::string DataL3JetParByIOV_DE = strDE;
-      std::string DataL3JetParByIOV_F = strF;
+          // Load the JetCorrectorParameter objects into a std::vector,
+          // IMPORTANT: THE ORDER MATTERS HERE !!!!
+          mEraVPar[era].push_back(*mEra_mStrJetCorPar[era]["L1JetPar"]);
+          mEraVPar[era].push_back(*mEra_mStrJetCorPar[era]["L2JetPar"]);
+          mEraVPar[era].push_back(*mEra_mStrJetCorPar[era]["L3JetPar"]);
+          mEraVPar[era].push_back(*mEra_mStrJetCorPar[era]["ResJetPar"]);
+          mEraVParAK8[era].push_back(*mEra_mStrJetCorPar[era]["L1JetParAK8"]);
+          mEraVParAK8[era].push_back(*mEra_mStrJetCorPar[era]["L2JetParAK8"]);
+          mEraVParAK8[era].push_back(*mEra_mStrJetCorPar[era]["L3JetParAK8"]);
+          mEraVParAK8[era].push_back(*mEra_mStrJetCorPar[era]["ResJetParAK8"]);
+          
+          // NOTE: Need to be careful about these as they are pointers. where to delete? how to use smart pointers?
+          mEraFacJetCorr[era] = new FactorizedJetCorrector(mEraVPar[era]);
+          mEraFacJetCorrAK8[era] = new FactorizedJetCorrector(mEraVParAK8[era]);
 
-      strB = DataResJetPar;
-      strC = strB; boost::replace_first(strC,"B_V","C_V");
-      strDE = strB; boost::replace_first(strDE,"B_V","DE_V");
-      strF = strB; boost::replace_first(strF,"B_V","F_V");
-      std::string DataResJetParByIOV_B = strB;
-      std::string DataResJetParByIOV_C = strC;
-      std::string DataResJetParByIOV_DE = strDE;
-      std::string DataResJetParByIOV_F = strF;
+      }
 
-      strB = DataL1JetParAK8;
-      strC = strB; boost::replace_first(strC,"B_V","C_V");
-      strDE = strB; boost::replace_first(strDE,"B_V","DE_V");
-      strF = strB; boost::replace_first(strF,"B_V","F_V");
-      std::string DataL1JetParAK8ByIOV_B = strB;
-      std::string DataL1JetParAK8ByIOV_C = strC;
-      std::string DataL1JetParAK8ByIOV_DE = strDE;
-      std::string DataL1JetParAK8ByIOV_F = strF;
-
-      strB = DataL2JetParAK8;
-      strC = strB; boost::replace_first(strC,"B_V","C_V");
-      strDE = strB; boost::replace_first(strDE,"B_V","DE_V");
-      strF = strB; boost::replace_first(strF,"B_V","F_V");
-      std::string DataL2JetParAK8ByIOV_B = strB;
-      std::string DataL2JetParAK8ByIOV_C = strC;
-      std::string DataL2JetParAK8ByIOV_DE = strDE;
-      std::string DataL2JetParAK8ByIOV_F = strF;
-
-      strB = DataL3JetParAK8;
-      strC = strB; boost::replace_first(strC,"B_V","C_V");
-      strDE = strB; boost::replace_first(strDE,"B_V","DE_V");
-      strF = strB; boost::replace_first(strF,"B_V","F_V");
-      std::string DataL3JetParAK8ByIOV_B = strB;
-      std::string DataL3JetParAK8ByIOV_C = strC;
-      std::string DataL3JetParAK8ByIOV_DE = strDE;
-      std::string DataL3JetParAK8ByIOV_F = strF;
-
-      strB = DataResJetParAK8;
-      strC = strB; boost::replace_first(strC,"B_V","C_V");
-      strDE = strB; boost::replace_first(strDE,"B_V","DE_V");
-      strF = strB; boost::replace_first(strF,"B_V","F_V");
-      std::string DataResJetParAK8ByIOV_B = strB;
-      std::string DataResJetParAK8ByIOV_C = strC;
-      std::string DataResJetParAK8ByIOV_DE = strDE;
-      std::string DataResJetParAK8ByIOV_F = strF;
-
-      ResJetPar_B = new JetCorrectorParameters(DataResJetParByIOV_B);
-      L3JetPar_B  = new JetCorrectorParameters(DataL3JetParByIOV_B);
-      L2JetPar_B  = new JetCorrectorParameters(DataL2JetParByIOV_B);
-      L1JetPar_B  = new JetCorrectorParameters(DataL1JetParByIOV_B);
-      ResJetParAK8_B = new JetCorrectorParameters(DataResJetParAK8ByIOV_B);
-      L3JetParAK8_B  = new JetCorrectorParameters(DataL3JetParAK8ByIOV_B);
-      L2JetParAK8_B  = new JetCorrectorParameters(DataL2JetParAK8ByIOV_B);
-      L1JetParAK8_B  = new JetCorrectorParameters(DataL1JetParAK8ByIOV_B);
-
-      ResJetPar_C = new JetCorrectorParameters(DataResJetParByIOV_C);
-      L3JetPar_C  = new JetCorrectorParameters(DataL3JetParByIOV_C);
-      L2JetPar_C  = new JetCorrectorParameters(DataL2JetParByIOV_C);
-      L1JetPar_C  = new JetCorrectorParameters(DataL1JetParByIOV_C);
-      ResJetParAK8_C = new JetCorrectorParameters(DataResJetParAK8ByIOV_C);
-      L3JetParAK8_C  = new JetCorrectorParameters(DataL3JetParAK8ByIOV_C);
-      L2JetParAK8_C  = new JetCorrectorParameters(DataL2JetParAK8ByIOV_C);
-      L1JetParAK8_C  = new JetCorrectorParameters(DataL1JetParAK8ByIOV_C);
-
-      ResJetPar_DE = new JetCorrectorParameters(DataResJetParByIOV_DE);
-      L3JetPar_DE  = new JetCorrectorParameters(DataL3JetParByIOV_DE);
-      L2JetPar_DE  = new JetCorrectorParameters(DataL2JetParByIOV_DE);
-      L1JetPar_DE  = new JetCorrectorParameters(DataL1JetParByIOV_DE);
-      ResJetParAK8_DE = new JetCorrectorParameters(DataResJetParAK8ByIOV_DE);
-      L3JetParAK8_DE  = new JetCorrectorParameters(DataL3JetParAK8ByIOV_DE);
-      L2JetParAK8_DE  = new JetCorrectorParameters(DataL2JetParAK8ByIOV_DE);
-      L1JetParAK8_DE  = new JetCorrectorParameters(DataL1JetParAK8ByIOV_DE);
-
-      ResJetPar_F = new JetCorrectorParameters(DataResJetParByIOV_F);
-      L3JetPar_F  = new JetCorrectorParameters(DataL3JetParByIOV_F);
-      L2JetPar_F  = new JetCorrectorParameters(DataL2JetParByIOV_F);
-      L1JetPar_F  = new JetCorrectorParameters(DataL1JetParByIOV_F);
-      ResJetParAK8_F = new JetCorrectorParameters(DataResJetParAK8ByIOV_F);
-      L3JetParAK8_F  = new JetCorrectorParameters(DataL3JetParAK8ByIOV_F);
-      L2JetParAK8_F  = new JetCorrectorParameters(DataL2JetParAK8ByIOV_F);
-      L1JetParAK8_F  = new JetCorrectorParameters(DataL1JetParAK8ByIOV_F);
-
-      // Load the JetCorrectorParameter objects into a std::vector,
-      // IMPORTANT: THE ORDER MATTERS HERE !!!!
-      vPar_B.push_back(*L1JetPar_B);
-      vPar_B.push_back(*L2JetPar_B);
-      vPar_B.push_back(*L3JetPar_B);
-      vPar_B.push_back(*ResJetPar_B);
-      vParAK8_B.push_back(*L1JetParAK8_B);
-      vParAK8_B.push_back(*L2JetParAK8_B);
-      vParAK8_B.push_back(*L3JetParAK8_B);
-      vParAK8_B.push_back(*ResJetParAK8_B);
-
-      vPar_C.push_back(*L1JetPar_C);
-      vPar_C.push_back(*L2JetPar_C);
-      vPar_C.push_back(*L3JetPar_C);
-      vPar_C.push_back(*ResJetPar_C);
-      vParAK8_C.push_back(*L1JetParAK8_C);
-      vParAK8_C.push_back(*L2JetParAK8_C);
-      vParAK8_C.push_back(*L3JetParAK8_C);
-      vParAK8_C.push_back(*ResJetParAK8_C);
-
-      vPar_DE.push_back(*L1JetPar_DE);
-      vPar_DE.push_back(*L2JetPar_DE);
-      vPar_DE.push_back(*L3JetPar_DE);
-      vPar_DE.push_back(*ResJetPar_DE);
-      vParAK8_DE.push_back(*L1JetParAK8_DE);
-      vParAK8_DE.push_back(*L2JetParAK8_DE);
-      vParAK8_DE.push_back(*L3JetParAK8_DE);
-      vParAK8_DE.push_back(*ResJetParAK8_DE);
-
-      vPar_F.push_back(*L1JetPar_F);
-      vPar_F.push_back(*L2JetPar_F);
-      vPar_F.push_back(*L3JetPar_F);
-      vPar_F.push_back(*ResJetPar_F);
-      vParAK8_F.push_back(*L1JetParAK8_F);
-      vParAK8_F.push_back(*L2JetParAK8_F);
-      vParAK8_F.push_back(*L3JetParAK8_F);
-      vParAK8_F.push_back(*ResJetParAK8_F);
-
-
-      //NOTE: these statement are there originaly from oldLJMet, but its causing segfault !!
-//       delete JetCorrector_B;
-//       delete JetCorrector_C;
-//       delete JetCorrector_DE;
-//       delete JetCorrector_F;
-//       delete JetCorrectorAK8_B;
-//       delete JetCorrectorAK8_C;
-//       delete JetCorrectorAK8_DE;
-//       delete JetCorrectorAK8_F;
-
-      JetCorrector_B = new FactorizedJetCorrector(vPar_B);
-      JetCorrectorAK8_B = new FactorizedJetCorrector(vParAK8_B);
-      JetCorrector_C = new FactorizedJetCorrector(vPar_C);
-      JetCorrectorAK8_C = new FactorizedJetCorrector(vParAK8_C);
-      JetCorrector_DE = new FactorizedJetCorrector(vPar_DE);
-      JetCorrectorAK8_DE = new FactorizedJetCorrector(vParAK8_DE);
-      JetCorrector_F = new FactorizedJetCorrector(vPar_F);
-      JetCorrectorAK8_F = new FactorizedJetCorrector(vParAK8_F);
 
     }
 
@@ -825,7 +632,7 @@ bool MultiLepEventSelector::operator()( edm::Event const & event, pat::strbitset
   FillHist("nEvents", theWeight);
 
   while(1){ // standard infinite while loop trick to avoid nested ifs
-
+  
     passCut(ret, "No selection");
 
     if( ! TriggerSelection(event) ) break; 
@@ -891,78 +698,6 @@ void MultiLepEventSelector::AnalyzeEvent( edm::EventBase const & event, LjmetEve
 
 void MultiLepEventSelector::EndJob()
 {
-
-// ---------------------------------------------------------------
-// ---------------------------------------------------------------
-// NOTE: EVERYTHING BELOW NEEDS TO BE EITHER REORGANIZED/REWRITTEN - start
-// ---------------------------------------------------------------
-// ---------------------------------------------------------------
-
-//NOTE: about pointers, try using smart pointers which deletes itself when out of scope, or something like that.
-
-//NOTE: these statement are there originaly from oldLJMet, but its causing segfault !!
-//       delete ResJetPar;
-//       delete L3JetPar;
-//       delete L2JetPar;
-//       delete L1JetPar;
-//       delete ResJetParAK8;
-//       delete L3JetParAK8;
-//       delete L2JetParAK8;
-//       delete L1JetParAK8;
-//
-//       delete ResJetPar_B;
-//       delete L3JetPar_B;
-//       delete L2JetPar_B;
-//       delete L1JetPar_B;
-//       delete ResJetParAK8_B;
-//       delete L3JetParAK8_B;
-//       delete L2JetParAK8_B;
-//       delete L1JetParAK8_B;
-//       delete ResJetPar_C;
-//       delete L3JetPar_C;
-//       delete L2JetPar_C;
-//       delete L1JetPar_C;
-//       delete ResJetParAK8_C;
-//       delete L3JetParAK8_C;
-//       delete L2JetParAK8_C;
-//       delete L1JetParAK8_C;
-//       delete ResJetPar_DE;
-//       delete L3JetPar_DE;
-//       delete L2JetPar_DE;
-//       delete L1JetPar_DE;
-//       delete ResJetParAK8_DE;
-//       delete L3JetParAK8_DE;
-//       delete L2JetParAK8_DE;
-//       delete L1JetParAK8_DE;
-//       delete ResJetPar_F;
-//       delete L3JetPar_F;
-//       delete L2JetPar_F;
-//       delete L1JetPar_F;
-//       delete ResJetParAK8_F;
-//       delete L3JetParAK8_F;
-//       delete L2JetParAK8_F;
-//       delete L1JetParAK8_F;
-//
-//       delete jecUnc;
-
-//       delete JetCorrector;
-//       delete JetCorrectorAK8;
-//       delete JetCorrector_B;
-//       delete JetCorrectorAK8_B;
-//       delete JetCorrector_C;
-//       delete JetCorrectorAK8_C;
-//       delete JetCorrector_DE;
-//       delete JetCorrectorAK8_DE;
-//       delete JetCorrector_F;
-//       delete JetCorrectorAK8_F;
-
-// ---------------------------------------------------------------
-// ---------------------------------------------------------------
-// NOTE: EVERYTHING ABOVE NEEDS TO BE EITHER REORGANIZED/REWRITTEN - end
-// ---------------------------------------------------------------
-// ---------------------------------------------------------------
-
-
 }
 
 bool MultiLepEventSelector::TriggerSelection(edm::Event const & event)
@@ -1605,7 +1340,7 @@ bool MultiLepEventSelector::JetSelection(edm::Event const & event, pat::strbitse
   if(debug)std::cout << "\t" <<"Jet Selection:"<< std::endl;
 
 
-  if(!isMc) JECbyIOV(event);
+  if(!isMc) SetFacJetCorr(event);
 
 
   edm::Handle<std::vector<pat::Jet> > jetsHandle;
@@ -2133,7 +1868,7 @@ bool MultiLepEventSelector::EXAMPLESelection(edm::Event const & event)
 // ---------------------------------------------------------------
 
 //JET CORRECTION HELPER METHODS
-void MultiLepEventSelector::JECbyIOV(edm::EventBase const & event)
+void MultiLepEventSelector::SetFacJetCorr(edm::EventBase const & event)
 {
 /*
  *This function takes an event, looks up the correct JEC file, and produces the correct JetCorrector for JEC corrections.
@@ -2145,12 +1880,31 @@ void MultiLepEventSelector::JECbyIOV(edm::EventBase const & event)
  * This is called in singleLepEventSelector
  * */
 
-  int iRun   = event.id().run();
 
-  if(iRun <= 299330){ JetCorrector = JetCorrector_B; JetCorrectorAK8 = JetCorrectorAK8_B;}
-  else if(iRun <= 302029){ JetCorrector = JetCorrector_C; JetCorrectorAK8 = JetCorrectorAK8_C;}
-  else if(iRun <= 304827){ JetCorrector = JetCorrector_DE; JetCorrectorAK8 = JetCorrectorAK8_DE;}
-  else{ JetCorrector = JetCorrector_F; JetCorrectorAK8 = JetCorrectorAK8_F;}
+  int iRun   = event.id().run();
+  
+  // NOTE: Need to be careful about these as they are pointers. where to delete? how to use smart pointers?
+
+  if(iRun <= 299330){ 
+  	if(debug) std::cout << "\t\t\t using JEC for era B "<< std::endl;
+  	JetCorrector = mEraFacJetCorr["B"]; 
+  	JetCorrectorAK8 = mEraFacJetCorrAK8["B"];
+  }
+  else if(iRun <= 302029){ 
+  	if(debug) std::cout << "\t\t\t using JEC for era C "<< std::endl;
+  	JetCorrector = mEraFacJetCorr["C"]; 
+  	JetCorrectorAK8 = mEraFacJetCorrAK8["C"];
+  }
+  else if(iRun <= 304827){ 
+  	if(debug) std::cout << "\t\t\t using JEC for era DE "<< std::endl;
+  	JetCorrector = mEraFacJetCorr["DE"]; 
+  	JetCorrectorAK8 = mEraFacJetCorrAK8["DE"];
+  	}
+  else{ 
+  	if(debug) std::cout << "\t\t\t using JEC for era F "<< std::endl;
+  	JetCorrector = mEraFacJetCorr["F"]; 
+  	JetCorrectorAK8 = mEraFacJetCorrAK8["F"];
+  }
 
 }
 
@@ -2547,6 +2301,7 @@ bool MultiLepEventSelector::isJetTagged(const pat::Jet & jet,
 
     if (jet.bDiscriminator("pfDeepCSVJetTags:probb")+jet.bDiscriminator("pfDeepCSVJetTags:probbb") > bTagCut) _isTagged = true;
 
+	// NOTE : IS BELOW STIL USED?? IF NOT CAN REMOVE ! AND REMOVE THE BTagUtilSF objects as well. Mar 18, 2019
     if (isMc && applySF){
 
       //TLorentzVector lvjet = correctJet(jet, event);
@@ -2601,11 +2356,9 @@ bool MultiLepEventSelector::isJetTagged(const pat::Jet & jet,
       mBtagSfUtil.SetSeed(abs(static_cast<int>(sin(jet.phi())*1e5)));
 
       // sanity check
-      /*
       bool _orig_tag = _isTagged;
       mBtagSfUtil.modifyBTagsWithSF(_isTagged, _jetFlavor, _heavySf, _heavyEff, _lightSf, _lightEff);
-      if (_isTagged != _orig_tag) ++mNBtagSfCorrJets;
-      */
+      //if (_isTagged != _orig_tag) ++mNBtagSfCorrJets;
 
     } // end of btag scale factor corrections
 

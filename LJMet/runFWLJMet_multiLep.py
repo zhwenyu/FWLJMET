@@ -14,20 +14,29 @@ process.MessageLogger.cerr.FwkReport.reportEvery = 20
 process.options = cms.untracked.PSet( wantSummary = cms.untracked.bool(False) )
 
 ## Maximal Number of Events
-MAXEVENTS = 100
+MAXEVENTS = 2000
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(MAXEVENTS) )
 
 ## Source / Input
-isMC=True
+# isMC=True
+isMC=False
+if(isMC): INFILE='root://cmsxrootd.fnal.gov//store/mc/RunIIFall17MiniAODv2/TprimeTprime_M-1100_TuneCP5_13TeV-madgraph-pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14-v2/00000/8EA8FE89-254F-E811-835E-0090FAA58BF4.root'
+else: INFILE='root://cmsxrootd.fnal.gov//store/data/Run2017F/DoubleEG/MINIAOD/09May2018-v1/10000/444E03EB-B75F-E811-AFBA-F01FAFD8F16A.root'
+
 process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring(
-        'root://cmsxrootd.fnal.gov//store/mc/RunIIFall17MiniAODv2/TprimeTprime_M-1100_TuneCP5_13TeV-madgraph-pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14-v2/00000/8EA8FE89-254F-E811-835E-0090FAA58BF4.root',
+        INFILE,
     )
 )
 
-OUTFILENAME = 'TprimeTprime_M-1100_TuneCP5_13TeV-madgraph-pythia8'
+if(isMC): 
+	OUTFILENAME = 'TprimeTprime_M-1100_TuneCP5_13TeV-madgraph-pythia8'
+	POSTFIX = 'MC'
+else: 
+	OUTFILENAME = 'DoubleEG_Run2017F'
+	POSTFIX = 'DATA'
 # TFileService
-process.TFileService = cms.Service("TFileService", fileName = cms.string(OUTFILENAME+'_FWLJMET_MC.root'))
+process.TFileService = cms.Service("TFileService", fileName = cms.string(OUTFILENAME+'_FWLJMET_'+POSTFIX+'.root'))
 
 
 # Output Module Configuration (expects a path 'p')
@@ -55,6 +64,9 @@ setupEgammaPostRecoSeq(process,
                        runVID=True,
                        era='2017-Nov17ReReco')
 
+#For MET filter
+if(isMC): MET_filt_flag_tag        = 'TriggerResults::PAT'
+else:     MET_filt_flag_tag        = 'TriggerResults::RECO'
 
 process.ljmet = cms.EDAnalyzer(
 	'LJMet',
@@ -110,8 +122,8 @@ process.ljmet = cms.EDAnalyzer(
 				'HLT_IsoTkMu24_v',
 				'HLT_IsoMu27_v',
 				),
-			trigger_path_el = cms.vstring(''),
-			trigger_path_mu = cms.vstring(''),
+			trigger_path_el = cms.vstring(''), #currently set to be the same as mc in the src code
+			trigger_path_mu = cms.vstring(''), #currently set to be the same as mc in the src code
 
 			# PV cuts
 			pv_cut     = cms.bool(True),
@@ -124,8 +136,8 @@ process.ljmet = cms.EDAnalyzer(
 				),
 
 			# MET filter - https://twiki.cern.ch/twiki/bin/viewauth/CMS/MissingETOptionalFiltersRun2
-			metfilters      = cms.bool(True),
-			flag_tag        = cms.InputTag('TriggerResults::PAT'),
+			metfilters      = cms.bool(True),			
+			flag_tag        = cms.InputTag(MET_filt_flag_tag),
 			METfilter_extra = cms.InputTag("ecalBadCalibReducedMINIAODFilter"),
 
 			#MET cuts
