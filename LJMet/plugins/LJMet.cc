@@ -167,7 +167,7 @@ LJMet::LJMet(const edm::ParameterSet& iConfig)
         TFileDirectory _dir = fs->mkdir( iMod->first.c_str() );
         for (iHist=iMod->second.begin();iHist!=iMod->second.end();++iHist){
             std::cout << "[FWLJMet] : "
-            << "Creating " << iMod->first << "/"
+            << "Creating histograms : " << iMod->first << "/"
             << iHist->second.GetName() << std::endl;
             iHist->second.SetHist( _dir.make<TH1F>(iHist->second.GetName().c_str(),
                                                    iHist->second.GetName().c_str(),

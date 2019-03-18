@@ -75,6 +75,7 @@ public:
     
     /// Assign current hist value to hist metadata collection
     void SetHistValue(std::string modname, std::string histname, double value);
+    void FillHist(std::string modname, std::string histname, double value);
     void Fill();
     
 private:

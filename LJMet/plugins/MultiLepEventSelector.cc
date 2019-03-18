@@ -797,15 +797,15 @@ void MultiLepEventSelector::BeginJob( const edm::ParameterSet& iConfig, edm::Con
     set("All cuts",true);
     
     //Record cut flow information - will be saved under folder named after the selector name.
-    SetHistogram( "Trigger", 1, 0,1); 
-    SetHistogram("Primary Vertex", 1, 0,1); 
-    SetHistogram("MET filters", 1, 0,1); 
-    SetHistogram("Lepton Selection", 1, 0,1); // keeping it simple for now
+    SetHistogram( "Trigger", 2, 0,2); 
+    SetHistogram("Primary Vertex", 2, 0,2); 
+    SetHistogram("MET filters", 2, 0,2); 
+    SetHistogram("Lepton Selection", 2, 0,2); // keeping it simple for now
     if(jet_cuts){ 
-		SetHistogram("Jet Selection", 1, 0,1); // keeping it simple for now
+		SetHistogram("Jet Selection", 2, 0,2); // keeping it simple for now
     }
-    SetHistogram("MET", 1, 0,1); 
-    SetHistogram("All cuts", 1, 0,1); 
+    SetHistogram("MET", 2, 0,2); 
+    SetHistogram("All cuts", 2, 0,2); 
     
 
 
@@ -826,7 +826,7 @@ bool MultiLepEventSelector::operator()( edm::Event const & event, pat::strbitset
       event.getByToken(genToken, genEvtInfo );
       theWeight = genEvtInfo->weight()/fabs(genEvtInfo->weight());
    }
-  SetHistValue("nEvents", theWeight);
+  FillHist("nEvents", theWeight);
 
   while(1){ // standard infinite while loop trick to avoid nested ifs
 
@@ -834,37 +834,37 @@ bool MultiLepEventSelector::operator()( edm::Event const & event, pat::strbitset
 
     if( ! TriggerSelection(event) ) break; 
     passCut(ret, "Trigger");
-    SetHistValue("Trigger", 1);
+    FillHist("Trigger", 1);
 
     if( ! PVSelection(event) ) break;
     passCut(ret, "Primary Vertex");
-    SetHistValue("Primary Vertex", 1);
+    FillHist("Primary Vertex", 1);
 
     if( ! METfilter(event) ) break;
     passCut(ret, "MET filters");
-    SetHistValue("Primary Vertex", 1);
+    FillHist("MET filters", 1);
 
     //Collect selected leptons
     MuonSelection(event);
     ElectronSelection(event);
 
     if( ! LeptonsSelection(event, ret) ) break;
-    SetHistValue("Lepton Selection", 1); // keeping it simple for now
+    FillHist("Lepton Selection", 1); // keeping it simple for now
 
     //Collect jets
     if( ! JetSelection(event, ret) ) break;
-    SetHistValue("Jet Selection", 1); // keeping it simple for now
+    FillHist("Jet Selection", 1); // keeping it simple for now
 
     //Collect AK8 jets
     AK8JetSelection(event);
 
     if( ! METSelection(event) ) break;
     passCut(ret, "MET");
-    SetHistValue("MET", 1);
+    FillHist("MET", 1);
 
 
     passCut(ret, "All cuts");
-    SetHistValue("All cuts", 1); 
+    FillHist("All cuts", 1); 
     break;
 
   } // end of while loop
