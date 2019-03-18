@@ -205,8 +205,6 @@ private:
 
     //JET correction methods variables/parameters/object type definitions - Ideally THESE NEEDS TO BE ON A SEPARATE DEDICATED JET CORRENTION CLASS, or something like that. - but on top of that this needs to be optimized and rewritten.
 
-    int mNCorrJets; // used in correctJet method
-
     TRandom3 JERrand;
 
     std::string MCL1JetPar;
@@ -320,8 +318,6 @@ private:
     BTagCalibration       calibsj;
     BTagCalibrationReader reader;
     BTagCalibrationReader readerSJ;
-
-    int mNBtagSfCorrJets; // used in isJetTagged method
 
     // ---------------------------------------------------------------
     // ---------------------------------------------------------------
@@ -2171,19 +2167,7 @@ TLorentzVector MultiLepEventSelector::correctJet(const pat::Jet & jet,
 
   TLorentzVector jetP4;
   jetP4.SetPtEtaPhiM(correctedJet.pt(), correctedJet.eta(),correctedJet.phi(), correctedJet.mass() );
-  //std::cout<<"jet pt: "<<jetP4.Pt()<<" eta: "<<jetP4.Eta()<<" phi: "<<jetP4.Phi()<<" energy: "<<jetP4.E()<<std::endl;
 
-
-  // sanity check - save correction of the first jet
-  if (mNCorrJets==0){
-    double _orig_pt = jet.pt();
-    if (fabs(_orig_pt)<0.000000001){
-      _orig_pt = 0.000000001;
-    }
-    SetHistValue("jes_correction", jetP4.Pt()/_orig_pt);
-    ++mNCorrJets;
-  }
-  //if (jetP4.Pt()>30.) std::cout<<"JEC Ratio (new/old) = "<<jetP4.Pt()/jet.pt()<<"     -->    corrected pT / eta = "<<jetP4.Pt()<<" / "<<jetP4.Eta()<<std::endl;
 
   return jetP4;
 }
@@ -2390,12 +2374,6 @@ TLorentzVector MultiLepEventSelector::correctMet(const pat::MET & met, edm::Even
 
     correctedMET_p4.SetPxPyPzE(correctedMET_px, correctedMET_py, 0, sqrt(correctedMET_px*correctedMET_px+correctedMET_py*correctedMET_py));
 
-    // sanity check histogram
-    double _orig_met = met.pt();
-    if (fabs(_orig_met) < 1.e-9) {
-        _orig_met = 1.e-9;
-    }
-    SetHistValue("met_correction", correctedMET_p4.Pt()/_orig_met);
 
     return correctedMET_p4;
 }
@@ -2623,9 +2601,11 @@ bool MultiLepEventSelector::isJetTagged(const pat::Jet & jet,
       mBtagSfUtil.SetSeed(abs(static_cast<int>(sin(jet.phi())*1e5)));
 
       // sanity check
+      /*
       bool _orig_tag = _isTagged;
       mBtagSfUtil.modifyBTagsWithSF(_isTagged, _jetFlavor, _heavySf, _heavyEff, _lightSf, _lightEff);
       if (_isTagged != _orig_tag) ++mNBtagSfCorrJets;
+      */
 
     } // end of btag scale factor corrections
 
