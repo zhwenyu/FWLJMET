@@ -158,6 +158,26 @@ LJMet::LJMet(const edm::ParameterSet& iConfig)
    // set excluded calculators
    factory->SetExcludedCalcs(vExcl); 
    
+   // create histograms
+   std::map<std::string,std::map<std::string,LjmetEventContent::HistMetadata> > & mh = ec.GetHistMap();
+   std::map<std::string,std::map<std::string,LjmetEventContent::HistMetadata> >::iterator iMod;
+   std::map<std::string,LjmetEventContent::HistMetadata>::iterator iHist;
+   for (iMod=mh.begin();iMod!=mh.end();++iMod){
+        
+        TFileDirectory _dir = fs->mkdir( iMod->first.c_str() );
+        for (iHist=iMod->second.begin();iHist!=iMod->second.end();++iHist){
+            std::cout << "[FWLJMet] : "
+            << "Creating histograms : " << iMod->first << "/"
+            << iHist->second.GetName() << std::endl;
+            iHist->second.SetHist( _dir.make<TH1F>(iHist->second.GetName().c_str(),
+                                                   iHist->second.GetName().c_str(),
+                                                   iHist->second.GetNBins(),
+                                                   iHist->second.GetXMin(),
+                                                   iHist->second.GetXMax() 
+                                                   ) 
+                                  );
+        }
+    }
 
 
 }

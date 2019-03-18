@@ -1,6 +1,9 @@
 #include "FWLJMET/LJMet/interface/BaseEventSelector.h"
 #include "FWLJMET/LJMet/interface/LjmetFactory.h"
 
+
+#include "SimDataFormats/GeneratorProducts/interface/GenEventInfoProduct.h"
+
 #include "FWCore/Common/interface/TriggerNames.h"
 #include "DataFormats/Common/interface/TriggerResults.h"
 #include "DataFormats/HLTReco/interface/TriggerEvent.h"
@@ -56,6 +59,7 @@ protected:
     bool bFirstEntry;
     bool debug;
     bool isMc;
+    
 
     //Trigger
     bool trigger_cut;
@@ -139,6 +143,7 @@ protected:
     std::string JERAK8_txtfile;
 
     //Tokens
+    edm::EDGetTokenT<GenEventInfoProduct>            genToken;
     edm::EDGetTokenT<edm::TriggerResults>            triggersToken;
     edm::EDGetTokenT<reco::VertexCollection>         PVToken;
     edm::EDGetTokenT<edm::TriggerResults>            METfilterToken;
@@ -199,8 +204,6 @@ private:
     TLorentzVector correctJetForMet(const pat::Jet & jet, edm::Event const & event, unsigned int syst = 0);
 
     //JET correction methods variables/parameters/object type definitions - Ideally THESE NEEDS TO BE ON A SEPARATE DEDICATED JET CORRENTION CLASS, or something like that. - but on top of that this needs to be optimized and rewritten.
-
-    int mNCorrJets; // used in correctJet method
 
     TRandom3 JERrand;
 
@@ -316,8 +319,6 @@ private:
     BTagCalibrationReader reader;
     BTagCalibrationReader readerSJ;
 
-    int mNBtagSfCorrJets; // used in isJetTagged method
-
     // ---------------------------------------------------------------
     // ---------------------------------------------------------------
     // NOTE: EVERYTHING ABOVE NEEDS TO BE EITHER REORGANIZED/REWRITTEN - end
@@ -352,6 +353,9 @@ void MultiLepEventSelector::BeginJob( const edm::ParameterSet& iConfig, edm::Con
     debug               = selectorConfig.getParameter<bool>("debug");
     isMc                = selectorConfig.getParameter<bool>("isMc");
     bFirstEntry         = true; //in case anything needs a first entry bool.
+    
+    //nEvents info
+    if(isMc) genToken            = iC.consumes<GenEventInfoProduct>(edm::InputTag("generator"));
 
     //Trigger
     triggersToken       = iC.consumes<edm::TriggerResults>(selectorConfig.getParameter<edm::InputTag>("HLTcollection"));
@@ -787,6 +791,19 @@ void MultiLepEventSelector::BeginJob( const edm::ParameterSet& iConfig, edm::Con
         }
     set("MET", met_cuts);
     set("All cuts",true);
+    
+    //Record cut flow information - will be saved under folder named after the selector name.
+    SetHistogram( "Trigger", 2, 0,2); 
+    SetHistogram("Primary Vertex", 2, 0,2); 
+    SetHistogram("MET filters", 2, 0,2); 
+    SetHistogram("Lepton Selection", 2, 0,2); // keeping it simple for now
+    if(jet_cuts){ 
+		SetHistogram("Jet Selection", 2, 0,2); // keeping it simple for now
+    }
+    SetHistogram("MET", 2, 0,2); 
+    SetHistogram("All cuts", 2, 0,2); 
+    
+
 
 
 } // end of BeginJob()
@@ -797,36 +814,53 @@ bool MultiLepEventSelector::operator()( edm::Event const & event, pat::strbitset
   if(debug)std::cout << "=====================================" <<std::endl;
   if(debug)std::cout << "Event = " << event.id().event() << ", Lumi Block = " << event.id().luminosityBlock() << std::endl;
   if(debug)std::cout << "=====================================" <<std::endl;
+  
+  //Save events before selections and MC negative weights. Histo is intialized in BaseEventSelector.h . This could also be written in BaseEventSelector.cc.
+  int theWeight = 1;
+  if(isMc){
+      edm::Handle<GenEventInfoProduct> genEvtInfo;
+      event.getByToken(genToken, genEvtInfo );
+      theWeight = genEvtInfo->weight()/fabs(genEvtInfo->weight());
+   }
+  FillHist("nEvents", theWeight);
 
   while(1){ // standard infinite while loop trick to avoid nested ifs
 
     passCut(ret, "No selection");
 
-    if( TriggerSelection(event) ) passCut(ret, "Trigger");
-    else break;
+    if( ! TriggerSelection(event) ) break; 
+    passCut(ret, "Trigger");
+    FillHist("Trigger", 1);
 
-    if( PVSelection(event) )      passCut(ret, "Primary Vertex");
-    else break;
+    if( ! PVSelection(event) ) break;
+    passCut(ret, "Primary Vertex");
+    FillHist("Primary Vertex", 1);
 
-    if( METfilter(event) )        passCut(ret, "MET filters");
-    else break;
+    if( ! METfilter(event) ) break;
+    passCut(ret, "MET filters");
+    FillHist("MET filters", 1);
 
     //Collect selected leptons
     MuonSelection(event);
     ElectronSelection(event);
+
     if( ! LeptonsSelection(event, ret) ) break;
+    FillHist("Lepton Selection", 1); // keeping it simple for now
 
     //Collect jets
     if( ! JetSelection(event, ret) ) break;
+    FillHist("Jet Selection", 1); // keeping it simple for now
 
     //Collect AK8 jets
     AK8JetSelection(event);
 
-    if( METSelection(event) )     passCut(ret, "MET"); // this needs to be after jets.
-    else break;
+    if( ! METSelection(event) ) break;
+    passCut(ret, "MET");
+    FillHist("MET", 1);
 
 
     passCut(ret, "All cuts");
+    FillHist("All cuts", 1); 
     break;
 
   } // end of while loop
@@ -2133,19 +2167,7 @@ TLorentzVector MultiLepEventSelector::correctJet(const pat::Jet & jet,
 
   TLorentzVector jetP4;
   jetP4.SetPtEtaPhiM(correctedJet.pt(), correctedJet.eta(),correctedJet.phi(), correctedJet.mass() );
-  //std::cout<<"jet pt: "<<jetP4.Pt()<<" eta: "<<jetP4.Eta()<<" phi: "<<jetP4.Phi()<<" energy: "<<jetP4.E()<<std::endl;
 
-
-  // sanity check - save correction of the first jet
-  if (mNCorrJets==0){
-    double _orig_pt = jet.pt();
-    if (fabs(_orig_pt)<0.000000001){
-      _orig_pt = 0.000000001;
-    }
-    SetHistValue("jes_correction", jetP4.Pt()/_orig_pt);
-    ++mNCorrJets;
-  }
-  //if (jetP4.Pt()>30.) std::cout<<"JEC Ratio (new/old) = "<<jetP4.Pt()/jet.pt()<<"     -->    corrected pT / eta = "<<jetP4.Pt()<<" / "<<jetP4.Eta()<<std::endl;
 
   return jetP4;
 }
@@ -2352,12 +2374,6 @@ TLorentzVector MultiLepEventSelector::correctMet(const pat::MET & met, edm::Even
 
     correctedMET_p4.SetPxPyPzE(correctedMET_px, correctedMET_py, 0, sqrt(correctedMET_px*correctedMET_px+correctedMET_py*correctedMET_py));
 
-    // sanity check histogram
-    double _orig_met = met.pt();
-    if (fabs(_orig_met) < 1.e-9) {
-        _orig_met = 1.e-9;
-    }
-    SetHistValue("met_correction", correctedMET_p4.Pt()/_orig_met);
 
     return correctedMET_p4;
 }
@@ -2585,9 +2601,11 @@ bool MultiLepEventSelector::isJetTagged(const pat::Jet & jet,
       mBtagSfUtil.SetSeed(abs(static_cast<int>(sin(jet.phi())*1e5)));
 
       // sanity check
+      /*
       bool _orig_tag = _isTagged;
       mBtagSfUtil.modifyBTagsWithSF(_isTagged, _jetFlavor, _heavySf, _heavyEff, _lightSf, _lightEff);
       if (_isTagged != _orig_tag) ++mNBtagSfCorrJets;
+      */
 
     } // end of btag scale factor corrections
 

@@ -99,6 +99,7 @@ public:
     /// Declare a new histogram to be created for the module
     void SetHistogram(std::string name, int nbins, double low, double high) { mpEc->SetHistogram(mName, name, nbins, low, high); }
     void SetHistValue(std::string name, double value) { mpEc->SetHistValue(mName, name, value); }
+    void FillHist(std::string name, double value) { mpEc->FillHist(mName, name, value); }
     
             
 protected:
