@@ -1,6 +1,9 @@
 #include "FWLJMET/LJMet/interface/BaseEventSelector.h"
 #include "FWLJMET/LJMet/interface/LjmetFactory.h"
 
+
+#include "SimDataFormats/GeneratorProducts/interface/GenEventInfoProduct.h"
+
 #include "FWCore/Common/interface/TriggerNames.h"
 #include "DataFormats/Common/interface/TriggerResults.h"
 #include "DataFormats/HLTReco/interface/TriggerEvent.h"
@@ -56,6 +59,7 @@ protected:
     bool bFirstEntry;
     bool debug;
     bool isMc;
+    
 
     //Trigger
     bool trigger_cut;
@@ -139,6 +143,7 @@ protected:
     std::string JERAK8_txtfile;
 
     //Tokens
+    edm::EDGetTokenT<GenEventInfoProduct>            genToken;
     edm::EDGetTokenT<edm::TriggerResults>            triggersToken;
     edm::EDGetTokenT<reco::VertexCollection>         PVToken;
     edm::EDGetTokenT<edm::TriggerResults>            METfilterToken;
@@ -352,6 +357,9 @@ void MultiLepEventSelector::BeginJob( const edm::ParameterSet& iConfig, edm::Con
     debug               = selectorConfig.getParameter<bool>("debug");
     isMc                = selectorConfig.getParameter<bool>("isMc");
     bFirstEntry         = true; //in case anything needs a first entry bool.
+    
+    //nEvents info
+    if(isMc) genToken            = iC.consumes<GenEventInfoProduct>(edm::InputTag("generator"));
 
     //Trigger
     triggersToken       = iC.consumes<edm::TriggerResults>(selectorConfig.getParameter<edm::InputTag>("HLTcollection"));
@@ -787,6 +795,19 @@ void MultiLepEventSelector::BeginJob( const edm::ParameterSet& iConfig, edm::Con
         }
     set("MET", met_cuts);
     set("All cuts",true);
+    
+    //Record cut flow information - will be saved under folder named after the selector name.
+    SetHistogram( "Trigger", 1, 0,1); 
+    SetHistogram("Primary Vertex", 1, 0,1); 
+    SetHistogram("MET filters", 1, 0,1); 
+    SetHistogram("Lepton Selection", 1, 0,1); // keeping it simple for now
+    if(jet_cuts){ 
+		SetHistogram("Jet Selection", 1, 0,1); // keeping it simple for now
+    }
+    SetHistogram("MET", 1, 0,1); 
+    SetHistogram("All cuts", 1, 0,1); 
+    
+
 
 
 } // end of BeginJob()
@@ -797,36 +818,53 @@ bool MultiLepEventSelector::operator()( edm::Event const & event, pat::strbitset
   if(debug)std::cout << "=====================================" <<std::endl;
   if(debug)std::cout << "Event = " << event.id().event() << ", Lumi Block = " << event.id().luminosityBlock() << std::endl;
   if(debug)std::cout << "=====================================" <<std::endl;
+  
+  //Save events before selections and MC negative weights. Histo is intialized in BaseEventSelector.h . This could also be written in BaseEventSelector.cc.
+  int theWeight = 1;
+  if(isMc){
+      edm::Handle<GenEventInfoProduct> genEvtInfo;
+      event.getByToken(genToken, genEvtInfo );
+      theWeight = genEvtInfo->weight()/fabs(genEvtInfo->weight());
+   }
+  SetHistValue("nEvents", theWeight);
 
   while(1){ // standard infinite while loop trick to avoid nested ifs
 
     passCut(ret, "No selection");
 
-    if( TriggerSelection(event) ) passCut(ret, "Trigger");
-    else break;
+    if( ! TriggerSelection(event) ) break; 
+    passCut(ret, "Trigger");
+    SetHistValue("Trigger", 1);
 
-    if( PVSelection(event) )      passCut(ret, "Primary Vertex");
-    else break;
+    if( ! PVSelection(event) ) break;
+    passCut(ret, "Primary Vertex");
+    SetHistValue("Primary Vertex", 1);
 
-    if( METfilter(event) )        passCut(ret, "MET filters");
-    else break;
+    if( ! METfilter(event) ) break;
+    passCut(ret, "MET filters");
+    SetHistValue("Primary Vertex", 1);
 
     //Collect selected leptons
     MuonSelection(event);
     ElectronSelection(event);
+
     if( ! LeptonsSelection(event, ret) ) break;
+    SetHistValue("Lepton Selection", 1); // keeping it simple for now
 
     //Collect jets
     if( ! JetSelection(event, ret) ) break;
+    SetHistValue("Jet Selection", 1); // keeping it simple for now
 
     //Collect AK8 jets
     AK8JetSelection(event);
 
-    if( METSelection(event) )     passCut(ret, "MET"); // this needs to be after jets.
-    else break;
+    if( ! METSelection(event) ) break;
+    passCut(ret, "MET");
+    SetHistValue("MET", 1);
 
 
     passCut(ret, "All cuts");
+    SetHistValue("All cuts", 1); 
     break;
 
   } // end of while loop
