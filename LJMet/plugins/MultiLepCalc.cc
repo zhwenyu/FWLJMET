@@ -142,7 +142,7 @@ int MultiLepCalc::BeginJob(edm::ConsumesCollector && iC)
 	cleanGenJets        = mPset.getParameter<bool>("cleanGenJets");
 
 	if (orlhew) {
-	  cout << "Overriding LHE weights, using "<<newPDFname<<" as new and "<<basePDFname<<" as base PDF set." << endl;
+	  std::cout << "Overriding LHE weights, using "<<newPDFname<<" as new and "<<basePDFname<<" as base PDF set." << std::endl;
 	  LHAPDF::Info& cfg = LHAPDF::getConfig();
 	  cfg.set_entry("Verbosity", 0);
 	}
