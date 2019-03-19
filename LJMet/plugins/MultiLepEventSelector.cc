@@ -128,6 +128,7 @@ protected:
     bool   JERup;
     bool   JERdown;
     bool   doNewJEC;
+    bool   doAllJetSyst;
     bool   doLepJetCleaning;
     bool   CleanLooseLeptons;
     double LepJetDR;
@@ -140,6 +141,8 @@ protected:
     int    min_jet;
     int    max_jet;
     double leading_jet_pt;
+    JetMETCorrHelper JetMETCorr;
+
 
     //Tokens
     edm::EDGetTokenT<GenEventInfoProduct>            genToken;
@@ -179,8 +182,6 @@ private:
     // NOTE: EVERYTHING BELOW NEEDS TO BE EITHER REORGANIZED/REWRITTEN - start
     // ---------------------------------------------------------------
     // ---------------------------------------------------------------
-
-	JetMETCorrHelper JetMETCorr;
 
     //BTAG helper method
     bool isJetTagged(const pat::Jet &jet,
@@ -316,6 +317,7 @@ void MultiLepEventSelector::BeginJob( const edm::ParameterSet& iConfig, edm::Con
     JERup                    = selectorConfig.getParameter<bool>("JERup");
     JERdown                  = selectorConfig.getParameter<bool>("JERdown");
     doNewJEC                 = selectorConfig.getParameter<bool>("doNewJEC");
+    doAllJetSyst             = selectorConfig.getParameter<bool>("doAllJetSyst");
     doLepJetCleaning         = selectorConfig.getParameter<bool>("doLepJetCleaning");
     CleanLooseLeptons        = selectorConfig.getParameter<bool>("CleanLooseLeptons");
     LepJetDR                 = selectorConfig.getParameter<double>("LepJetDR");
@@ -328,6 +330,8 @@ void MultiLepEventSelector::BeginJob( const edm::ParameterSet& iConfig, edm::Con
     min_jet                  = selectorConfig.getParameter<int>("min_jet");
     max_jet                  = selectorConfig.getParameter<int>("max_jet");
     leading_jet_pt           = selectorConfig.getParameter<double>("leading_jet_pt");
+    //JET CORRECTION  initialization
+    JetMETCorr.Initialize(selectorConfig,isMc);
 
 
     //MET
@@ -339,7 +343,7 @@ void MultiLepEventSelector::BeginJob( const edm::ParameterSet& iConfig, edm::Con
     //Misc
     PFCandToken          = iC.consumes<pat::PackedCandidateCollection>(selectorConfig.getParameter<edm::InputTag>("PFparticlesCollection"));
     rhoJetsNC_Token      = iC.consumes<double>(selectorConfig.getParameter<edm::InputTag>("rhoJetsNCInputTag"));
-    rhoJetsToken      = iC.consumes<double>(selectorConfig.getParameter<edm::InputTag>("rhoJetsInputTag"));
+    rhoJetsToken         = iC.consumes<double>(selectorConfig.getParameter<edm::InputTag>("rhoJetsInputTag"));
 
 
     // ---------------------------------------------------------------
@@ -348,10 +352,6 @@ void MultiLepEventSelector::BeginJob( const edm::ParameterSet& iConfig, edm::Con
     // ---------------------------------------------------------------
     // ---------------------------------------------------------------
 
-    //JET CORRECTION  initialization
-    
-    JetMETCorr.Initialize(selectorConfig,isMc);
-    
     //BTAG parameter initialization
     btag_cuts          = selectorConfig.getParameter<bool>("btag_cuts");
     bdisc_min          = selectorConfig.getParameter<double>("bdisc_min");
@@ -1649,7 +1649,7 @@ bool MultiLepEventSelector::METSelection(edm::Event const & event)
 	  if ( pMet.isNonnull() && pMet.isAvailable() ) {
 	    pat::MET const & met = mhMet->at(0);
 	    TLorentzVector corrMET = JetMETCorr.correctMet(met,event,isMc,rhoJetsToken,vAllJets,reCorrectJet,syst);
-	    
+
 	    //save to EventSelector object variable.
 	    correctedMET_p4 = corrMET;
 
