@@ -259,36 +259,36 @@ process.ljmet = cms.EDAnalyzer(
 			# Jet corrections are read from txt files
             doNewJEC                 = cms.bool(doNewJEC),
             doAllJetSyst             = cms.bool(doAllJetSyst),
-	    JEC_txtfile              = cms.string(JEC_txtfile),
-	    JERSF_txtfile            = cms.string(JERSF_txtfile),
-	    JER_txtfile              = cms.string(JER_txtfile),
-	    JERAK8_txtfile           = cms.string(JERAK8_txtfile),
-	    MCL1JetPar               = cms.string(MCL1JetPar),
-	    MCL2JetPar               = cms.string(MCL2JetPar),
-	    MCL3JetPar               = cms.string(MCL3JetPar),
-	    MCL1JetParAK8            = cms.string(MCL1JetParAK8),
-	    MCL2JetParAK8            = cms.string(MCL2JetParAK8),
-	    MCL3JetParAK8            = cms.string(MCL3JetParAK8),
-	    DataL1JetPar             = cms.string(DataL1JetPar),
-	    DataL2JetPar             = cms.string(DataL2JetPar),
-	    DataL3JetPar             = cms.string(DataL3JetPar),
-	    DataResJetPar            = cms.string(DataResJetPar),
-	    DataL1JetParAK8          = cms.string(DataL1JetParAK8),
-	    DataL2JetParAK8          = cms.string(DataL2JetParAK8),
-	    DataL3JetParAK8          = cms.string(DataL3JetParAK8),
-	    DataResJetParAK8         = cms.string(DataResJetParAK8),
+            JEC_txtfile              = cms.string(JEC_txtfile),
+            JERSF_txtfile            = cms.string(JERSF_txtfile),
+            JER_txtfile              = cms.string(JER_txtfile),
+            JERAK8_txtfile           = cms.string(JERAK8_txtfile),
+            MCL1JetPar               = cms.string(MCL1JetPar),
+            MCL2JetPar               = cms.string(MCL2JetPar),
+            MCL3JetPar               = cms.string(MCL3JetPar),
+            MCL1JetParAK8            = cms.string(MCL1JetParAK8),
+            MCL2JetParAK8            = cms.string(MCL2JetParAK8),
+            MCL3JetParAK8            = cms.string(MCL3JetParAK8),
+            DataL1JetPar             = cms.string(DataL1JetPar),
+            DataL2JetPar             = cms.string(DataL2JetPar),
+            DataL3JetPar             = cms.string(DataL3JetPar),
+            DataResJetPar            = cms.string(DataResJetPar),
+            DataL1JetParAK8          = cms.string(DataL1JetParAK8),
+            DataL2JetParAK8          = cms.string(DataL2JetParAK8),
+            DataL3JetParAK8          = cms.string(DataL3JetParAK8),
+            DataResJetParAK8         = cms.string(DataResJetParAK8),
 
 
-	    #Btag
-	    btag_cuts                = cms.bool(False), #not implemented
-	    btagOP                   = cms.string('MEDIUM'),
-	    bdisc_min                = cms.double(0.4941),
-	    DeepCSVfile              = cms.string(relBase+'/src/FWLJMET/LJMet/data/DeepCSV_94XSF_V3_B_F.csv'),
-	    DeepCSVSubjetfile        = cms.string(relBase+'/src/FWLJMET/LJMet/data/subjet_DeepCSV_94XSF_V3_B_F.csv'),
-	    BTagUncertUp             = cms.bool(False), # no longer needed
-	    BTagUncertDown           = cms.bool(False), # no longer needed
-	    MistagUncertUp           = cms.bool(False), # no longer needed
-	    MistagUncertDown          = cms.bool(False), # no longer needed
+            #Btag
+            btag_cuts                = cms.bool(False), #not implemented
+            btagOP                   = cms.string('MEDIUM'),
+            bdisc_min                = cms.double(0.4941),
+            DeepCSVfile              = cms.string(relBase+'/src/FWLJMET/LJMet/data/DeepCSV_94XSF_V3_B_F.csv'),
+            DeepCSVSubjetfile        = cms.string(relBase+'/src/FWLJMET/LJMet/data/subjet_DeepCSV_94XSF_V3_B_F.csv'),
+            BTagUncertUp             = cms.bool(False), # no longer needed
+            BTagUncertDown           = cms.bool(False), # no longer needed
+            MistagUncertUp           = cms.bool(False), # no longer needed
+            MistagUncertDown          = cms.bool(False), # no longer needed
 
 
             ),
@@ -306,8 +306,7 @@ process.ljmet = cms.EDAnalyzer(
             PFparticlesCollection  = cms.InputTag("packedPFCandidates"),
 
             rhoJetsInputTag            = cms.InputTag("fixedGridRhoFastjetAll"), #this is for electron. Why is it different compared to muon?
-
-	    UseElMVA                 = cms.bool(True),
+            UseElMVA                 = cms.bool(True),
 #             UseElIDV1                = cms.bool(False),
             UseElIDV1                = cms.bool(True),
 
@@ -318,29 +317,41 @@ process.ljmet = cms.EDAnalyzer(
             JERup                    = cms.bool(JERup),
             JERdown                  = cms.bool(JERdown),
             doAllJetSyst             = cms.bool(doAllJetSyst),
-	    JEC_txtfile              = cms.string(JEC_txtfile),
-	    JERSF_txtfile            = cms.string(JERSF_txtfile),
-	    JER_txtfile              = cms.string(JER_txtfile),
-	    JERAK8_txtfile           = cms.string(JERAK8_txtfile),
-	    MCL1JetPar               = cms.string(MCL1JetPar),
-	    MCL2JetPar               = cms.string(MCL2JetPar),
-	    MCL3JetPar               = cms.string(MCL3JetPar),
-	    MCL1JetParAK8            = cms.string(MCL1JetParAK8),
-	    MCL2JetParAK8            = cms.string(MCL2JetParAK8),
-	    MCL3JetParAK8            = cms.string(MCL3JetParAK8),
-	    DataL1JetPar             = cms.string(DataL1JetPar),
-	    DataL2JetPar             = cms.string(DataL2JetPar),
-	    DataL3JetPar             = cms.string(DataL3JetPar),
-	    DataResJetPar            = cms.string(DataResJetPar),
-	    DataL1JetParAK8          = cms.string(DataL1JetParAK8),
-	    DataL2JetParAK8          = cms.string(DataL2JetParAK8),
-	    DataL3JetParAK8          = cms.string(DataL3JetParAK8),
-	    DataResJetParAK8         = cms.string(DataResJetParAK8),
+            JEC_txtfile              = cms.string(JEC_txtfile),
+            JERSF_txtfile            = cms.string(JERSF_txtfile),
+            JER_txtfile              = cms.string(JER_txtfile),
+            JERAK8_txtfile           = cms.string(JERAK8_txtfile),
+            MCL1JetPar               = cms.string(MCL1JetPar),
+            MCL2JetPar               = cms.string(MCL2JetPar),
+            MCL3JetPar               = cms.string(MCL3JetPar),
+            MCL1JetParAK8            = cms.string(MCL1JetParAK8),
+            MCL2JetParAK8            = cms.string(MCL2JetParAK8),
+            MCL3JetParAK8            = cms.string(MCL3JetParAK8),
+            DataL1JetPar             = cms.string(DataL1JetPar),
+            DataL2JetPar             = cms.string(DataL2JetPar),
+            DataL3JetPar             = cms.string(DataL3JetPar),
+            DataResJetPar            = cms.string(DataResJetPar),
+            DataL1JetParAK8          = cms.string(DataL1JetParAK8),
+            DataL2JetParAK8          = cms.string(DataL2JetParAK8),
+            DataL3JetParAK8          = cms.string(DataL3JetParAK8),
+            DataResJetParAK8         = cms.string(DataResJetParAK8),
 
-	    #For accessing METnoHF, and METmod
-	    metnohf_collection = cms.InputTag('slimmedMETsNoHF'),
-	    metmod_collection = cms.InputTag('slimmedMETsModifiedMET'),
-
+            #For accessing METnoHF, and METmod
+            metnohf_collection = cms.InputTag('slimmedMETsNoHF'),
+            metmod_collection = cms.InputTag('slimmedMETsModifiedMET'),
+            
+            #Gen stuff
+            saveGenHT          = cms.bool(False),
+            genJetsCollection  = cms.InputTag("slimmedGenJets"),
+            OverrideLHEWeights = cms.bool(True),
+            basePDFname        = cms.string('NNPDF31_nnlo_as_0118_nf_4'),
+            newPDFname         = cms.string('NNPDF31_lo_as_0118'),
+            keepPDGID          = cms.vuint32(1, 2, 3, 4, 5, 6, 21, 11, 12, 13, 14, 15, 16, 24),
+            keepMomPDGID       = cms.vuint32(6, 24),
+            keepPDGIDForce     = cms.vuint32(6,6),
+            keepStatusForce    = cms.vuint32(62,22),
+            cleanGenJets       = cms.bool(True),
+            
 
 
 	),

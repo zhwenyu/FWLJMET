@@ -9,4 +9,7 @@
 <use name="CondFormats/JetMETObjects"/>
 <use name="CondFormats/BTauObjects"/>
 <use name="CondTools/BTau"/>
+<use name="SimDataFormats/GeneratorProducts"/>
+<use name="SimGeneral/HepPDTRecord"/>
+<use name="lhapdf"/>
 <flags EDM_PLUGIN="1"/>

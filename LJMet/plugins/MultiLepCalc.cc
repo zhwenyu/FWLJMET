@@ -12,6 +12,17 @@
 #include "FWLJMET/LJMet/interface/JetMETCorrHelper.h"
 
 
+#include "SimDataFormats/GeneratorProducts/interface/GenEventInfoProduct.h"
+#include "SimDataFormats/GeneratorProducts/interface/LHEEventProduct.h"
+#include "SimDataFormats/GeneratorProducts/interface/LHERunInfoProduct.h"
+#include "LHAPDF/LHAPDF.h"
+#include "LHAPDF/GridPDF.h"
+#include "LHAPDF/Info.h"
+#include "LHAPDF/Config.h"
+#include "LHAPDF/PDFInfo.h"
+#include "LHAPDF/PDFSet.h"
+#include "LHAPDF/Factories.h"
+
 class LjmetFactory;
 
 class MultiLepCalc : public BaseCalc {
@@ -31,43 +42,58 @@ public:
 
 
 private:
-	bool debug;
-	bool isMc;
-	bool saveLooseLeps;
-	bool keepFullMChistory;
-	bool UseElMVA;
-	bool UseElIDV1;
+    bool debug;
+    bool isMc;
+    bool saveLooseLeps;
+    bool keepFullMChistory;
+    bool UseElMVA;
+    bool UseElIDV1;
 
-        bool doNewJEC;
-        bool   JECup;
-        bool   JECdown;
-        bool   JERup;
-        bool   JERdown;
-	bool doAllJetSyst;
-	JetMETCorrHelper JetMETCorr;
+    bool doNewJEC;
+    bool   JECup;
+    bool   JECdown;
+    bool   JERup;
+    bool   JERdown;
+    bool doAllJetSyst;
+    JetMETCorrHelper JetMETCorr;
 
-	edm::EDGetTokenT<std::vector<PileupSummaryInfo>>   PupInfoToken;
-	edm::EDGetTokenT<edm::TriggerResults >             muflagtagToken;
-	edm::EDGetTokenT<double>                           rhoJetsNCToken;
-	edm::EDGetTokenT<double>                           rhoJetsToken;
-	edm::EDGetTokenT<pat::PackedCandidateCollection>   PFCandToken;
-	edm::EDGetTokenT<reco::GenParticleCollection>      genParticlesToken;
-	edm::EDGetTokenT<std::vector<pat::MET> >           METnoHFtoken;
-	edm::EDGetTokenT<std::vector<pat::MET> >           METmodToken;
+    bool saveGenHT;
+    bool orlhew;
+    std::string basePDFname;
+    std::string newPDFname;
+    std::vector<unsigned int> keepPDGID;
+    std::vector<unsigned int> keepMomPDGID;
+    std::vector<unsigned int> keepPDGIDForce;
+    std::vector<unsigned int> keepStatusForce;
+    bool cleanGenJets;
+
+
+    edm::EDGetTokenT<std::vector<PileupSummaryInfo>>   PupInfoToken;
+    edm::EDGetTokenT<edm::TriggerResults >             muflagtagToken;
+    edm::EDGetTokenT<double>                           rhoJetsNCToken;
+    edm::EDGetTokenT<double>                           rhoJetsToken;
+    edm::EDGetTokenT<pat::PackedCandidateCollection>   PFCandToken;
+    edm::EDGetTokenT<reco::GenParticleCollection>      genParticlesToken;
+    edm::EDGetTokenT<std::vector<pat::MET> >           METnoHFtoken;
+    edm::EDGetTokenT<std::vector<pat::MET> >           METmodToken;
+    edm::EDGetTokenT<GenEventInfoProduct>              genToken;
+    edm::EDGetTokenT<LHEEventProduct>                  LHEToken;
+    edm::EDGetTokenT<std::vector< reco::GenJet> >      genJetsToken;
 
 
 
-	//helper functions
-	int findMatch(const reco::GenParticleCollection & genParticles, int idToMatch, double eta, double phi);
-	double mdeltaR(double eta1, double phi1, double eta2, double phi2);
-	void fillMotherInfo(const reco::Candidate *mother,
-						int i,
-						std::vector <int> & momid,
-						std::vector <int> & momstatus,
-						std::vector<double> & mompt,
-						std::vector<double> & mometa,
-						std::vector<double> & momphi,
-						std::vector<double> & momenergy);
+    //helper functions
+    int findMatch(const reco::GenParticleCollection & genParticles, int idToMatch, double eta, double phi);
+    double mdeltaR(double eta1, double phi1, double eta2, double phi2);
+    void fillMotherInfo(const reco::Candidate *mother,
+			int i,
+			std::vector <int> & momid,
+			std::vector <int> & momstatus,
+			std::vector<double> & mompt,
+			std::vector<double> & mometa,
+			std::vector<double> & momphi,
+			std::vector<double> & momenergy);
+    static bool SortLVByPt(const TLorentzVector a, const TLorentzVector b) {return a.Pt() > b.Pt();}
 
 
 
@@ -97,8 +123,29 @@ int MultiLepCalc::BeginJob(edm::ConsumesCollector && iC)
 	//Misc
 	rhoJetsNCToken      = iC.consumes<double>(mPset.getParameter<edm::InputTag>("rhoJetsNCInputTag"));
 	PFCandToken         = iC.consumes<pat::PackedCandidateCollection>(mPset.getParameter<edm::InputTag>("PFparticlesCollection"));
-	genParticlesToken   = iC.consumes<reco::GenParticleCollection>(mPset.getParameter<edm::InputTag>("genParticlesCollection"));
 	rhoJetsToken        = iC.consumes<double>(mPset.getParameter<edm::InputTag>("rhoJetsInputTag"));
+
+
+	//Gen
+	genParticlesToken   = iC.consumes<reco::GenParticleCollection>(mPset.getParameter<edm::InputTag>("genParticlesCollection"));
+	genJetsToken        = iC.consumes<std::vector< reco::GenJet> >(mPset.getParameter<edm::InputTag>("genJetsCollection"));
+	genToken            = iC.consumes<GenEventInfoProduct>(edm::InputTag("generator")); //Hardcoding.
+	LHEToken            = iC.consumes<LHEEventProduct>(edm::InputTag("externalLHEProducer")); //hardcoding.
+	saveGenHT           = mPset.getParameter<bool>("saveGenHT");
+	orlhew              = mPset.getParameter<bool>("OverrideLHEWeights");
+	basePDFname         = mPset.getParameter<std::string>("basePDFname");
+	newPDFname          = mPset.getParameter<std::string>("newPDFname");
+	keepPDGID           = mPset.getParameter<std::vector<unsigned int> >("keepPDGID");
+	keepMomPDGID        = mPset.getParameter<std::vector<unsigned int> >("keepMomPDGID");
+	keepPDGIDForce      = mPset.getParameter<std::vector<unsigned int> >("keepPDGIDForce");
+	keepStatusForce     = mPset.getParameter<std::vector<unsigned int> >("keepStatusForce");
+	cleanGenJets        = mPset.getParameter<bool>("cleanGenJets");
+
+	if (orlhew) {
+	  cout << "Overriding LHE weights, using "<<newPDFname<<" as new and "<<basePDFname<<" as base PDF set." << endl;
+	  LHAPDF::Info& cfg = LHAPDF::getConfig();
+	  cfg.set_entry("Verbosity", 0);
+	}
 
 	//Electron
 	UseElMVA          = mPset.getParameter<bool>("UseElMVA");
@@ -1101,6 +1148,356 @@ int MultiLepCalc::AnalyzeEvent(edm::Event const & event, BaseEventSelector * sel
     SetValue("metmod_phi", _metmod_phi);
     SetValue("corr_metmod", _corr_metmod);
     SetValue("corr_metmod_phi", _corr_metmod_phi);
+
+
+    //_____ Gen Info ______________________________
+    //
+
+    //Four std::vector
+    std::vector <double> genPt;
+    std::vector <double> genEta;
+    std::vector <double> genPhi;
+    std::vector <double> genEnergy;
+
+    //Identity
+    std::vector <int> genID;
+    std::vector <int> genIndex;
+    std::vector <int> genStatus;
+    std::vector <int> genMotherID;
+    std::vector <int> genMotherIndex;
+
+    double LHEweightorig = 0;
+    double HTfromHEPEUP = 0;
+    int NPartonsfromHEPEUP = 0;
+
+    //event weights
+    std::vector<double> evtWeightsMC;
+    float MCWeight=1;
+    std::vector<double> LHEweights;
+    std::vector<int> LHEweightids;
+
+    std::vector <double> genJetPt;
+    std::vector <double> genJetEta;
+    std::vector <double> genJetPhi;
+    std::vector <double> genJetEnergy;
+
+    //Tau Decay Lepton
+    double genTDLPt = -9999.;
+    double genTDLEta = -9999.;
+    double genTDLPhi = -9999.;
+    double genTDLEnergy = -9999.;
+    int genTDLID = 0;
+
+    //B Soft Leptons
+    std::vector <double> genBSLPt;
+    std::vector <double> genBSLEta;
+    std::vector <double> genBSLPhi;
+    std::vector <double> genBSLEnergy;
+    std::vector <int> genBSLID;
+
+    std::vector <int> NewPDFids;
+    std::vector <double> NewPDFweights;
+    std::vector <double> NewPDFweightsBase;
+
+    if (isMc){
+        //load info for event weight
+        edm::Handle<GenEventInfoProduct> genEvtInfo;
+        event.getByToken(genToken, genEvtInfo );
+
+        std::vector<double> evtWeights = genEvtInfo->weights();
+        double theWeight = genEvtInfo->weight();
+
+        evtWeightsMC=evtWeights;
+        MCWeight = theWeight;
+
+        if (orlhew) {
+
+          float x1 = genEvtInfo->pdf()->x.first;
+          float x2 = genEvtInfo->pdf()->x.second;
+          double Q = genEvtInfo->pdf()->scalePDF;
+          int id1 = genEvtInfo->pdf()->id.first;
+          int id2 = genEvtInfo->pdf()->id.second;
+          //std::cout<<"x1 x2 Q id1 id2"<<std::endl;
+          //std::cout<<x1<<" "<<x2<<" "<<Q<<" "<<id1<<" "<<id2<<std::endl;
+
+          //Initialize PDF sets
+          LHAPDF::PDF* basepdf1 = LHAPDF::mkPDF(basePDFname,0);
+          const LHAPDF::GridPDF& pdf1 = * dynamic_cast<const LHAPDF::GridPDF*>(basepdf1);
+
+          // calculate central PDFs for generator set,
+          double pdf1_gen = pdf1.xfxQ(id1, x1, Q);
+          double pdf2_gen = pdf1.xfxQ(id2, x2, Q);
+          //std::cout<<"pdf1_gen = "<<pdf1_gen<<" pdf2_gen = "<<pdf2_gen<<std::endl;
+          delete basepdf1;
+
+          const LHAPDF::PDFSet newset(newPDFname);
+          const size_t nmem = newset.size();
+          const std::vector<LHAPDF::PDF*> newpdfs = newset.mkPDFs();
+          for (size_t i = 0; i<nmem; i++) {
+            const LHAPDF::GridPDF& pdf2 = * dynamic_cast<const LHAPDF::GridPDF*>(newpdfs[i]);
+
+            double pdf1_new = pdf2.xfxQ(id1, x1, Q);
+            double pdf2_new = pdf2.xfxQ(id2, x2, Q);
+            NewPDFweights.push_back((pdf1_new*pdf2_new)/(pdf1_gen*pdf2_gen));
+            NewPDFweightsBase.push_back(pdf1_gen*pdf2_gen);
+            NewPDFids.push_back(315000+i);
+
+            delete (newpdfs[i]);
+          }
+        }
+        edm::Handle<LHEEventProduct> EvtHandle;
+        if(event.getByToken(LHEToken,EvtHandle)){
+
+            // Save LHE-level HT calculation from quarks:
+            if(saveGenHT){
+
+                // Save the madgraph event weight
+                const lhef::HEPEUP& lheEvent =EvtHandle->hepeup();
+
+                // Loop over HepEvent entries
+                std::vector<lhef::HEPEUP::FiveVector> lheParticles = lheEvent.PUP;
+                size_t numParticles = lheParticles.size();
+                for(size_t idxParticle = 0; idxParticle < numParticles; ++idxParticle){
+
+                    // PDG ID
+                    int absPdgId = TMath::Abs(lheEvent.IDUP[idxParticle]);
+
+                    // Particle status
+                    int status = lheEvent.ISTUP[idxParticle];
+
+                    // Sum up pt and multiplicity of status 1 quarks and gluons
+                    if(status == 1 && ((absPdgId >= 1 && absPdgId <= 6) || absPdgId == 21)){
+
+                        HTfromHEPEUP += TMath::Sqrt(TMath::Power(lheParticles[idxParticle][0], 2.) + TMath::Power(lheParticles[idxParticle][1], 2.));
+                        NPartonsfromHEPEUP++;
+
+                    }
+                }
+
+            }
+
+            // Storing LHE weights https://twiki.cern.ch/twiki/bin/viewauth/CMS/LHEReaderCMSSW
+            // for MC@NLO renormalization and factorization scale.
+            // ID numbers 1001 - 1009. (muR,muF) =
+            // 0 = 1001: (1,1)    3 = 1004: (2,1)    6 = 1007: (0.5,1)
+            // 1 = 1002: (1,2)    4 = 1005: (2,2)  	 7 = 1008: (0.5,2)
+            // 2 = 1003: (1,0.5)  5 = 1006: (2,0.5)	 8 = 1009: (0.5,0.5)
+            // for PDF variations: ID numbers > 2000
+
+            LHEweightorig = EvtHandle->originalXWGTUP();
+
+            std::string weightidstr;
+            int weightid;
+            if(EvtHandle->weights().size() > 0){
+                for(unsigned int i = 0; i < EvtHandle->weights().size(); i++){
+                    weightidstr = EvtHandle->weights()[i].id;
+                    weightid = std::stoi(weightidstr);
+                    LHEweights.push_back(EvtHandle->weights()[i].wgt/EvtHandle->originalXWGTUP());
+                    LHEweightids.push_back(weightid);
+                }
+            }
+
+        }
+
+        //load genparticles collection
+        edm::Handle<reco::GenParticleCollection> genParticles;
+        event.getByToken(genParticlesToken, genParticles);
+
+        edm::Handle<std::vector< reco::GenJet> > genJets;
+        event.getByToken(genJetsToken, genJets);
+
+        //std::cout << "---------------------------------" << std::endl;
+        //std::cout << "\tStatus\tmoment\tmass\tpt\teta\tphi\tID\tMomID\tMomStat\tGMomID\tGMomSt\tGGMomID\tGGMomSt" << std::endl;
+        //std::cout << std::endl;
+
+        for(size_t i = 0; i < genParticles->size(); i++){
+            const reco::GenParticle & p = (*genParticles).at(i);
+
+            bool forceSave = false;
+            for (unsigned int ii = 0; ii < keepPDGIDForce.size(); ii++){
+                if (abs(p.pdgId()) == (int) keepPDGIDForce.at(ii) && p.status() == (int) keepStatusForce.at(ii)){
+                    forceSave = true;
+                    break;
+                }
+            }
+            //if (abs(p.pdgId())==11 || abs(p.pdgId())==13 || abs(p.pdgId())==15) {
+            //    std::cout << i << "\t" << p.status() << "\t" << p.p() << "\t" << p.mass() << "\t" << p.pt() << "\t" << p.eta() << "\t" << p.phi() << "\t" << p.pdgId() << "\t";
+            //    if (!(!(p.mother()))) {
+            //        std::cout << p.mother()->pdgId() << "\t" << p.mother()->status() << "\t";
+            //        if (!(!(p.mother()->mother()))) std::cout << p.mother()->mother()->pdgId() << "\t" << p.mother()->mother()->status() << "\t";
+            //    }
+            //}
+
+            if (p.status() == 1 && (abs(p.pdgId()) == 11 || abs(p.pdgId()) == 13)){
+                if (!(!(p.mother()))) {
+                    if (!(p.mother()->status()==23 && (abs(p.mother()->pdgId()) == 11 || abs(p.mother()->pdgId()) == 13))) {
+                        if (!(!(p.mother()->mother()))) {
+                            if (abs(p.mother()->mother()->pdgId()) == 15 && abs(p.mother()->pdgId()) == 15) {
+                                genTDLPt     = p.pt();
+                                genTDLEta    = p.eta();
+                                genTDLPhi    = p.phi();
+                                genTDLEnergy = p.energy();
+                                genTDLID     = p.pdgId();
+                                //std::cout << "<-- TDL";
+                            }
+                            else {
+                                genBSLPt     . push_back(p.pt());
+                                genBSLEta    . push_back(p.eta());
+                                genBSLPhi    . push_back(p.phi());
+                                genBSLEnergy . push_back(p.energy());
+                                genBSLID     . push_back(p.pdgId());
+                                //std::cout << "<-- BSL";
+                            }
+                        }
+                    }
+                }
+            }
+            //if (abs(p.pdgId())==11 || abs(p.pdgId())==13 || abs(p.pdgId())==15) {
+            //    std::cout << std::endl;
+            //}
+
+            //Find status 23 particles
+            if (p.status() == 23){
+
+                reco::Candidate* mother = (reco::Candidate*) p.mother();
+                if (not mother)            continue;
+
+                bool bKeep = false;
+                for (unsigned int uk = 0; uk < keepMomPDGID.size(); uk++){
+                    if (abs(mother->pdgId()) == (int) keepMomPDGID.at(uk)){
+                        bKeep = true;
+                        break;
+                    }
+                }
+
+                if (not bKeep) {
+                    for (unsigned int uk = 0; uk < keepPDGID.size(); uk++){
+                        if (abs(p.pdgId()) == (int) keepPDGID.at(uk)){
+                            bKeep = true;
+                            break;
+                        }
+                    }
+                }
+
+                if (not bKeep) continue;
+
+                //Find index of mother
+                int mInd = 0;
+                for(size_t j = 0; j < genParticles->size(); j++){
+                    const reco::GenParticle & q = (*genParticles).at(j);
+                    if (q.status() != 3) continue;
+                    if (mother->pdgId() == q.pdgId() and fabs(mother->eta() - q.eta()) < 0.01 and fabs(mother->pt() - q.pt()) < 0.01){
+                        mInd = (int) j;
+                        break;
+                    }
+                }
+
+                //Four std::vector
+                genPt     . push_back(p.pt());
+                genEta    . push_back(p.eta());
+                genPhi    . push_back(p.phi());
+                genEnergy . push_back(p.energy());
+
+                //Identity
+                genID            . push_back(p.pdgId());
+                genIndex         . push_back((int) i);
+                genStatus        . push_back(p.status());
+                genMotherID      . push_back(mother->pdgId());
+                genMotherIndex   . push_back(mInd);
+            }
+            else if (forceSave) {
+                //Four std::vector
+                genPt     . push_back(p.pt());
+                genEta    . push_back(p.eta());
+                genPhi    . push_back(p.phi());
+                genEnergy . push_back(p.energy());
+
+                //Identity
+                genID            . push_back(p.pdgId());
+                genIndex         . push_back((int) i);
+                genStatus        . push_back(p.status());
+                genMotherID      . push_back(0);
+                genMotherIndex   . push_back(0);
+            }
+        }//End loop over gen particles
+        TLorentzVector tmpJet;
+        TLorentzVector tmpLep;
+        TLorentzVector tmpCand;
+        std::vector<TLorentzVector> tmpVec;
+        for(const reco::GenJet &j : *genJets){
+            tmpJet.SetPtEtaPhiE(j.pt(),j.eta(),j.phi(),j.energy());
+            if (cleanGenJets) {
+	            for(size_t k = 0; k < vGenLep.size(); k++){
+                    tmpLep = vGenLep[k];
+	                for (unsigned int id = 0, nd = j.numberOfDaughters(); id < nd; ++id) {
+			  if ( !(j.daughterPtr(id).isNonnull()) ) continue;
+			  if ( !(j.daughterPtr(id).isAvailable()) ) continue;
+			  const reco::Candidate &_ijet_const = dynamic_cast<const reco::Candidate &>(*j.daughter(id));
+			  tmpCand.SetPtEtaPhiE(_ijet_const.pt(),_ijet_const.eta(),_ijet_const.phi(),_ijet_const.energy());
+			  if ( tmpLep.DeltaR(tmpCand) < 0.001 && (abs(_ijet_const.pdgId())==13 || abs(_ijet_const.pdgId())==11) ) {//genjet cleaning to mimic reco jet cleaning
+	                    //std::cout<<"Found overlap:"<<std::endl;
+	                    //std::cout<<"Gen Lep      : pt = "<<tmpLep.Pt()<<", eta = "<<tmpLep.Eta()<<", phi = "<<tmpLep.Phi()<<std::endl;
+	                    //std::cout<<"Gen Jet      : pt = "<<tmpJet.Pt()<<", eta = "<<tmpJet.Eta()<<", phi = "<<tmpJet.Phi()<<std::endl;
+	                    //std::cout<<"Gen Jet Const: pt = "<<tmpCand.Pt()<<", eta = "<<tmpCand.Eta()<<", phi = "<<tmpCand.Phi()<<std::endl;
+	                    tmpJet = tmpJet - tmpLep;
+ 	                }
+                        if (abs(_ijet_const.pdgId())==12 || abs(_ijet_const.pdgId())==14 || abs(_ijet_const.pdgId())==16) tmpJet = tmpJet - tmpCand;//temporary fix for neutrinos being included in genjets, can be removed in later releases (i.e. >74X)
+                    }
+                }
+            }
+            tmpVec.push_back(tmpJet);
+        }
+        std::sort(tmpVec.begin(), tmpVec.end(), SortLVByPt);
+        for (unsigned int i = 0; i < tmpVec.size(); i++) {
+	    //std::cout<<"Gen Jet      : pt = "<<tmpVec.at(i).Pt()<<", eta = "<<tmpVec.at(i).Eta()<<", phi = "<<tmpVec.at(i).Phi()<<std::endl;
+            genJetPt     . push_back(tmpVec.at(i).Pt());
+            genJetEta    . push_back(tmpVec.at(i).Eta());
+            genJetPhi    . push_back(tmpVec.at(i).Phi());
+            genJetEnergy . push_back(tmpVec.at(i).Energy());
+        }  //End loop over gen jets
+    }  //End MC-only if
+
+    // Four std::vector
+    SetValue("genPt"    , genPt);
+    SetValue("genEta"   , genEta);
+    SetValue("genPhi"   , genPhi);
+    SetValue("genEnergy", genEnergy);
+
+    // Identity
+    SetValue("genID"         , genID);
+    SetValue("genIndex"      , genIndex);
+    SetValue("genStatus"     , genStatus);
+    SetValue("genMotherID"   , genMotherID);
+    SetValue("genMotherIndex", genMotherIndex);
+
+    // Four std::vector
+    SetValue("genJetPt"    , genJetPt);
+    SetValue("genJetEta"   , genJetEta);
+    SetValue("genJetPhi"   , genJetPhi);
+    SetValue("genJetEnergy", genJetEnergy);
+
+    SetValue("genBSLPt"    , genBSLPt);
+    SetValue("genBSLEta"   , genBSLEta);
+    SetValue("genBSLPhi"   , genBSLPhi);
+    SetValue("genBSLEnergy", genBSLEnergy);
+    SetValue("genBSLID"    , genBSLID);
+
+    SetValue("genTDLPt"    , genTDLPt);
+    SetValue("genTDLEta"   , genTDLEta);
+    SetValue("genTDLPhi"   , genTDLPhi);
+    SetValue("genTDLEnergy", genTDLEnergy);
+    SetValue("genTDLID"    , genTDLID);
+
+    SetValue("evtWeightsMC", evtWeightsMC);
+    SetValue("MCWeight", MCWeight);
+    SetValue("LHEweightorig", LHEweightorig);
+    SetValue("LHEweights", LHEweights);
+    SetValue("LHEweightids", LHEweightids);
+    SetValue("NewPDFids", NewPDFids);
+    SetValue("NewPDFweights", NewPDFweights);
+    SetValue("NewPDFweightsBase", NewPDFweightsBase);
+    SetValue("HTfromHEPUEP", HTfromHEPEUP);
+    SetValue("NPartonsfromHEPUEP", NPartonsfromHEPEUP);
 
 
 	return 0;
