@@ -6,6 +6,7 @@ using namespace std;
 
 JetMETCorrHelper::JetMETCorrHelper()
 {
+    if(debug) std::cout << mLegend << "Creating JetMETCorrHelper object." << std::endl;
 }
 
 JetMETCorrHelper::JetMETCorrHelper(const edm::ParameterSet& iConfig, bool isMc)
@@ -16,9 +17,8 @@ JetMETCorrHelper::JetMETCorrHelper(const edm::ParameterSet& iConfig, bool isMc)
 
 void JetMETCorrHelper::Initialize(const edm::ParameterSet& iConfig, bool isMc){
 
-	mLegend = "[JetMETCorrHelper]:";
-
     //JET CORRECTION  initialization
+    if(debug) std::cout << mLegend << "Initializing JetMETCorrHelper object." << std::endl;
 
     std::string JEC_txtfile              = iConfig.getParameter<std::string>("JEC_txtfile");
     std::string JERSF_txtfile            = iConfig.getParameter<std::string>("JERSF_txtfile");

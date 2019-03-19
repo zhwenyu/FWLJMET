@@ -68,8 +68,8 @@ class JetMETCorrHelper{
             
         bool debug=true;
 
-        std::string mLegend;
-        
+        std::string mLegend = "[JetMETCorrHelper]: ";
+    
         TRandom3 JERrand;
 
 		JetCorrectionUncertainty *jecUnc;
