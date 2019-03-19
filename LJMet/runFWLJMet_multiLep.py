@@ -281,14 +281,15 @@ process.ljmet = cms.EDAnalyzer(
 
             #Btag
             btag_cuts                = cms.bool(False), #not implemented
-            btagOP                   = cms.string('MEDIUM'),
-            bdisc_min                = cms.double(0.4941),
+            btagOP                   = cms.string('MEDIUM'), 
+            bdisc_min                = cms.double(0.4941), # THIS HAS TO MATCH btagOP !
+            applyBtagSF              = cms.bool(True), #This is implemented by BTagSFUtil.cc
             DeepCSVfile              = cms.string(relBase+'/src/FWLJMET/LJMet/data/DeepCSV_94XSF_V3_B_F.csv'),
             DeepCSVSubjetfile        = cms.string(relBase+'/src/FWLJMET/LJMet/data/subjet_DeepCSV_94XSF_V3_B_F.csv'),
-            BTagUncertUp             = cms.bool(False), # no longer needed
-            BTagUncertDown           = cms.bool(False), # no longer needed
-            MistagUncertUp           = cms.bool(False), # no longer needed
-            MistagUncertDown          = cms.bool(False), # no longer needed
+            BTagUncertUp             = cms.bool(False), # no longer needed, but can still be utilized. Keep false as default.
+            BTagUncertDown           = cms.bool(False), # no longer needed, but can still be utilized. Keep false as default.
+            MistagUncertUp           = cms.bool(False), # no longer needed, but can still be utilized. Keep false as default.
+            MistagUncertDown          = cms.bool(False), # no longer needed, but can still be utilized. Keep false as default.
 
 
             ),
@@ -352,6 +353,16 @@ process.ljmet = cms.EDAnalyzer(
             keepStatusForce    = cms.vuint32(62,22),
             cleanGenJets       = cms.bool(True),
             
+            #Btagging
+            btagOP                   = cms.string('MEDIUM'), 
+            bdisc_min                = cms.double(0.4941), # THIS HAS TO MATCH btagOP !
+            applyBtagSF              = cms.bool(True), #This is implemented by BTagSFUtil.cc
+            DeepCSVfile              = cms.string(relBase+'/src/FWLJMET/LJMet/data/DeepCSV_94XSF_V3_B_F.csv'),
+            DeepCSVSubjetfile        = cms.string(relBase+'/src/FWLJMET/LJMet/data/subjet_DeepCSV_94XSF_V3_B_F.csv'),
+            BTagUncertUp             = cms.bool(False), # no longer needed, but can still be utilized. Keep false as default.
+            BTagUncertDown           = cms.bool(False), # no longer needed, but can still be utilized. Keep false as default.
+            MistagUncertUp           = cms.bool(False), # no longer needed, but can still be utilized. Keep false as default.
+            MistagUncertDown          = cms.bool(False), # no longer needed, but can still be utilized. Keep false as default.
 
 
 	),

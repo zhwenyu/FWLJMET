@@ -10,6 +10,7 @@
 #include "FWLJMET/LJMet/interface/MiniIsolation.h"
 
 #include "FWLJMET/LJMet/interface/JetMETCorrHelper.h"
+#include "FWLJMET/LJMet/interface/BTagSFUtil.h"
 
 
 #include "SimDataFormats/GeneratorProducts/interface/GenEventInfoProduct.h"
@@ -60,6 +61,8 @@ private:
     bool   JERdown;
     bool doAllJetSyst;
     JetMETCorrHelper JetMETCorr;
+
+    BTagSFUtil mBtagSfUtil;
 
     bool saveGenHT;
     bool orlhew;
@@ -115,6 +118,9 @@ MultiLepCalc::~MultiLepCalc()
 
 int MultiLepCalc::BeginJob(edm::ConsumesCollector && iC)
 {
+
+	std::cout << "["+GetName()+"]: "<< "initializing parameters" << std::endl;
+
 	//do consumes here if need to access input file directly
 
 	//PU info
@@ -146,7 +152,7 @@ int MultiLepCalc::BeginJob(edm::ConsumesCollector && iC)
 	vGenLep.clear();
 
 	if (orlhew) {
-	  std::cout << "Overriding LHE weights, using "<<newPDFname<<" as new and "<<basePDFname<<" as base PDF set." << std::endl;
+	  std::cout << "["+GetName()+"]: "<< "Overriding LHE weights, using "<<newPDFname<<" as new and "<<basePDFname<<" as base PDF set." << std::endl;
 	  LHAPDF::Info& cfg = LHAPDF::getConfig();
 	  cfg.set_entry("Verbosity", 0);
 	}
@@ -172,6 +178,9 @@ int MultiLepCalc::BeginJob(edm::ConsumesCollector && iC)
 	JERdown                  = mPset.getParameter<bool>("JERdown");
 	doAllJetSyst             = mPset.getParameter<bool>("doAllJetSyst");
 	JetMETCorr.Initialize(mPset,isMc);
+	
+    //BTAG parameter initialization
+    mBtagSfUtil.Initialize(mPset);
 
 	return 0;
 }
@@ -966,10 +975,10 @@ void MultiLepCalc::AnalyzeJets(edm::Event const & event, BaseEventSelector * sel
 //     std::vector <double> AK4JetEnergy_jerdn;
 
     std::vector <int>    AK4JetBTag;
-//     std::vector <int>    AK4JetBTag_bSFup;
-//     std::vector <int>    AK4JetBTag_bSFdn;
-//     std::vector <int>    AK4JetBTag_lSFup;
-//     std::vector <int>    AK4JetBTag_lSFdn;
+    std::vector <int>    AK4JetBTag_bSFup;
+    std::vector <int>    AK4JetBTag_bSFdn;
+    std::vector <int>    AK4JetBTag_lSFup;
+    std::vector <int>    AK4JetBTag_lSFdn;
     std::vector <double> AK4JetBDisc;
     std::vector <double> AK4JetBDeepCSVb;
     std::vector <double> AK4JetBDeepCSVbb;
@@ -988,12 +997,14 @@ void MultiLepCalc::AnalyzeJets(edm::Event const & event, BaseEventSelector * sel
       AK4JetEnergy . push_back(ii->energy());
 
       AK4JetBTag   . push_back(vCorrBtagJets[index].second);
-//       AK4JetBTag_bSFup.push_back(selector->isJetTagged(*ii, event, true, 1));
-//       AK4JetBTag_bSFdn.push_back(selector->isJetTagged(*ii, event, true, 2));
-//       AK4JetBTag_lSFup.push_back(selector->isJetTagged(*ii, event, true, 3));
-//       AK4JetBTag_lSFdn.push_back(selector->isJetTagged(*ii, event, true, 4));
+      
+      TLorentzVector jetP4; jetP4.SetPtEtaPhiE(ii->pt(), ii->eta(), ii->phi(), ii->energy() );
 
-      //AK4JetRCN        . push_back(((*ijet)->chargedEmEnergy()+(*ijet)->chargedHadronEnergy()) / ((*ijet)->neutralEmEnergy()+(*ijet)->neutralHadronEnergy()));
+      AK4JetBTag_bSFup.push_back(mBtagSfUtil.isJetTagged(*ii,jetP4, event, isMc, 1));
+      AK4JetBTag_bSFdn.push_back(mBtagSfUtil.isJetTagged(*ii,jetP4, event, isMc, 2));
+      AK4JetBTag_lSFup.push_back(mBtagSfUtil.isJetTagged(*ii,jetP4, event, isMc, 3));
+      AK4JetBTag_lSFdn.push_back(mBtagSfUtil.isJetTagged(*ii,jetP4, event, isMc, 4));
+
       AK4JetBDisc        . push_back(ii->bDiscriminator( "pfCombinedInclusiveSecondaryVertexV2BJetTags" ));
       AK4JetBDeepCSVb    . push_back(ii->bDiscriminator( "pfDeepCSVJetTags:probb" ));
       AK4JetBDeepCSVbb   . push_back(ii->bDiscriminator( "pfDeepCSVJetTags:probbb" ));
@@ -1060,11 +1071,10 @@ void MultiLepCalc::AnalyzeJets(edm::Event const & event, BaseEventSelector * sel
 //     }
     SetValue("AK4HT"        , AK4HT);
     SetValue("AK4JetBTag"   , AK4JetBTag);
-//     SetValue("AK4JetBTag_bSFup"   , AK4JetBTag_bSFup);
-//     SetValue("AK4JetBTag_bSFdn"   , AK4JetBTag_bSFdn);
-//     SetValue("AK4JetBTag_lSFup"   , AK4JetBTag_lSFup);
-//     SetValue("AK4JetBTag_lSFdn"   , AK4JetBTag_lSFdn);
-    //SetValue("AK4JetRCN"          , AK4JetRCN);
+    SetValue("AK4JetBTag_bSFup"   , AK4JetBTag_bSFup);
+    SetValue("AK4JetBTag_bSFdn"   , AK4JetBTag_bSFdn);
+    SetValue("AK4JetBTag_lSFup"   , AK4JetBTag_lSFup);
+    SetValue("AK4JetBTag_lSFdn"   , AK4JetBTag_lSFdn);
     SetValue("AK4JetBDisc"          , AK4JetBDisc);
     SetValue("AK4JetBDeepCSVb"      , AK4JetBDeepCSVb);
     SetValue("AK4JetBDeepCSVbb"     , AK4JetBDeepCSVbb);
@@ -1185,13 +1195,12 @@ void MultiLepCalc::AnalyzeMET(edm::Event const & event, BaseEventSelector * sele
     if(pMet.isNonnull() && pMet.isAvailable()) {
         _met = pMet->p4().pt();
         _met_phi = pMet->p4().phi();
-
-
-	if(corrMET_p4.Pt()>0) {
-	  _corr_met.push_back(corrMET_p4.Pt());
-	  _corr_met_phi.push_back(corrMET_p4.Phi());
-	}
-	else{
+        
+        if(corrMET_p4.Pt()>0) {
+            _corr_met.push_back(corrMET_p4.Pt());
+            _corr_met_phi.push_back(corrMET_p4.Phi());
+        }
+        else{
             _corr_met.push_back(-9999.0);
             _corr_met_phi.push_back(-9999.0);
         }

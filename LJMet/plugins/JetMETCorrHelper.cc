@@ -18,7 +18,9 @@ JetMETCorrHelper::JetMETCorrHelper(const edm::ParameterSet& iConfig, bool isMc)
 void JetMETCorrHelper::Initialize(const edm::ParameterSet& iConfig, bool isMc){
 
     //JET CORRECTION  initialization
-    if(debug) std::cout << mLegend << "Initializing JetMETCorrHelper object." << std::endl;
+    std::cout << mLegend << "Initializing JetMETCorrHelper object." << std::endl;
+
+    debug              = iConfig.getParameter<bool>("debug");
 
     std::string JEC_txtfile              = iConfig.getParameter<std::string>("JEC_txtfile");
     std::string JERSF_txtfile            = iConfig.getParameter<std::string>("JERSF_txtfile");
@@ -193,7 +195,7 @@ TLorentzVector JetMETCorrHelper::correctJet(const pat::Jet & jet,
   pat::Jet correctedJet = correctJetReturnPatJet(jet, event, isMc, rhoJetsToken, doAK8Corr, reCorrectJet, syst);
 
   TLorentzVector jetP4;
-  jetP4.SetPtEtaPhiM(correctedJet.pt(), correctedJet.eta(),correctedJet.phi(), correctedJet.mass() );
+  jetP4.SetPtEtaPhiM(correctedJet.pt(), correctedJet.eta(),correctedJet.phi(), correctedJet.mass() ); // Should this use SetPtEtaPhiE ? -- Mar 19, 2019.
 
 
   return jetP4;

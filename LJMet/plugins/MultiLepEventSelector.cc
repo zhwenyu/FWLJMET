@@ -26,11 +26,7 @@
 #include <regex>
 
 #include "FWLJMET/LJMet/interface/JetMETCorrHelper.h"
-
 #include "FWLJMET/LJMet/interface/BTagSFUtil.h"
-#include "FWLJMET/LJMet/interface/BtagHardcodedConditions.h"
-#include "CondFormats/BTauObjects/interface/BTagCalibration.h"
-#include "CondTools/BTau/interface/BTagCalibrationReader.h"
 
 
 using namespace std;
@@ -142,7 +138,10 @@ protected:
     int    max_jet;
     double leading_jet_pt;
     JetMETCorrHelper JetMETCorr;
-
+    
+    //Btag
+    bool        btag_cuts;
+    BTagSFUtil mBtagSfUtil;
 
     //Tokens
     edm::EDGetTokenT<GenEventInfoProduct>            genToken;
@@ -170,51 +169,6 @@ protected:
     bool JetSelection      (edm::Event const & event, pat::strbitset & ret);
     void AK8JetSelection   (edm::Event const & event);
     bool METSelection      (edm::Event const & event);
-
-
-private:
-
-
-    //NOTE: theres no really good reason why there are in private or protected. Not planning on having child classes of this class.
-
-    // ---------------------------------------------------------------
-    // ---------------------------------------------------------------
-    // NOTE: EVERYTHING BELOW NEEDS TO BE EITHER REORGANIZED/REWRITTEN - start
-    // ---------------------------------------------------------------
-    // ---------------------------------------------------------------
-
-    //BTAG helper method
-    bool isJetTagged(const pat::Jet &jet,
-                     TLorentzVector correctedJet_lv,
-                     edm::Event const & event,
-                     bool isMc,
-                     bool applySF = true,
-                     int shiftflag = 0,
-                     bool subjetflag = false);
-
-    //BTAG variables/parameters/object type definitions
-    bool        btag_cuts;
-    double      bdisc_min;
-    std::string DeepCSVfile;
-    std::string DeepCSVSubjetfile;
-    std::string btagOP;
-    double bTagCut;
-    BTagSFUtil mBtagSfUtil;
-    BtagHardcodedConditions mBtagCond;
-    bool        BTagUncertUp;
-    bool        BTagUncertDown;
-    bool        MistagUncertUp;
-    bool        MistagUncertDown;
-    BTagCalibration       calib;
-    BTagCalibration       calibsj;
-    BTagCalibrationReader reader;
-    BTagCalibrationReader readerSJ;
-
-    // ---------------------------------------------------------------
-    // ---------------------------------------------------------------
-    // NOTE: EVERYTHING ABOVE NEEDS TO BE EITHER REORGANIZED/REWRITTEN - end
-    // ---------------------------------------------------------------
-    // ---------------------------------------------------------------
 
 
 };
@@ -333,6 +287,11 @@ void MultiLepEventSelector::BeginJob( const edm::ParameterSet& iConfig, edm::Con
     //JET CORRECTION  initialization
     JetMETCorr.Initialize(selectorConfig,isMc);
 
+    //BTAG
+    btag_cuts          = selectorConfig.getParameter<bool>("btag_cuts");  // this is currently not used anywhere but could be useful in the future. -- Mar 19, 2019.  
+    //BTAG parameter initialization
+    mBtagSfUtil.Initialize(selectorConfig);
+
 
     //MET
     METtoken           = iC.consumes<std::vector<pat::MET> >(selectorConfig.getParameter<edm::InputTag>("met_collection"));
@@ -344,52 +303,6 @@ void MultiLepEventSelector::BeginJob( const edm::ParameterSet& iConfig, edm::Con
     PFCandToken          = iC.consumes<pat::PackedCandidateCollection>(selectorConfig.getParameter<edm::InputTag>("PFparticlesCollection"));
     rhoJetsNC_Token      = iC.consumes<double>(selectorConfig.getParameter<edm::InputTag>("rhoJetsNCInputTag"));
     rhoJetsToken         = iC.consumes<double>(selectorConfig.getParameter<edm::InputTag>("rhoJetsInputTag"));
-
-
-    // ---------------------------------------------------------------
-    // ---------------------------------------------------------------
-    // NOTE: EVERYTHING BELOW NEEDS TO BE EITHER REORGANIZED/REWRITTEN - start
-    // ---------------------------------------------------------------
-    // ---------------------------------------------------------------
-
-    //BTAG parameter initialization
-    btag_cuts          = selectorConfig.getParameter<bool>("btag_cuts");
-    bdisc_min          = selectorConfig.getParameter<double>("bdisc_min");
-    DeepCSVfile        = selectorConfig.getParameter<std::string>("DeepCSVfile");
-    DeepCSVSubjetfile  = selectorConfig.getParameter<std::string>("DeepCSVSubjetfile");
-    btagOP             = selectorConfig.getParameter<std::string>("btagOP");
-    BTagUncertUp       = selectorConfig.getParameter<bool>("BTagUncertUp");
-    BTagUncertDown     = selectorConfig.getParameter<bool>("BTagUncertDown");
-    MistagUncertUp     = selectorConfig.getParameter<bool>("MistagUncertUp");
-    MistagUncertDown   = selectorConfig.getParameter<bool>("MistagUncertDown");
-
-    bTagCut = bdisc_min;
-    std::cout << mLegend << "b-tag check: DeepCSV "<<btagOP<<" > "<<bdisc_min<<std::endl;
-    std::cout << mLegend << "b-tag files: " << DeepCSVfile << ", " << DeepCSVSubjetfile << std::endl;
-    calib   = BTagCalibration("deepcsv",DeepCSVfile);
-    calibsj = BTagCalibration("deepcsvsj",DeepCSVSubjetfile);
-    if(btagOP == "LOOSE"){
-      reader   = BTagCalibrationReader(BTagEntry::OP_LOOSE, "central", {"up","down"});
-      readerSJ = BTagCalibrationReader(BTagEntry::OP_LOOSE, "central", {"up","down"});
-    }else if(btagOP == "TIGHT"){
-      reader   = BTagCalibrationReader(BTagEntry::OP_TIGHT, "central", {"up","down"});
-    }else{
-      reader   = BTagCalibrationReader(BTagEntry::OP_MEDIUM, "central", {"up","down"});
-      readerSJ = BTagCalibrationReader(BTagEntry::OP_MEDIUM, "central", {"up","down"});
-    }
-    reader.load(calib, BTagEntry::FLAV_B, "comb");
-    reader.load(calib, BTagEntry::FLAV_C, "comb");
-    reader.load(calib, BTagEntry::FLAV_UDSG, "incl");
-    readerSJ.load(calibsj, BTagEntry::FLAV_B, "lt");
-    readerSJ.load(calibsj, BTagEntry::FLAV_C, "lt");
-    readerSJ.load(calibsj, BTagEntry::FLAV_UDSG, "incl");
-
-
-    // ---------------------------------------------------------------
-    // ---------------------------------------------------------------
-    // NOTE: EVERYTHING ABOVE NEEDS TO BE EITHER REORGANIZED/REWRITTEN - end
-    // ---------------------------------------------------------------
-    // ---------------------------------------------------------------
 
 
     //-----------------------
@@ -1319,7 +1232,7 @@ bool MultiLepEventSelector::JetSelection(edm::Event const & event, pat::strbitse
       corrJet = JetMETCorr.correctJetReturnPatJet(*_ijet, event, isMc, rhoJetsToken, isAK8, reCorrectJet, syst);
     }
 
-    _isTagged = isJetTagged(*_ijet, jetP4, event, isMc);
+    _isTagged = mBtagSfUtil.isJetTagged(*_ijet, jetP4, event, isMc);
 
     // jet cuts  //NOTE: THIS IDEALLY SHOULDN'T BE HARD CODED -- Mar 13, 2019
     while(1){
@@ -1706,95 +1619,3 @@ bool MultiLepEventSelector::EXAMPLESelection(edm::Event const & event)
 
 }
 */
-
-
-// ---------------------------------------------------------------
-// ---------------------------------------------------------------
-// NOTE: EVERYTHING BELOW NEEDS TO BE EITHER REORGANIZED/REWRITTEN - start
-// ---------------------------------------------------------------
-// ---------------------------------------------------------------
-
-
-//BTAG HELPER METHOD
-bool MultiLepEventSelector::isJetTagged(const pat::Jet & jet,
-                                        TLorentzVector correctedJet_lv,
-                                        edm::Event const & event,
-                                        bool isMc,
-                                        bool applySF,
-                                        int shiftflag,
-                                        bool subjetflag)
-{
-    bool _isTagged = false;
-
-    if (jet.bDiscriminator("pfDeepCSVJetTags:probb")+jet.bDiscriminator("pfDeepCSVJetTags:probbb") > bTagCut) _isTagged = true;
-
-	// NOTE : IS BELOW STIL USED?? IF NOT CAN REMOVE ! AND REMOVE THE BTagUtilSF objects as well. Mar 18, 2019
-    if (isMc && applySF){
-
-      //TLorentzVector lvjet = correctJet(jet, event);
-      TLorentzVector lvjet = correctedJet_lv;
-
-      int _jetFlavor = abs(jet.hadronFlavour());
-      double _heavySf = 1.0;
-      double _heavyEff = 1.0;
-      double _lightSf = 1.0;
-      double _lightEff = 1.0;
-
-      if(!subjetflag){
-
-		_heavySf = reader.eval_auto_bounds("central",BTagEntry::FLAV_B,fabs(lvjet.Eta()),lvjet.Pt());
-		if (shiftflag == 1 ||  BTagUncertUp ) _heavySf = reader.eval_auto_bounds("up",BTagEntry::FLAV_B,fabs(lvjet.Eta()),lvjet.Pt());
-		else if (shiftflag == 2 ||  BTagUncertDown ) _heavySf = reader.eval_auto_bounds("down",BTagEntry::FLAV_B,fabs(lvjet.Eta()),lvjet.Pt());
-		_heavyEff = mBtagCond.GetBtagEfficiency(lvjet.Et(), fabs(lvjet.Eta()), "DeepCSV"+btagOP);
-
-		if(_jetFlavor == 4){
-		  _heavySf = reader.eval_auto_bounds("central",BTagEntry::FLAV_C,fabs(lvjet.Eta()),lvjet.Pt());
-		  if (shiftflag == 1 ||  BTagUncertUp ) _heavySf = reader.eval_auto_bounds("up",BTagEntry::FLAV_C,fabs(lvjet.Eta()),lvjet.Pt());
-		  else if (shiftflag == 2 ||  BTagUncertDown ) _heavySf = reader.eval_auto_bounds("down",BTagEntry::FLAV_C,fabs(lvjet.Eta()),lvjet.Pt());
-		  _heavyEff = mBtagCond.GetBtagEfficiency(lvjet.Et(), fabs(lvjet.Eta()), "DeepCSV"+btagOP);
-		}
-
-		_lightSf = reader.eval_auto_bounds("central",BTagEntry::FLAV_UDSG,fabs(lvjet.Eta()),lvjet.Pt());
-		if (shiftflag == 3 || MistagUncertUp ) _lightSf = reader.eval_auto_bounds("up",BTagEntry::FLAV_UDSG,fabs(lvjet.Eta()),lvjet.Pt());
-		else if (shiftflag == 4 ||  MistagUncertDown ) _lightSf = reader.eval_auto_bounds("down",BTagEntry::FLAV_UDSG,fabs(lvjet.Eta()),lvjet.Pt());
-		_lightEff = mBtagCond.GetMistagRate(lvjet.Et(), fabs(lvjet.Eta()), "DeepCSV"+btagOP);
-
-      }
-      else{
-
-      	_heavySf = readerSJ.eval_auto_bounds("central",BTagEntry::FLAV_B,fabs(lvjet.Eta()),lvjet.Pt());
-      	if (shiftflag == 1 ||  BTagUncertUp ) _heavySf = readerSJ.eval_auto_bounds("up",BTagEntry::FLAV_B,fabs(lvjet.Eta()),lvjet.Pt());
-      	else if (shiftflag == 2 ||  BTagUncertDown ) _heavySf = readerSJ.eval_auto_bounds("down",BTagEntry::FLAV_B,fabs(lvjet.Eta()),lvjet.Pt());
-      	_heavyEff = mBtagCond.GetBtagEfficiency(lvjet.Et(), fabs(lvjet.Eta()), "SJDeepCSV"+btagOP);
-
-      	if(_jetFlavor == 4){
-      	  _heavySf = readerSJ.eval_auto_bounds("central",BTagEntry::FLAV_C,fabs(lvjet.Eta()),lvjet.Pt());
-      	  if (shiftflag == 1 ||  BTagUncertUp ) _heavySf = readerSJ.eval_auto_bounds("up",BTagEntry::FLAV_C,fabs(lvjet.Eta()),lvjet.Pt());
-      	  else if (shiftflag == 2 ||  BTagUncertDown ) _heavySf = readerSJ.eval_auto_bounds("down",BTagEntry::FLAV_C,fabs(lvjet.Eta()),lvjet.Pt());
-      	  _heavyEff = mBtagCond.GetBtagEfficiency(lvjet.Et(), fabs(lvjet.Eta()), "SJDeepCSV"+btagOP);
-      	}
-
-      	_lightSf = readerSJ.eval_auto_bounds("central",BTagEntry::FLAV_UDSG,fabs(lvjet.Eta()),lvjet.Pt());
-      	if (shiftflag == 3 || MistagUncertUp ) _lightSf = readerSJ.eval_auto_bounds("up",BTagEntry::FLAV_UDSG,fabs(lvjet.Eta()),lvjet.Pt());
-      	else if (shiftflag == 4 ||  MistagUncertDown ) _lightSf = readerSJ.eval_auto_bounds("down",BTagEntry::FLAV_UDSG,fabs(lvjet.Eta()),lvjet.Pt());
-      	_lightEff = mBtagCond.GetMistagRate(lvjet.Et(), fabs(lvjet.Eta()), "SJDeepCSV"+btagOP);
-      }
-
-      mBtagSfUtil.SetSeed(abs(static_cast<int>(sin(jet.phi())*1e5)));
-
-      // sanity check
-      bool _orig_tag = _isTagged;
-      mBtagSfUtil.modifyBTagsWithSF(_isTagged, _jetFlavor, _heavySf, _heavyEff, _lightSf, _lightEff);
-      //if (_isTagged != _orig_tag) ++mNBtagSfCorrJets;
-
-    } // end of btag scale factor corrections
-
-    return _isTagged;
-}
-
-
-// ---------------------------------------------------------------
-// ---------------------------------------------------------------
-// NOTE: EVERYTHING ABOVE NEEDS TO BE EITHER REORGANIZED/REWRITTEN - end
-// ---------------------------------------------------------------
-// ---------------------------------------------------------------
