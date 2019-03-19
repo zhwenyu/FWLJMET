@@ -60,7 +60,7 @@ protected:
     bool bFirstEntry;
     bool debug;
     bool isMc;
-    
+
 
     //Trigger
     bool trigger_cut;
@@ -200,16 +200,16 @@ private:
                                     bool doAK8Corr=false,
                                     bool reCorrectJet=false,
                                     unsigned int syst=0);
-    TLorentzVector correctMet(const pat::MET & met, 
+    TLorentzVector correctMet(const pat::MET & met,
                               edm::Event const & event,
-                              bool isMc, 
+                              bool isMc,
                               edm::EDGetTokenT<double> rhoJetsToken,
-                              bool reCorrectjet = false, 
-                              unsigned int syst = 0, 
+                              bool reCorrectjet = false,
+                              unsigned int syst = 0,
                               bool useHF = true);
-    TLorentzVector correctJetForMet(const pat::Jet & jet, 
+    TLorentzVector correctJetForMet(const pat::Jet & jet,
                                     edm::Event const & event,
-                                    bool isMc, 
+                                    bool isMc,
                                     edm::EDGetTokenT<double> rhoJetsToken,
                                     unsigned int syst = 0);
 
@@ -229,15 +229,15 @@ private:
     FactorizedJetCorrector *JetCorrectorAK8;
 
     std::map<std::string,std::string> mJetParStr;
-    
-    std::map<std::string, std::vector<JetCorrectorParameters> > mEraVPar;
-    std::map<std::string, std::vector<JetCorrectorParameters> > mEraVParAK8;    
-    std::map<std::string, JetCorrectorParameters*> mStrJetCorPar; 
 
-    std::map<std::string, std::map<std::string, JetCorrectorParameters*> > mEra_mStrJetCorPar; 
+    std::map<std::string, std::vector<JetCorrectorParameters> > mEraVPar;
+    std::map<std::string, std::vector<JetCorrectorParameters> > mEraVParAK8;
+    std::map<std::string, JetCorrectorParameters*> mStrJetCorPar;
+
+    std::map<std::string, std::map<std::string, JetCorrectorParameters*> > mEra_mStrJetCorPar;
     std::map<std::string, std::map<std::string, std::string>>              mEraJetParStr;
     std::map<std::string, std::string> mEraReplaceStr;
-    
+
     std::map<std::string, FactorizedJetCorrector*> mEraFacJetCorr;
     std::map<std::string, FactorizedJetCorrector*> mEraFacJetCorrAK8;
 
@@ -302,7 +302,7 @@ void MultiLepEventSelector::BeginJob( const edm::ParameterSet& iConfig, edm::Con
     debug               = selectorConfig.getParameter<bool>("debug");
     isMc                = selectorConfig.getParameter<bool>("isMc");
     bFirstEntry         = true; //in case anything needs a first entry bool.
-    
+
     //nEvents info
     if(isMc) genToken            = iC.consumes<GenEventInfoProduct>(edm::InputTag("generator"));
 
@@ -368,29 +368,29 @@ void MultiLepEventSelector::BeginJob( const edm::ParameterSet& iConfig, edm::Con
     maxLeptons               = selectorConfig.getParameter<int>("maxLeptons");
 
     //Jets
-    jetsToken                = iC.consumes<pat::JetCollection>(selectorConfig.getParameter<edm::InputTag>("jet_collection")),
-    AK8jetsToken             = iC.consumes<pat::JetCollection>(selectorConfig.getParameter<edm::InputTag>("AK8jet_collection")),
-    JECup                    = selectorConfig.getParameter<bool>("JECup"),
-    JECdown                  = selectorConfig.getParameter<bool>("JECdown"),
-    JERup                    = selectorConfig.getParameter<bool>("JERup"),
-    JERdown                  = selectorConfig.getParameter<bool>("JERdown"),
-    doNewJEC                 = selectorConfig.getParameter<bool>("doNewJEC"),
-    doLepJetCleaning         = selectorConfig.getParameter<bool>("doLepJetCleaning"),
-    CleanLooseLeptons        = selectorConfig.getParameter<bool>("CleanLooseLeptons"),
-    LepJetDR                 = selectorConfig.getParameter<double>("LepJetDR"),
-    LepJetDRAK8              = selectorConfig.getParameter<double>("LepJetDRAK8"),
-    jet_cuts                 = selectorConfig.getParameter<bool>("jet_cuts"),
-    jet_minpt                = selectorConfig.getParameter<double>("jet_minpt"),
-    jet_maxeta               = selectorConfig.getParameter<double>("jet_maxeta"),
-    jet_minpt_AK8            = selectorConfig.getParameter<double>("jet_minpt_AK8"),
-    jet_maxeta_AK8           = selectorConfig.getParameter<double>("jet_maxeta_AK8"),
-    min_jet                  = selectorConfig.getParameter<int>("min_jet"),
-    max_jet                  = selectorConfig.getParameter<int>("max_jet"),
-    leading_jet_pt           = selectorConfig.getParameter<double>("leading_jet_pt"),
-    JEC_txtfile              = selectorConfig.getParameter<std::string>("JEC_txtfile"),
-    JERSF_txtfile            = selectorConfig.getParameter<std::string>("JERSF_txtfile"),
-    JER_txtfile              = selectorConfig.getParameter<std::string>("JER_txtfile"),
-    JERAK8_txtfile           = selectorConfig.getParameter<std::string>("JERAK8_txtfile"),
+    jetsToken                = iC.consumes<pat::JetCollection>(selectorConfig.getParameter<edm::InputTag>("jet_collection"));
+    AK8jetsToken             = iC.consumes<pat::JetCollection>(selectorConfig.getParameter<edm::InputTag>("AK8jet_collection"));
+    JECup                    = selectorConfig.getParameter<bool>("JECup");
+    JECdown                  = selectorConfig.getParameter<bool>("JECdown");
+    JERup                    = selectorConfig.getParameter<bool>("JERup");
+    JERdown                  = selectorConfig.getParameter<bool>("JERdown");
+    doNewJEC                 = selectorConfig.getParameter<bool>("doNewJEC");
+    doLepJetCleaning         = selectorConfig.getParameter<bool>("doLepJetCleaning");
+    CleanLooseLeptons        = selectorConfig.getParameter<bool>("CleanLooseLeptons");
+    LepJetDR                 = selectorConfig.getParameter<double>("LepJetDR");
+    LepJetDRAK8              = selectorConfig.getParameter<double>("LepJetDRAK8");
+    jet_cuts                 = selectorConfig.getParameter<bool>("jet_cuts");
+    jet_minpt                = selectorConfig.getParameter<double>("jet_minpt");
+    jet_maxeta               = selectorConfig.getParameter<double>("jet_maxeta");
+    jet_minpt_AK8            = selectorConfig.getParameter<double>("jet_minpt_AK8");
+    jet_maxeta_AK8           = selectorConfig.getParameter<double>("jet_maxeta_AK8");
+    min_jet                  = selectorConfig.getParameter<int>("min_jet");
+    max_jet                  = selectorConfig.getParameter<int>("max_jet");
+    leading_jet_pt           = selectorConfig.getParameter<double>("leading_jet_pt");
+    JEC_txtfile              = selectorConfig.getParameter<std::string>("JEC_txtfile");
+    JERSF_txtfile            = selectorConfig.getParameter<std::string>("JERSF_txtfile");
+    JER_txtfile              = selectorConfig.getParameter<std::string>("JER_txtfile");
+    JERAK8_txtfile           = selectorConfig.getParameter<std::string>("JERAK8_txtfile");
 
 
     //MET
@@ -465,17 +465,18 @@ void MultiLepEventSelector::BeginJob( const edm::ParameterSet& iConfig, edm::Con
     }
     else if ( !isMc ) {
       // Create the JetCorrectorParameter objects, the order does not matter.
-      
+
       mEraReplaceStr["B"] = "B_V";
       mEraReplaceStr["C"] = "C_V";
       mEraReplaceStr["DE"] = "DE_V";
       mEraReplaceStr["F"] = "F_V";
-      
+
       for (std::map<std::string,std::string>::iterator it=mEraReplaceStr.begin();it!=mEraReplaceStr.end();it++){
-          
+
           std::string era = it->first;
           std::string replaceStr = it->second;
-                    
+
+          //Fetch the text files
           mEraJetParStr[era]["DataL1JetParByIOV"]  = std::regex_replace(mJetParStr["DataL1JetPar"],std::regex("B_V"), replaceStr);
           mEraJetParStr[era]["DataL2JetParByIOV"]  = std::regex_replace(mJetParStr["DataL2JetPar"],std::regex("B_V"), replaceStr);
           mEraJetParStr[era]["DataL3JetParByIOV"]  = std::regex_replace(mJetParStr["DataL3JetPar"],std::regex("B_V"), replaceStr);
@@ -495,8 +496,8 @@ void MultiLepEventSelector::BeginJob( const edm::ParameterSet& iConfig, edm::Con
           if(debug) std::cout << mLegend << "Using JEC files DataL2JetParAK8ByIOV : era "+era+": " <<  mEraJetParStr[era]["DataL2JetParAK8ByIOV"] << std::endl;
           if(debug) std::cout << mLegend << "Using JEC files DataL3JetParAK8ByIOV : era "+era+": " <<  mEraJetParStr[era]["DataL3JetParAK8ByIOV"] << std::endl;
           if(debug) std::cout << mLegend << "Using JEC files DataResJetParAK8ByIOV : era "+era+": " <<  mEraJetParStr[era]["DataResJetParAK8ByIOV"] << std::endl;
-          
-          
+
+
           // NOTE: Need to be careful about these as they are pointers. where to delete? how to use smart pointers?
           mEra_mStrJetCorPar[era]["ResJetPar"] = new JetCorrectorParameters(mEraJetParStr[era]["DataResJetParByIOV"]);
           mEra_mStrJetCorPar[era]["L3JetPar"]  = new JetCorrectorParameters(mEraJetParStr[era]["DataL3JetParByIOV"]);
@@ -517,7 +518,7 @@ void MultiLepEventSelector::BeginJob( const edm::ParameterSet& iConfig, edm::Con
           mEraVParAK8[era].push_back(*mEra_mStrJetCorPar[era]["L2JetParAK8"]);
           mEraVParAK8[era].push_back(*mEra_mStrJetCorPar[era]["L3JetParAK8"]);
           mEraVParAK8[era].push_back(*mEra_mStrJetCorPar[era]["ResJetParAK8"]);
-          
+
           // NOTE: Need to be careful about these as they are pointers. where to delete? how to use smart pointers?
           mEraFacJetCorr[era] = new FactorizedJetCorrector(mEraVPar[era]);
           mEraFacJetCorrAK8[era] = new FactorizedJetCorrector(mEraVParAK8[era]);
@@ -527,15 +528,15 @@ void MultiLepEventSelector::BeginJob( const edm::ParameterSet& iConfig, edm::Con
     }
 
     //BTAG parameter initialization
-    btag_cuts          = selectorConfig.getParameter<bool>("btag_cuts"),
-    bdisc_min          = selectorConfig.getParameter<double>("bdisc_min"),
-    DeepCSVfile        = selectorConfig.getParameter<std::string>("DeepCSVfile"),
-    DeepCSVSubjetfile  = selectorConfig.getParameter<std::string>("DeepCSVSubjetfile"),
-    btagOP             = selectorConfig.getParameter<std::string>("btagOP"),
-    BTagUncertUp       = selectorConfig.getParameter<bool>("BTagUncertUp"),
-    BTagUncertDown     = selectorConfig.getParameter<bool>("BTagUncertDown"),
-    MistagUncertUp     = selectorConfig.getParameter<bool>("MistagUncertUp"),
-    MistagUncertDown   = selectorConfig.getParameter<bool>("MistagUncertDown"),
+    btag_cuts          = selectorConfig.getParameter<bool>("btag_cuts");
+    bdisc_min          = selectorConfig.getParameter<double>("bdisc_min");
+    DeepCSVfile        = selectorConfig.getParameter<std::string>("DeepCSVfile");
+    DeepCSVSubjetfile  = selectorConfig.getParameter<std::string>("DeepCSVSubjetfile");
+    btagOP             = selectorConfig.getParameter<std::string>("btagOP");
+    BTagUncertUp       = selectorConfig.getParameter<bool>("BTagUncertUp");
+    BTagUncertDown     = selectorConfig.getParameter<bool>("BTagUncertDown");
+    MistagUncertUp     = selectorConfig.getParameter<bool>("MistagUncertUp");
+    MistagUncertDown   = selectorConfig.getParameter<bool>("MistagUncertDown");
 
     bTagCut = bdisc_min;
     std::cout << mLegend << "b-tag check: DeepCSV "<<btagOP<<" > "<<bdisc_min<<std::endl;
@@ -606,18 +607,18 @@ void MultiLepEventSelector::BeginJob( const edm::ParameterSet& iConfig, edm::Con
         }
     set("MET", met_cuts);
     set("All cuts",true);
-    
+
     //Record cut flow information - will be saved under folder named after the selector name.
-    SetHistogram( "Trigger", 2, 0,2); 
-    SetHistogram("Primary Vertex", 2, 0,2); 
-    SetHistogram("MET filters", 2, 0,2); 
+    SetHistogram( "Trigger", 2, 0,2);
+    SetHistogram("Primary Vertex", 2, 0,2);
+    SetHistogram("MET filters", 2, 0,2);
     SetHistogram("Lepton Selection", 2, 0,2); // keeping it simple for now
-    if(jet_cuts){ 
+    if(jet_cuts){
 		SetHistogram("Jet Selection", 2, 0,2); // keeping it simple for now
     }
-    SetHistogram("MET", 2, 0,2); 
-    SetHistogram("All cuts", 2, 0,2); 
-    
+    SetHistogram("MET", 2, 0,2);
+    SetHistogram("All cuts", 2, 0,2);
+
 
 
 
@@ -629,7 +630,7 @@ bool MultiLepEventSelector::operator()( edm::Event const & event, pat::strbitset
   if(debug)std::cout << "=====================================" <<std::endl;
   if(debug)std::cout << "Event = " << event.id().event() << ", Lumi Block = " << event.id().luminosityBlock() << std::endl;
   if(debug)std::cout << "=====================================" <<std::endl;
-  
+
   //Save events before selections and MC negative weights. Histo is intialized in BaseEventSelector.h . This could also be written in BaseEventSelector.cc.
   int theWeight = 1;
   if(isMc){
@@ -640,10 +641,10 @@ bool MultiLepEventSelector::operator()( edm::Event const & event, pat::strbitset
   FillHist("nEvents", theWeight);
 
   while(1){ // standard infinite while loop trick to avoid nested ifs
-  
+
     passCut(ret, "No selection");
 
-    if( ! TriggerSelection(event) ) break; 
+    if( ! TriggerSelection(event) ) break;
     passCut(ret, "Trigger");
     FillHist("Trigger", 1);
 
@@ -675,7 +676,7 @@ bool MultiLepEventSelector::operator()( edm::Event const & event, pat::strbitset
 
 
     passCut(ret, "All cuts");
-    FillHist("All cuts", 1); 
+    FillHist("All cuts", 1);
     break;
 
   } // end of while loop
@@ -1794,7 +1795,7 @@ bool MultiLepEventSelector::METSelection(edm::Event const & event)
 {
 
 	bool pass = false;
-	
+
 	//for jet correction
 	bool reCorrectJet = doNewJEC;
 	unsigned int syst;
@@ -1803,7 +1804,7 @@ bool MultiLepEventSelector::METSelection(edm::Event const & event)
 	else if (JERup){syst=3;}
 	else if (JERdown){syst=4;}
 	else syst = 0; //nominal
-	
+
 
 	//
 	//_____ MET cuts __________________________________
@@ -1900,27 +1901,27 @@ void MultiLepEventSelector::SetFacJetCorr(edm::EventBase const & event)
 
 
   int iRun   = event.id().run();
-  
+
   // NOTE: Need to be careful about these as they are pointers. where to delete? how to use smart pointers?
 
-  if(iRun <= 299330){ 
+  if(iRun <= 299330){
   	if(debug) std::cout << "\t\t\t using JEC for era B "<< std::endl;
-  	JetCorrector = mEraFacJetCorr["B"]; 
+  	JetCorrector = mEraFacJetCorr["B"];
   	JetCorrectorAK8 = mEraFacJetCorrAK8["B"];
   }
-  else if(iRun <= 302029){ 
+  else if(iRun <= 302029){
   	if(debug) std::cout << "\t\t\t using JEC for era C "<< std::endl;
-  	JetCorrector = mEraFacJetCorr["C"]; 
+  	JetCorrector = mEraFacJetCorr["C"];
   	JetCorrectorAK8 = mEraFacJetCorrAK8["C"];
   }
-  else if(iRun <= 304827){ 
+  else if(iRun <= 304827){
   	if(debug) std::cout << "\t\t\t using JEC for era DE "<< std::endl;
-  	JetCorrector = mEraFacJetCorr["DE"]; 
+  	JetCorrector = mEraFacJetCorr["DE"];
   	JetCorrectorAK8 = mEraFacJetCorrAK8["DE"];
   	}
-  else{ 
+  else{
   	if(debug) std::cout << "\t\t\t using JEC for era F "<< std::endl;
-  	JetCorrector = mEraFacJetCorr["F"]; 
+  	JetCorrector = mEraFacJetCorr["F"];
   	JetCorrectorAK8 = mEraFacJetCorrAK8["F"];
   }
 
@@ -2126,12 +2127,12 @@ pat::Jet MultiLepEventSelector::correctJetReturnPatJet(const pat::Jet & jet,
   return correctedJet;
 }
 
-TLorentzVector MultiLepEventSelector::correctMet(const pat::MET & met, 
+TLorentzVector MultiLepEventSelector::correctMet(const pat::MET & met,
                                                  edm::Event const & event,
                                                  bool isMc,
                                                  edm::EDGetTokenT<double> rhoJetsToken,
-                                                 bool reCorrectjet, 
-                                                 unsigned int syst, 
+                                                 bool reCorrectjet,
+                                                 unsigned int syst,
                                                  bool useHF)
 {
     double correctedMET_px = met.uncorPx();
@@ -2155,7 +2156,7 @@ TLorentzVector MultiLepEventSelector::correctMet(const pat::MET & met,
     return correctedMET_p4;
 }
 
-TLorentzVector MultiLepEventSelector::correctJetForMet(const pat::Jet & jet, 
+TLorentzVector MultiLepEventSelector::correctJetForMet(const pat::Jet & jet,
                                                        edm::Event const & event,
                                                        bool isMc,
                                                        edm::EDGetTokenT<double> rhoJetsToken,
@@ -2217,7 +2218,7 @@ TLorentzVector MultiLepEventSelector::correctJetForMet(const pat::Jet & jet,
         Variation JERsystematic = Variation::NOMINAL;
         if(syst==3) JERsystematic = Variation::UP;
         if(syst==4) JERsystematic = Variation::DOWN;
-        
+
         JME::JetParameters parameters;
         parameters.setJetPt(pt);
         parameters.setJetEta(jetP4.Eta());
