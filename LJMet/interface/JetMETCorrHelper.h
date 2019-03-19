@@ -66,9 +66,9 @@ class JetMETCorrHelper{
 
     private:
             
-        bool debug=true;
+        bool debug;
 
-        std::string mLegend = "[JetMETCorrHelper]: ";
+        std::string mLegend = "\t[JetMETCorrHelper]: ";
     
         TRandom3 JERrand;
 
