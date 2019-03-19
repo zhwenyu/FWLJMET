@@ -23,4 +23,4 @@ Some info:
 
 run LJMet by running:
 
-    cmsRun LJMet/runFWLJMet.py
+    cmsRun LJMet/runFWLJMet_multiLep.py
