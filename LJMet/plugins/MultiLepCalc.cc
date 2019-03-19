@@ -7,8 +7,9 @@
 #include "DataFormats/Common/interface/TriggerResults.h"
 #include "DataFormats/HLTReco/interface/TriggerEvent.h"
 
-
 #include "FWLJMET/LJMet/interface/MiniIsolation.h"
+
+#include "FWLJMET/LJMet/interface/JetMETCorrHelper.h"
 
 
 class LjmetFactory;
@@ -20,14 +21,14 @@ public:
     virtual int BeginJob(edm::ConsumesCollector && iC);
     virtual int AnalyzeEvent(edm::Event const & event, BaseEventSelector * selector);
     virtual int EndJob(){return 0;};
-    
-    void AnalyzeTriggers(edm::Event const & event, BaseEventSelector * selector); 
-    void AnalyzePV(edm::Event const & event, BaseEventSelector * selector); 
-    void AnalyzePU(edm::Event const & event, BaseEventSelector * selector); 
-    void AnalyzeBadDupMu(edm::Event const & event, BaseEventSelector * selector); 
-    void AnalyzeMuon(edm::Event const & event, BaseEventSelector * selector); 
-    void AnalyzeElectron(edm::Event const & event, BaseEventSelector * selector); 
-    
+
+    void AnalyzeTriggers(edm::Event const & event, BaseEventSelector * selector);
+    void AnalyzePV(edm::Event const & event, BaseEventSelector * selector);
+    void AnalyzePU(edm::Event const & event, BaseEventSelector * selector);
+    void AnalyzeBadDupMu(edm::Event const & event, BaseEventSelector * selector);
+    void AnalyzeMuon(edm::Event const & event, BaseEventSelector * selector);
+    void AnalyzeElectron(edm::Event const & event, BaseEventSelector * selector);
+
 
 private:
 	bool debug;
@@ -37,25 +38,38 @@ private:
 	bool UseElMVA;
 	bool UseElIDV1;
 
+        bool doNewJEC;
+        bool   JECup;
+        bool   JECdown;
+        bool   JERup;
+        bool   JERdown;
+	bool doAllJetSyst;
+	JetMETCorrHelper JetMETCorr;
+
 	edm::EDGetTokenT<std::vector<PileupSummaryInfo>>   PupInfoToken;
 	edm::EDGetTokenT<edm::TriggerResults >             muflagtagToken;
 	edm::EDGetTokenT<double>                           rhoJetsNCToken;
 	edm::EDGetTokenT<double>                           rhoJetsToken;
 	edm::EDGetTokenT<pat::PackedCandidateCollection>   PFCandToken;
 	edm::EDGetTokenT<reco::GenParticleCollection>      genParticlesToken;
-	
+	edm::EDGetTokenT<std::vector<pat::MET> >           METnoHFtoken;
+	edm::EDGetTokenT<std::vector<pat::MET> >           METmodToken;
+
+
+
 	//helper functions
 	int findMatch(const reco::GenParticleCollection & genParticles, int idToMatch, double eta, double phi);
 	double mdeltaR(double eta1, double phi1, double eta2, double phi2);
-	void fillMotherInfo(const reco::Candidate *mother, 
-						int i, 
-						std::vector <int> & momid, 
-						std::vector <int> & momstatus, 
-						std::vector<double> & mompt, 
-						std::vector<double> & mometa, 
-						std::vector<double> & momphi, 
+	void fillMotherInfo(const reco::Candidate *mother,
+						int i,
+						std::vector <int> & momid,
+						std::vector <int> & momstatus,
+						std::vector<double> & mompt,
+						std::vector<double> & mometa,
+						std::vector<double> & momphi,
 						std::vector<double> & momenergy);
-        
+
+
 
 };
 
@@ -81,7 +95,7 @@ int MultiLepCalc::BeginJob(edm::ConsumesCollector && iC)
 	muflagtagToken 		= iC.consumes<edm::TriggerResults >(edm::InputTag("TriggerResults::RECO"));
 
 	//Misc
-	rhoJetsNCToken      = iC.consumes<double>(mPset.getParameter<edm::InputTag>("rhoJetsNCInputTag"));    
+	rhoJetsNCToken      = iC.consumes<double>(mPset.getParameter<edm::InputTag>("rhoJetsNCInputTag"));
 	PFCandToken         = iC.consumes<pat::PackedCandidateCollection>(mPset.getParameter<edm::InputTag>("PFparticlesCollection"));
 	genParticlesToken   = iC.consumes<reco::GenParticleCollection>(mPset.getParameter<edm::InputTag>("genParticlesCollection"));
 	rhoJetsToken        = iC.consumes<double>(mPset.getParameter<edm::InputTag>("rhoJetsInputTag"));
@@ -90,18 +104,31 @@ int MultiLepCalc::BeginJob(edm::ConsumesCollector && iC)
 	UseElMVA          = mPset.getParameter<bool>("UseElMVA");
 	UseElIDV1         = mPset.getParameter<bool>("UseElIDV1");
 
+	//MET
+	METnoHFtoken        = iC.consumes<std::vector<pat::MET>>(mPset.getParameter<edm::InputTag>("metnohf_collection"));
+	METmodToken         = iC.consumes<std::vector<pat::MET>>(mPset.getParameter<edm::InputTag>("metmod_collection"));
+
 	debug             = mPset.getParameter<bool>("debug");
 	isMc              = mPset.getParameter<bool>("isMc");
 	saveLooseLeps     = mPset.getParameter<bool>("saveLooseLeps");
 	keepFullMChistory = mPset.getParameter<bool>("keepFullMChistory");
+
+	//JET CORRECTION  initialization
+	doNewJEC                 = mPset.getParameter<bool>("doNewJEC");
+	JECup                    = mPset.getParameter<bool>("JECup");
+	JECdown                  = mPset.getParameter<bool>("JECdown");
+	JERup                    = mPset.getParameter<bool>("JERup");
+	JERdown                  = mPset.getParameter<bool>("JERdown");
+	doAllJetSyst             = mPset.getParameter<bool>("doAllJetSyst");
+	JetMETCorr.Initialize(mPset,isMc);
 
 	return 0;
 }
 
 int MultiLepCalc::AnalyzeEvent(edm::Event const & event, BaseEventSelector * selector)
 {
-	
-	//NOTE: THIS IS ALL BECOMING TOO LONG. NEEDS TO BE BROKEN DOWN SOMEHOW. IDEALLY PER OBJECTS. modularize! 
+
+	//NOTE: THIS IS ALL BECOMING TOO LONG. NEEDS TO BE BROKEN DOWN SOMEHOW. IDEALLY PER OBJECTS. modularize!
 
 	if(debug)std::cout << "Processing Event in MultiLepCalc::AnalyzeEvent" << std::endl;
 
@@ -112,11 +139,13 @@ int MultiLepCalc::AnalyzeEvent(edm::Event const & event, BaseEventSelector * sel
 	std::vector<edm::Ptr<pat::Electron> >       const & vSelLooseElectrons = selector->GetSelLooseElectrons();
 	std::vector<edm::Ptr<pat::Muon> >                   vSelMuons          = selector->GetSelMuons();
 	std::vector<edm::Ptr<pat::Electron> >               vSelElectrons      = selector->GetSelElectrons();
-    std::vector<pat::Jet>                       const & vSelCorrJets       = selector->GetSelCorrJets();
-    std::vector<pat::Jet>                       const & vSelCorrJets_AK8   = selector->GetSelCorrJetsAK8();
-    std::vector<std::pair<TLorentzVector,bool>> const & vCorrBtagJets      = selector->GetSelCorrJetsWithBTags();
-    edm::Ptr<pat::MET>                          const & pMet               = selector->GetMet();	
 
+	std::vector<edm::Ptr<pat::Jet>>             const & vAllJets           = selector->GetAllJets();
+	std::vector<pat::Jet>                       const & vSelCorrJets       = selector->GetSelCorrJets();
+	std::vector<pat::Jet>                       const & vSelCorrJets_AK8   = selector->GetSelCorrJetsAK8();
+	std::vector<std::pair<TLorentzVector,bool>> const & vCorrBtagJets      = selector->GetSelCorrJetsWithBTags();
+	edm::Ptr<pat::MET>                          const & pMet               = selector->GetMet();
+	TLorentzVector                              const & corrMET_p4         = selector->GetCorrectedMet();
 
 	AnalyzeTriggers(event, selector);
 
@@ -188,10 +217,10 @@ int MultiLepCalc::AnalyzeEvent(edm::Event const & event, BaseEventSelector * sel
 	edm::Handle<double> rhoJetsNC;
 	event.getByToken(rhoJetsNCToken, rhoJetsNC);
 	double myRhoJetsNC = *rhoJetsNC;
-	
+
 	edm::Handle<reco::GenParticleCollection> genParticles;
 	event.getByToken(genParticlesToken, genParticles);
-	
+
 	edm::Handle<double> rhoHandle;
 	event.getByToken(rhoJetsToken, rhoHandle);
 	double rhoIso = std::max(*(rhoHandle.product()), 0.0);
@@ -264,9 +293,9 @@ int MultiLepCalc::AnalyzeEvent(edm::Event const & event, BaseEventSelector * sel
 
 	for (std::vector<edm::Ptr<pat::Muon> >::const_iterator imu = vSelMuons.begin(); imu != vSelMuons.end(); imu++) {
 	  //Protect against muons without tracks (should never happen, but just in case)
-	  if ((*imu)->globalTrack().isNonnull()   and 
+	  if ((*imu)->globalTrack().isNonnull()   and
 	      (*imu)->globalTrack().isAvailable() and
-	      (*imu)->innerTrack().isNonnull()    and 
+	      (*imu)->innerTrack().isNonnull()    and
 	      (*imu)->innerTrack().isAvailable())
 	    {
 
@@ -467,7 +496,7 @@ int MultiLepCalc::AnalyzeEvent(edm::Event const & event, BaseEventSelector * sel
     std::vector <double> elDZ;
     std::vector <double> elOoemoop;
     std::vector <int>    elMHits;
-    std::vector <int>    elVtxFitConv;    
+    std::vector <int>    elVtxFitConv;
 
     std::vector <double> elMVAValue;
     std::vector <double> elMVAValue_iso;
@@ -531,7 +560,7 @@ int MultiLepCalc::AnalyzeEvent(edm::Event const & event, BaseEventSelector * sel
             elSCE    . push_back((*iel)->superCluster()->energy());
             elPFPhi  . push_back((*iel)->phi());
             elEnergy . push_back((*iel)->energy());
-            
+
             elEtaVtx.push_back((*iel)->trackMomentumAtVtxWithConstraint().Eta());
             elPhiVtx.push_back((*iel)->trackMomentumAtVtxWithConstraint().Phi());
             elDEtaSCTkAtVtx.push_back((*iel)->deltaEtaSuperClusterTrackAtVtx());
@@ -547,7 +576,7 @@ int MultiLepCalc::AnalyzeEvent(edm::Event const & event, BaseEventSelector * sel
             else if(fabs(scEta) >1.479) AEff = 0.1073;
             else if(fabs(scEta) >1.0) AEff = 0.1626;
             else AEff = 0.1566;
-  
+
             double chIso = ((*iel)->pfIsolationVariables()).sumChargedHadronPt;
             double nhIso = ((*iel)->pfIsolationVariables()).sumNeutralHadronEt;
             double phIso = ((*iel)->pfIsolationVariables()).sumPhotonEt;
@@ -558,7 +587,7 @@ int MultiLepCalc::AnalyzeEvent(edm::Event const & event, BaseEventSelector * sel
             elPhIso  . push_back(phIso);
             elAEff   . push_back(AEff);
             elRhoIso . push_back(rhoIso);
-            
+
             elEcalPFClusterIso.push_back((*iel)->ecalPFClusterIso());
             elHcalPFClusterIso.push_back((*iel)->hcalPFClusterIso());
             elDR03TkSumPt.push_back((*iel)->dr03TkSumPt());
@@ -567,7 +596,7 @@ int MultiLepCalc::AnalyzeEvent(edm::Event const & event, BaseEventSelector * sel
 
             elRelIso . push_back(relIso);
             elMiniIso . push_back(miniIso);
-            
+
             //get three different charges
             elGsfCharge.push_back( (*iel)->gsfTrack()->charge());
             if( (*iel)->closestCtfTrackRef().isNonnull()) elCtfCharge.push_back((*iel)->closestCtfTrackRef()->charge());
@@ -595,7 +624,7 @@ int MultiLepCalc::AnalyzeEvent(edm::Event const & event, BaseEventSelector * sel
             elMHits.push_back((*iel)->gsfTrack()->hitPattern().numberOfAllHits(reco::HitPattern::MISSING_INNER_HITS));
             elVtxFitConv.push_back((*iel)->passConversionVeto());
             elNotConversion.push_back((*iel)->passConversionVeto());
-	    
+
 
 	    if(UseElIDV1){
 	      elIsTight.push_back((*iel)->electronID("cutBasedElectronID-Fall17-94X-V1-tight"));
@@ -760,7 +789,7 @@ int MultiLepCalc::AnalyzeEvent(edm::Event const & event, BaseEventSelector * sel
     //_____ Jets ______________________________
     //
 
-    
+
     //Get AK4 Jets
     //Four std::vector
     std::vector <double> AK4JetPt;
@@ -788,7 +817,7 @@ int MultiLepCalc::AnalyzeEvent(edm::Event const & event, BaseEventSelector * sel
     std::vector <double> AK4JetBDeepCSVudsg;
     std::vector <int>    AK4JetFlav;
 
-    //std::vector <double> AK4JetRCN;   
+    //std::vector <double> AK4JetRCN;
     double AK4HT =.0;
     for (std::vector<pat::Jet>::const_iterator ii = vSelCorrJets.begin(); ii != vSelCorrJets.end(); ii++){
       int index = (int)(ii-vSelCorrJets.begin());
@@ -813,9 +842,9 @@ int MultiLepCalc::AnalyzeEvent(edm::Event const & event, BaseEventSelector * sel
       AK4JetFlav         . push_back(abs(ii->hadronFlavour()));
 
       //HT
-      AK4HT += ii->pt(); 
+      AK4HT += ii->pt();
     }
-    
+
 //     double AK4HT_jesup =.0;
 //     double AK4HT_jesdn =.0;
 //     double AK4HT_jerup =.0;
@@ -825,28 +854,28 @@ int MultiLepCalc::AnalyzeEvent(edm::Event const & event, BaseEventSelector * sel
 //           AK4JetPt_jesup     . push_back(ii_jesup->Pt());
 //           AK4JetEnergy_jesup  . push_back(ii_jesup->Energy());
 //           //HT
-//           AK4HT_jesup += ii_jesup->Pt(); 
+//           AK4HT_jesup += ii_jesup->Pt();
 //         }
-//     
+//
 //         for (std::vector<TLorentzVector>::const_iterator ii_jesdn = vSelCorrJets_jesdn.begin(); ii_jesdn != vSelCorrJets_jesdn.end(); ii_jesdn++){
 //           AK4JetPt_jesdn     . push_back(ii_jesdn->Pt());
 //           AK4JetEnergy_jesdn . push_back(ii_jesdn->Energy());
 //           //HT
-//           AK4HT_jesdn += ii_jesdn->Pt(); 
+//           AK4HT_jesdn += ii_jesdn->Pt();
 //         }
-//     
+//
 //         for (std::vector<TLorentzVector>::const_iterator ii_jerup = vSelCorrJets_jerup.begin(); ii_jerup != vSelCorrJets_jerup.end(); ii_jerup++){
 //           AK4JetPt_jerup     . push_back(ii_jerup->Pt());
 //           AK4JetEnergy_jerup . push_back(ii_jerup->Energy());
 //           //HT
-//           AK4HT_jerup += ii_jerup->Pt(); 
+//           AK4HT_jerup += ii_jerup->Pt();
 //         }
-//     
+//
 //         for (std::vector<TLorentzVector>::const_iterator ii_jerdn = vSelCorrJets_jerdn.begin(); ii_jerdn != vSelCorrJets_jerdn.end(); ii_jerdn++){
 //           AK4JetPt_jerdn     . push_back(ii_jerdn->Pt());
 //           AK4JetEnergy_jerdn . push_back(ii_jerdn->Energy());
 //           //HT
-//           AK4HT_jerdn += ii_jerdn->Pt(); 
+//           AK4HT_jerdn += ii_jerdn->Pt();
 //         }
 //     }
 
@@ -902,10 +931,10 @@ int MultiLepCalc::AnalyzeEvent(edm::Event const & event, BaseEventSelector * sel
 //     std::vector <double> AK8JetEnergy_jerdn;
 
     std::vector <double> AK8JetCSV;
-    std::vector <double> AK8JetDoubleB;       
-    
+    std::vector <double> AK8JetDoubleB;
+
     for (std::vector<pat::Jet>::const_iterator ii = vSelCorrJets_AK8.begin(); ii != vSelCorrJets_AK8.end(); ii++){
-      
+
       if(ii->pt() < 170) continue; // not all info there for lower pt
 
 //       if (doAllJetSyst) {
@@ -922,18 +951,18 @@ int MultiLepCalc::AnalyzeEvent(edm::Event const & event, BaseEventSelector * sel
 // 	AK8JetEnergy_jerup     . push_back(lvak8_jerup.Energy());
 // 	AK8JetEnergy_jerdn     . push_back(lvak8_jerdn.Energy());
 //       }
-      
+
       //Four std::vector
       AK8JetPt     . push_back(ii->pt());
       AK8JetEta    . push_back(ii->eta());
       AK8JetPhi    . push_back(ii->phi());
       AK8JetEnergy . push_back(ii->energy());
-      
+
       AK8JetCSV    . push_back(ii->bDiscriminator( "pfCombinedInclusiveSecondaryVertexV2BJetTags" ));
       AK8JetDoubleB. push_back(ii->bDiscriminator("pfBoostedDoubleSecondaryVertexAK8BJetTags"));
       //     AK8JetRCN    . push_back((ijet->chargedEmEnergy()+ijet->chargedHadronEnergy()) / (ijet->neutralEmEnergy()+ijet->neutralHadronEnergy()));
     }
- 
+
     //Four std::vector
     SetValue("AK8JetPt"     , AK8JetPt);
     SetValue("AK8JetEta"    , AK8JetEta);
@@ -951,6 +980,127 @@ int MultiLepCalc::AnalyzeEvent(edm::Event const & event, BaseEventSelector * sel
 //     }
     SetValue("AK8JetCSV"     , AK8JetCSV);
     SetValue("AK8JetDoubleB" , AK8JetDoubleB);
+
+
+    //
+    //_____ MET ______________________________
+    //
+
+    //for jet correction
+    unsigned int syst;
+    if (JECup){syst=1;}
+    else if (JECdown){syst=2;}
+    else if (JERup){syst=3;}
+    else if (JERdown){syst=4;}
+    else syst = 0; //nominal
+
+    double _met = -9999.0;
+    double _met_phi = -9999.0;
+    // Corrected MET
+    std::vector<double> _corr_met;
+    std::vector<double> _corr_met_phi;
+    if(pMet.isNonnull() && pMet.isAvailable()) {
+        _met = pMet->p4().pt();
+        _met_phi = pMet->p4().phi();
+
+
+	if(corrMET_p4.Pt()>0) {
+	  _corr_met.push_back(corrMET_p4.Pt());
+	  _corr_met_phi.push_back(corrMET_p4.Phi());
+	}
+	else{
+            _corr_met.push_back(-9999.0);
+            _corr_met_phi.push_back(-9999.0);
+        }
+
+        for (unsigned int corri = 1; corri<5; corri++) {
+
+            if (!doAllJetSyst) break;
+
+            TLorentzVector corrMET = JetMETCorr.correctMet(*pMet, event, isMc, rhoJetsToken, vAllJets, doNewJEC, corri);
+
+            if(corrMET.Pt()>0) {
+                _corr_met.push_back(corrMET.Pt());
+                _corr_met_phi.push_back(corrMET.Phi());
+            }
+            else{
+                _corr_met.push_back(-9999.0);
+                _corr_met_phi.push_back(-9999.0);
+            }
+        }
+    }
+    SetValue("met", _met);
+    SetValue("met_phi", _met_phi);
+    SetValue("corr_met", _corr_met[0]);
+    SetValue("corr_met_phi", _corr_met_phi[0]);
+    if(doAllJetSyst){
+        SetValue("corr_met_jesup", _corr_met[1]);
+        SetValue("corr_met_jesup_phi", _corr_met_phi[1]);
+        SetValue("corr_met_jesdn", _corr_met[2]);
+        SetValue("corr_met_jesdn_phi", _corr_met_phi[2]);
+        SetValue("corr_met_jerup", _corr_met[3]);
+        SetValue("corr_met_jerup_phi", _corr_met_phi[3]);
+        SetValue("corr_met_jerdn", _corr_met[4]);
+        SetValue("corr_met_jerdn_phi", _corr_met_phi[4]);
+    }
+
+
+    bool useHF;
+
+    //METNOHF
+    useHF = false;
+    double _metnohf = -9999.0;
+    double _metnohf_phi = -9999.0;
+    double _corr_metnohf = -9999.0;
+    double _corr_metnohf_phi = -9999.0;
+    edm::Handle<std::vector<pat::MET> > METnoHF;
+    if(event.getByToken(METnoHFtoken, METnoHF)){
+      edm::Ptr<pat::MET> metnohf = edm::Ptr<pat::MET>( METnoHF, 0);
+
+      if(metnohf.isNonnull() && metnohf.isAvailable()) {
+        _metnohf = metnohf->p4().pt();
+        _metnohf_phi = metnohf->p4().phi();
+
+        TLorentzVector corrMETNOHF = JetMETCorr.correctMet(*metnohf, event, isMc, rhoJetsToken, vAllJets, doNewJEC, syst, useHF);
+        //std::cout<<(selector->GetCleanedCorrMet()).Pt()<<std::endl;
+        if(corrMETNOHF.Pt()>0) {
+	  _corr_metnohf = corrMETNOHF.Pt();
+	  _corr_metnohf_phi = corrMETNOHF.Phi();
+        }
+      }
+    }
+    SetValue("metnohf", _metnohf);
+    SetValue("metnohf_phi", _metnohf_phi);
+    SetValue("corr_metnohf", _corr_metnohf);
+    SetValue("corr_metnohf_phi", _corr_metnohf_phi);
+
+    //METMOD
+    useHF = false;
+    double _metmod = -9999.0;
+    double _metmod_phi = -9999.0;
+    double _corr_metmod = -9999.0;
+    double _corr_metmod_phi = -9999.0;
+    edm::Handle<std::vector<pat::MET> > METmod;
+    if(event.getByToken(METmodToken, METmod)){
+      edm::Ptr<pat::MET> metmod = edm::Ptr<pat::MET>( METmod, 0);
+
+      if(metmod.isNonnull() && metmod.isAvailable()) {
+        _metmod = metmod->p4().pt();
+        _metmod_phi = metmod->p4().phi();
+
+        TLorentzVector corrMETMOD = JetMETCorr.correctMet(*metmod, event, isMc, rhoJetsToken, vAllJets, doNewJEC, syst, useHF);
+        //std::cout<<(selector->GetCleanedCorrMet()).Pt()<<std::endl;
+        if(corrMETMOD.Pt()>0) {
+	  _corr_metmod = corrMETMOD.Pt();
+	  _corr_metmod_phi = corrMETMOD.Phi();
+        }
+      }
+    }
+
+    SetValue("metmod", _metmod);
+    SetValue("metmod_phi", _metmod_phi);
+    SetValue("corr_metmod", _corr_metmod);
+    SetValue("corr_metmod_phi", _corr_metmod_phi);
 
 
 	return 0;
@@ -996,24 +1146,24 @@ void MultiLepCalc::AnalyzeTriggers(edm::Event const & event, BaseEventSelector *
 	SetValue("viSelTriggersMu", viSelTriggersMu);
 
 
-} 
+}
 
-void MultiLepCalc::AnalyzePV(edm::Event const & event, BaseEventSelector * selector) 
+void MultiLepCalc::AnalyzePV(edm::Event const & event, BaseEventSelector * selector)
 {
 //to be filled after all migration completed
-} 
-void MultiLepCalc::AnalyzePU(edm::Event const & event, BaseEventSelector * selector) 
+}
+void MultiLepCalc::AnalyzePU(edm::Event const & event, BaseEventSelector * selector)
 {
 //to be filled after all migration completed
-} 
-void MultiLepCalc::AnalyzeBadDupMu(edm::Event const & event, BaseEventSelector * selector) 
+}
+void MultiLepCalc::AnalyzeBadDupMu(edm::Event const & event, BaseEventSelector * selector)
 {
 //to be filled after all migration completed
-} 
+}
 void MultiLepCalc::AnalyzeMuon(edm::Event const & event, BaseEventSelector * selector)
 {
 //to be filled after all migration completed
-} 
+}
 void MultiLepCalc::AnalyzeElectron(edm::Event const & event, BaseEventSelector * selector)
 {
 //to be filled after all migration completed
@@ -1033,7 +1183,7 @@ int MultiLepCalc::findMatch(const reco::GenParticleCollection & genParticles, in
             closestDR = dRtmp;
             closestGenPart = j;
         }//end of requirement for matching
-    }//end of gen particle loop 
+    }//end of gen particle loop
     return closestGenPart;
 }
 
