@@ -84,7 +84,7 @@ process.ljmet = cms.EDAnalyzer(
 
 	MultiLepSelector = cms.PSet( # name has to match the name as registered in BeginJob of  EventSelector.cc
 
-            debug  = cms.bool(False),
+            debug  = cms.bool(True),
 
             isMc  = cms.bool(isMC),
 
