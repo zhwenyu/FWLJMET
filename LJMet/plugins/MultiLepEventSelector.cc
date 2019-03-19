@@ -204,6 +204,7 @@ private:
                               edm::Event const & event,
                               bool isMc,
                               edm::EDGetTokenT<double> rhoJetsToken,
+                              std::vector<edm::Ptr<pat::Jet>> vAllJets,
                               bool reCorrectjet = false,
                               unsigned int syst = 0,
                               bool useHF = true);
@@ -1823,7 +1824,10 @@ bool MultiLepEventSelector::METSelection(edm::Event const & event)
 	  bool passMaxMET = false;
 	  if ( pMet.isNonnull() && pMet.isAvailable() ) {
 	    pat::MET const & met = mhMet->at(0);
-	    TLorentzVector corrMET = correctMet(met,event,isMc,rhoJetsToken,reCorrectJet,syst);
+	    TLorentzVector corrMET = correctMet(met,event,isMc,rhoJetsToken,vAllJets,reCorrectJet,syst);
+	    
+	    //save to EventSelector object variable.
+	    correctedMET_p4 = corrMET;
 
 	    if (debug) std::cout<<"\t\t" <<"MET = " << corrMET.Pt()<< std::endl;
 
@@ -2131,6 +2135,7 @@ TLorentzVector MultiLepEventSelector::correctMet(const pat::MET & met,
                                                  edm::Event const & event,
                                                  bool isMc,
                                                  edm::EDGetTokenT<double> rhoJetsToken,
+                                                 std::vector<edm::Ptr<pat::Jet>> vAllJets,
                                                  bool reCorrectjet,
                                                  unsigned int syst,
                                                  bool useHF)
@@ -2149,11 +2154,12 @@ TLorentzVector MultiLepEventSelector::correctMet(const pat::MET & met,
         correctedMET_px = met.px();
         correctedMET_py = met.py();
     }
+    
+    TLorentzVector correctedMET_p4_temp;
 
-    correctedMET_p4.SetPxPyPzE(correctedMET_px, correctedMET_py, 0, sqrt(correctedMET_px*correctedMET_px+correctedMET_py*correctedMET_py));
+    correctedMET_p4_temp.SetPxPyPzE(correctedMET_px, correctedMET_py, 0, sqrt(correctedMET_px*correctedMET_px+correctedMET_py*correctedMET_py));
 
-
-    return correctedMET_p4;
+    return correctedMET_p4_temp;
 }
 
 TLorentzVector MultiLepEventSelector::correctJetForMet(const pat::Jet & jet,
