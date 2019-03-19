@@ -73,7 +73,7 @@ private:
     std::vector<unsigned int> keepPDGIDForce;
     std::vector<unsigned int> keepStatusForce;
     bool cleanGenJets;
-	std::vector< TLorentzVector > vGenLep;
+    std::vector< TLorentzVector > vGenLep;
 
 
     edm::EDGetTokenT<std::vector<PileupSummaryInfo>>   PupInfoToken;
@@ -178,9 +178,9 @@ int MultiLepCalc::BeginJob(edm::ConsumesCollector && iC)
 	JERdown                  = mPset.getParameter<bool>("JERdown");
 	doAllJetSyst             = mPset.getParameter<bool>("doAllJetSyst");
 	JetMETCorr.Initialize(mPset,isMc);
-	
-    //BTAG parameter initialization
-    mBtagSfUtil.Initialize(mPset);
+
+	//BTAG parameter initialization
+	mBtagSfUtil.Initialize(mPset);
 
 	return 0;
 }
@@ -195,7 +195,7 @@ int MultiLepCalc::AnalyzeEvent(edm::Event const & event, BaseEventSelector * sel
 	AnalyzeTriggers(event, selector);
 
 	AnalyzePU(event, selector);
-	
+
 	AnalyzeBadDupMu(event, selector);
 
 	AnalyzeMuon(event, selector);
@@ -346,7 +346,7 @@ void MultiLepCalc::AnalyzeMuon(edm::Event const & event, BaseEventSelector * sel
 
 	edm::Handle<reco::GenParticleCollection> genParticles;
 	event.getByToken(genParticlesToken, genParticles);
-	
+
 
 	//
 	//_____Muons______
@@ -577,7 +577,7 @@ void MultiLepCalc::AnalyzeMuon(edm::Event const & event, BaseEventSelector * sel
 	SetValue("muMatchedEta", muMatchedEta);
 	SetValue("muMatchedPhi", muMatchedPhi);
 	SetValue("muMatchedEnergy", muMatchedEnergy);
-	
+
 
 
 }
@@ -997,7 +997,7 @@ void MultiLepCalc::AnalyzeJets(edm::Event const & event, BaseEventSelector * sel
       AK4JetEnergy . push_back(ii->energy());
 
       AK4JetBTag   . push_back(vCorrBtagJets[index].second);
-      
+
       TLorentzVector jetP4; jetP4.SetPtEtaPhiE(ii->pt(), ii->eta(), ii->phi(), ii->energy() );
 
       AK4JetBTag_bSFup.push_back(mBtagSfUtil.isJetTagged(*ii,jetP4, event, isMc, 1));
@@ -1195,7 +1195,7 @@ void MultiLepCalc::AnalyzeMET(edm::Event const & event, BaseEventSelector * sele
     if(pMet.isNonnull() && pMet.isAvailable()) {
         _met = pMet->p4().pt();
         _met_phi = pMet->p4().phi();
-        
+
         if(corrMET_p4.Pt()>0) {
             _corr_met.push_back(corrMET_p4.Pt());
             _corr_met_phi.push_back(corrMET_p4.Phi());
