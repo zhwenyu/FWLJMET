@@ -137,7 +137,7 @@ void LjmetEventContent::SetHistValue(std::string modname, std::string histname, 
 void LjmetEventContent::FillHist(std::string modname, std::string histname, double value)
 {
 
-    // fill histograms
+    // fill histograms NOTE: THIS CAN BE IMROVED! NO NEED TO LOOP, JUST DIRECTLY FIND VALUE BY KEY! (For some reason it was not working at first try. But try again!)
     std::map<std::string, std::map<std::string, LjmetEventContent::HistMetadata>>::iterator iMod;
     std::map<std::string, LjmetEventContent::HistMetadata>::iterator iHist;
     for (iMod = mDoubleHist.begin(); iMod != mDoubleHist.end(); ++iMod) {
