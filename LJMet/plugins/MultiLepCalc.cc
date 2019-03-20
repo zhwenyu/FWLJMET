@@ -188,8 +188,6 @@ int MultiLepCalc::BeginJob(edm::ConsumesCollector && iC)
 int MultiLepCalc::AnalyzeEvent(edm::Event const & event, BaseEventSelector * selector)
 {
 
-	//NOTE: THIS IS ALL BECOMING TOO LONG. NEEDS TO BE BROKEN DOWN SOMEHOW. IDEALLY PER OBJECTS. modularize!
-
 	if(debug)std::cout << "Processing Event in MultiLepCalc::AnalyzeEvent" << std::endl;
 
 	AnalyzeTriggers(event, selector);
