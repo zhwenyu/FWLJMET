@@ -85,6 +85,7 @@ class LJMet : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
 
 
       bool debug;
+      int verbosity;
       std::string selection;
       std::vector<std::string> vExcl;
       std::vector<std::string> vIncl;
@@ -107,7 +108,8 @@ LJMet::LJMet(const edm::ParameterSet& iConfig)
 {
    //now do what ever initialization is needed
 
-   debug      = iConfig.getParameter<bool>("debug");
+   debug      = iConfig.getParameter<bool>("debug"); //this is debug feature from new ljmet, only on and off.
+   verbosity  = iConfig.getParameter<int>("verbosity"); // this is debug feature from old ljmet. this has levels, which is better. Need to utilize both old and new ! #TODO.
    selection  = iConfig.getParameter<std::string>("selector");
    vExcl      = iConfig.getParameter<std::vector<std::string>>("exclude_calcs");
    vIncl      = iConfig.getParameter<std::vector<std::string>>("include_calcs");
@@ -123,6 +125,7 @@ LJMet::LJMet(const edm::ParameterSet& iConfig)
    _tree = fs->make<TTree>(_treename.c_str(), _treename.c_str(), 64000000);
 
    // internal LJMet event content
+   ec.SetVerbosity(verbosity);
    ec.SetTree(_tree);
 
    // The factory for event selector and calculator plugins
@@ -137,7 +140,7 @@ LJMet::LJMet(const edm::ParameterSet& iConfig)
    theSelector->Init();
 
    //Object to pass to eventSelector and Calculators access data - https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideEDMGetDataFromEvent#Consumes_and_Helpers
-   edm::ConsumesCollector && cC = consumesCollector(); // this didn work. so for now constructing twice for eventSelector and Calculator each.
+   edm::ConsumesCollector && cC = consumesCollector(); 
 
    theSelector->BeginJob(iConfig, (edm::ConsumesCollector &&)cC);
    
@@ -153,8 +156,28 @@ LJMet::LJMet(const edm::ParameterSet& iConfig)
    factory->BeginJobAllCalc((edm::ConsumesCollector &&)cC, vIncl);
 
    // set excluded calculators
-   factory->SetExcludedCalcs(vExcl); // This is silly. Need to make changes so that LJMet by default only considers included Calculators!
+   factory->SetExcludedCalcs(vExcl); 
    
+   // create histograms
+   std::map<std::string,std::map<std::string,LjmetEventContent::HistMetadata> > & mh = ec.GetHistMap();
+   std::map<std::string,std::map<std::string,LjmetEventContent::HistMetadata> >::iterator iMod;
+   std::map<std::string,LjmetEventContent::HistMetadata>::iterator iHist;
+   for (iMod=mh.begin();iMod!=mh.end();++iMod){
+        
+        TFileDirectory _dir = fs->mkdir( iMod->first.c_str() );
+        for (iHist=iMod->second.begin();iHist!=iMod->second.end();++iHist){
+            std::cout << "[FWLJMet] : "
+            << "Creating histograms : " << iMod->first << "/"
+            << iHist->second.GetName() << std::endl;
+            iHist->second.SetHist( _dir.make<TH1F>(iHist->second.GetName().c_str(),
+                                                   iHist->second.GetName().c_str(),
+                                                   iHist->second.GetNBins(),
+                                                   iHist->second.GetXMin(),
+                                                   iHist->second.GetXMax() 
+                                                   ) 
+                                  );
+        }
+    }
 
 
 }

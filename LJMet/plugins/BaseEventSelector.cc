@@ -35,8 +35,8 @@ void BaseEventSelector::EndEvent(edm::EventBase const & event, LjmetEventContent
 
 void BaseEventSelector::Init( void )
 {
-    // init sanity check histograms
-    mpEc->SetHistogram(mName, "jes_correction", 100, 0.8, 1.2);
-    mpEc->SetHistogram(mName, "met_correction", 100, 0.0, 2.0);
+
+    mpEc->SetHistogram(mName, "nEvents", 4, -2,2); // to record total events prior to any selection (and ideally negative weights for MC). 
+
 }
 

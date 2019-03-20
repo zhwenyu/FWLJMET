@@ -39,7 +39,7 @@ process.ljmet = cms.EDAnalyzer(
 			'DummyCalc',
 	),
 
-	test_selector = cms.PSet(
+	test_selector = cms.PSet( # name has to match the name as registered in BeginJob of  EventSelector.cc
 
             debug  = cms.bool(True),
 
@@ -96,46 +96,8 @@ process.ljmet = cms.EDAnalyzer(
 )
 
 
-#added by rizki - this part is not necessary for FWLJMET !
-process.skimMiniAOD = cms.EDFilter(
-	"SkimMiniAOD",
-	debug			= cms.bool(True),
-
-	filter_by_minLeptons	= cms.bool(True),
-	muonCollection 		= cms.InputTag("slimmedMuons"),
-	electronCollection	= cms.InputTag("slimmedElectrons"),
-	minLeptons		= cms.int32(3),
-
-	filter_by_HLT		= cms.bool(True),
-	HLT			= cms.InputTag("TriggerResults","","HLT"),
-        HLTpaths 		= cms.vstring(
-    	#MuMu
-        'HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_v',    #exists in 2017  (PreScaled!)
-        'HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_v',  #exists in 2017 (PreScaled!)
-        'HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_Mass3p8_v',
-        'HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_v',
-        'HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ_v',
-    	#ElEl
-        'HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_v',  #exists in 2017
-        'HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v', #exists in 2017
-        #MuEl
-        'HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_v',   #exists in 2017
-        'HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_DZ', #exists in 2017
-        'HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_v', #exists in 2017
-        'HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v',  #exists in 2017
-        #for trig efficiency
-        'HLT_IsoMu24_v',
-        'HLT_IsoTkMu24_v',
-        'HLT_IsoMu27_v',
-        'HLT_Ele27_WPTight_Gsf_v',
-        'HLT_Ele35_WPTight_Gsf_v',
-        ),
-
-	)
-
 
 # Configure a path and endpath to run the producer and output modules
 process.p = cms.Path(
 	process.ljmet
-#     *process.skimMiniAOD - this is not necessary for FWLJMET !
 )

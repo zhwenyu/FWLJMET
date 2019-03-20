@@ -10,22 +10,23 @@ mVerbosity(0)
 std::cout<<"INSIDE LjmetEventContent::LjmetEventContent()"<<std::endl; // DELETE THIS LINE WHEN DONE
 }
 
-LjmetEventContent::LjmetEventContent(std::map<std::string, edm::ParameterSet const> mPar):
+LjmetEventContent::LjmetEventContent(edm::ParameterSet const iConfig):
 mName("LjmetEventContent"),
 mLegend("[LjmetEventContent]: "),
 mpTree(0),
 mFirstEntry(true),
 mVerbosity(0)
 {
-    if (mPar.find("ljmet") != mPar.end()) {
-        if (mPar["ljmet"].exists("verbosity")) {
-            mVerbosity = mPar["ljmet"].getParameter<int>("verbosity");
-        }
-    }
+	mVerbosity = iConfig.getParameter<int>("verbosity");
 }
 
 LjmetEventContent::~LjmetEventContent()
 {
+}
+
+void LjmetEventContent::SetVerbosity(int verbosity)
+{
+    mVerbosity = verbosity;
 }
 
 void LjmetEventContent::SetTree(TTree * tree)
@@ -133,6 +134,41 @@ void LjmetEventContent::SetHistValue(std::string modname, std::string histname, 
     }
 }
 
+void LjmetEventContent::FillHist(std::string modname, std::string histname, double value)
+{
+
+    // fill histograms NOTE: THIS CAN BE IMROVED! NO NEED TO LOOP, JUST DIRECTLY FIND VALUE BY KEY! (For some reason it was not working at first try. But try again!)
+    std::map<std::string, std::map<std::string, LjmetEventContent::HistMetadata>>::iterator iMod;
+    std::map<std::string, LjmetEventContent::HistMetadata>::iterator iHist;
+    for (iMod = mDoubleHist.begin(); iMod != mDoubleHist.end(); ++iMod) {
+    	if(iMod->first == modname){    			
+			for (iHist = iMod->second.begin(); iHist != iMod->second.end(); ++iHist) {
+    			if(iHist->first==histname){
+					TH1 * _hist = iHist->second.GetHist();
+					if (_hist){
+						_hist->Fill(value);
+						if(mVerbosity>1) std::cout << mLegend <<"["+modname+"]:"<<"Filling "+histname+" histogram" << std::endl;
+					}
+					else{
+						std::cout << mLegend <<"Histo "+histname+" is NULL" << std::endl;
+					}
+					break; // end loop when map of histo is found
+				}
+				else if (iHist == iMod->second.end()){
+					std::cout << mLegend <<"["+modname+"]:"<<"Problem finding map of of histo for this module" << std::endl;
+				}
+			}
+			break; //end loop when map of map of histo is found
+		}
+		else if(iMod == mDoubleHist.end()){
+			std::cout << mLegend <<"["+modname+"]:"<<"Problem finding map of map of histo for this module" << std::endl;		
+		}
+
+    }
+
+}
+
+
 void LjmetEventContent::Fill()
 {
     if (mFirstEntry) {
@@ -141,8 +177,8 @@ void LjmetEventContent::Fill()
     }
     mpTree->Fill();
     
-    // fill histograms
-    // create histograms
+    // fill histograms --> Replaced by FillHist !! Now we fill each histogram one at a time individually, not all at once.
+    /*
     std::map<std::string, std::map<std::string, LjmetEventContent::HistMetadata>>::iterator iMod;
     std::map<std::string, LjmetEventContent::HistMetadata>::iterator iHist;
     for (iMod = mDoubleHist.begin(); iMod != mDoubleHist.end(); ++iMod) {
@@ -151,6 +187,7 @@ void LjmetEventContent::Fill()
             if (_hist) _hist->Fill(iHist->second.GetValue());
         }
     }
+    */
 }
 
 int LjmetEventContent::createBranches()
