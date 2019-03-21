@@ -127,7 +127,7 @@ int MultiLepCalc::BeginJob(edm::ConsumesCollector && iC)
 	PupInfoToken 		= iC.consumes<std::vector<PileupSummaryInfo>>(edm::InputTag("slimmedAddPileupInfo"));
 
 	//Bad, dup, mu flag
-	muflagtagToken 		= iC.consumes<edm::TriggerResults >(edm::InputTag("TriggerResults::RECO"));
+	muflagtagToken 		= iC.consumes<edm::TriggerResults >(edm::InputTag("TriggerResults::RECO")); //Hardcoding.
 
 	//Misc
 	rhoJetsNCToken      = iC.consumes<double>(mPset.getParameter<edm::InputTag>("rhoJetsNCInputTag"));

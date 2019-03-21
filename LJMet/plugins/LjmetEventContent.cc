@@ -7,7 +7,6 @@ mpTree(0),
 mFirstEntry(true),
 mVerbosity(0)
 {
-std::cout<<"INSIDE LjmetEventContent::LjmetEventContent()"<<std::endl; // DELETE THIS LINE WHEN DONE
 }
 
 LjmetEventContent::LjmetEventContent(edm::ParameterSet const iConfig):

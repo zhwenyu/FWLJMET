@@ -361,6 +361,7 @@ process.ljmet = cms.EDAnalyzer(
         include_calcs = cms.vstring(
                         'MultiLepCalc',
                         'TpTpCalc',
+                        'CommonCalc',
         ),
         exclude_calcs = cms.vstring(
                         'TestCalc',
@@ -373,6 +374,7 @@ process.ljmet = cms.EDAnalyzer(
         # Calc cfg name has to match the name as registered in Calc.cc
         MultiLepCalc = cms.PSet(MultiLepCalc_cfg),
         TpTpCalc = cms.PSet(TpTpCalc_cfg),
+        CommonCalc = cms.PSet(),
 
 )
 
