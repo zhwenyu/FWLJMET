@@ -285,7 +285,7 @@ void MultiLepEventSelector::BeginJob( const edm::ParameterSet& iConfig, edm::Con
     max_jet                  = selectorConfig.getParameter<int>("max_jet");
     leading_jet_pt           = selectorConfig.getParameter<double>("leading_jet_pt");
     //JET CORRECTION  initialization
-    JetMETCorr.Initialize(selectorConfig,isMc);
+    JetMETCorr.Initialize(selectorConfig);
 
     //BTAG
     btag_cuts          = selectorConfig.getParameter<bool>("btag_cuts");  // this is currently not used anywhere but could be useful in the future. -- Mar 19, 2019.  
@@ -1166,14 +1166,14 @@ bool MultiLepEventSelector::JetSelection(edm::Event const & event, pat::strbitse
 			  if ( (*_i_const).key() == muDaughters[muI].key() ) {
 				tmpJet.setP4( tmpJet.p4() - muDaughters[muI]->p4() );
 				if (debug) std::cout << "  Cleaned Jet : pT = " << tmpJet.pt() << " eta = " << tmpJet.eta() << " phi = " << tmpJet.phi() << std::endl;
-				jetP4 = JetMETCorr.correctJet(tmpJet, event, isMc, rhoJetsToken, isAK8, reCorrectJet, syst); //THIS SEEMS REDUNDANT WITH correctJetReturnPatJet METHOD, CAN CALCULATE P4 FROM OUTPUT OF correctJetReturnPatJet RATHER THAN DOING EXACTLY EVERYTHING correctJetReturnPatJet IS DOING. FIX!!!! -- MAR 15,2019
+				jetP4 = JetMETCorr.correctJet(tmpJet, event, rhoJetsToken, isAK8, reCorrectJet, syst); //THIS SEEMS REDUNDANT WITH correctJetReturnPatJet METHOD, CAN CALCULATE P4 FROM OUTPUT OF correctJetReturnPatJet RATHER THAN DOING EXACTLY EVERYTHING correctJetReturnPatJet IS DOING. FIX!!!! -- MAR 15,2019
 /*				if (mbPar["doAllJetSyst"]) {
-				  jetP4_jesup = JetMETCorr.correctJet(tmpJet, event, isMc, rhoJetsToken, isAK8, reCorrectJet,1);
-				  jetP4_jesdn = JetMETCorr.correctJet(tmpJet, event, isMc, rhoJetsToken, isAK8, reCorrectJet,2);
-				  jetP4_jerup = JetMETCorr.correctJet(tmpJet, event, isMc, rhoJetsToken, isAK8, reCorrectJet,3);
-				  jetP4_jerdn = JetMETCorr.correctJet(tmpJet, event, isMc, rhoJetsToken, isAK8, reCorrectJet,4);
+				  jetP4_jesup = JetMETCorr.correctJet(tmpJet, event, rhoJetsToken, isAK8, reCorrectJet,1);
+				  jetP4_jesdn = JetMETCorr.correctJet(tmpJet, event, rhoJetsToken, isAK8, reCorrectJet,2);
+				  jetP4_jerup = JetMETCorr.correctJet(tmpJet, event, rhoJetsToken, isAK8, reCorrectJet,3);
+				  jetP4_jerdn = JetMETCorr.correctJet(tmpJet, event, rhoJetsToken, isAK8, reCorrectJet,4);
 				}*/
-				corrJet = JetMETCorr.correctJetReturnPatJet(tmpJet, event, isMc, rhoJetsToken, isAK8, reCorrectJet, syst); //THIS SEEMS REDUNDANT WITH correctJet METHOD ! FIX !!!
+				corrJet = JetMETCorr.correctJetReturnPatJet(tmpJet, event, rhoJetsToken, isAK8, reCorrectJet, syst); //THIS SEEMS REDUNDANT WITH correctJet METHOD ! FIX !!!
 				if (debug) std::cout << "Corrected Jet : pT = " << jetP4.Pt() << " eta = " << jetP4.Eta() << " phi = " << jetP4.Phi() << std::endl;
 				_cleaned = true;
 				muDaughters.erase( muDaughters.begin()+muI );
@@ -1202,14 +1202,14 @@ bool MultiLepEventSelector::JetSelection(edm::Event const & event, pat::strbitse
 			  if ( (*_i_const).key() == elDaughters[elI].key() ) {
 				tmpJet.setP4( tmpJet.p4() - elDaughters[elI]->p4() );
 				if (debug) std::cout << "  Cleaned Jet : pT = " << tmpJet.pt() << " eta = " << tmpJet.eta() << " phi = " << tmpJet.phi() << std::endl;
-				jetP4 = JetMETCorr.correctJet(tmpJet, event, isMc, rhoJetsToken, isAK8, reCorrectJet, syst); //THIS SEEMS REDUNDANT WITH correctJetReturnPatJet METHOD, CAN CALCULATE P4 FROM OUTPUT OF correctJetReturnPatJet RATHER THAN DOING EXACTLY EVERYTHING correctJetReturnPatJet IS DOING. FIX!!!! -- MAR 15,2019
+				jetP4 = JetMETCorr.correctJet(tmpJet, event, rhoJetsToken, isAK8, reCorrectJet, syst); //THIS SEEMS REDUNDANT WITH correctJetReturnPatJet METHOD, CAN CALCULATE P4 FROM OUTPUT OF correctJetReturnPatJet RATHER THAN DOING EXACTLY EVERYTHING correctJetReturnPatJet IS DOING. FIX!!!! -- MAR 15,2019
 /*				if (mbPar["doAllJetSyst"]) {
-				  jetP4_jesup = JetMETCorr.correctJet(tmpJet, event, isMc, rhoJetsToken, isAK8, reCorrectJet,1);
-				  jetP4_jesdn = JetMETCorr.correctJet(tmpJet, event, isMc, rhoJetsToken, isAK8, reCorrectJet,2);
-				  jetP4_jerup = JetMETCorr.correctJet(tmpJet, event, isMc, rhoJetsToken, isAK8, reCorrectJet,3);
-				  jetP4_jerdn = JetMETCorr.correctJet(tmpJet, event, isMc, rhoJetsToken, isAK8, reCorrectJet,4);
+				  jetP4_jesup = JetMETCorr.correctJet(tmpJet, event, rhoJetsToken, isAK8, reCorrectJet,1);
+				  jetP4_jesdn = JetMETCorr.correctJet(tmpJet, event, rhoJetsToken, isAK8, reCorrectJet,2);
+				  jetP4_jerup = JetMETCorr.correctJet(tmpJet, event, rhoJetsToken, isAK8, reCorrectJet,3);
+				  jetP4_jerdn = JetMETCorr.correctJet(tmpJet, event, rhoJetsToken, isAK8, reCorrectJet,4);
 				}*/
-				corrJet = JetMETCorr.correctJetReturnPatJet(tmpJet, event, isMc, rhoJetsToken, isAK8, reCorrectJet, syst); //THIS SEEMS REDUNDANT WITH correctJet METHOD ! FIX!!!! -- MAR 15,2019
+				corrJet = JetMETCorr.correctJetReturnPatJet(tmpJet, event, rhoJetsToken, isAK8, reCorrectJet, syst); //THIS SEEMS REDUNDANT WITH correctJet METHOD ! FIX!!!! -- MAR 15,2019
 				if (debug) std::cout << "Corrected Jet : pT = " << jetP4.Pt() << " eta = " << jetP4.Eta() << " phi = " << jetP4.Phi() << std::endl;
 				_cleaned = true;
 				elDaughters.erase( elDaughters.begin()+elI );
@@ -1222,14 +1222,14 @@ bool MultiLepEventSelector::JetSelection(edm::Event const & event, pat::strbitse
     }
 
     if (!_cleaned) {
-      jetP4 = JetMETCorr.correctJet(*_ijet, event, isMc, rhoJetsToken, isAK8, reCorrectJet, syst);
+      jetP4 = JetMETCorr.correctJet(*_ijet, event, rhoJetsToken, isAK8, reCorrectJet, syst);
 /*      if (mbPar["doAllJetSyst"]) {
-		jetP4_jesup = JetMETCorr.correctJet(*_ijet, event, isMc, rhoJetsToken, isAK8, reCorrectJet,1);
-		jetP4_jesdn = JetMETCorr.correctJet(*_ijet, event, isMc, rhoJetsToken, isAK8, reCorrectJet,2);
-		jetP4_jerup = JetMETCorr.correctJet(*_ijet, event, isMc, rhoJetsToken, isAK8, reCorrectJet,3);
-		jetP4_jerdn = JetMETCorr.correctJet(*_ijet, event, isMc, rhoJetsToken, isAK8, reCorrectJet,4);
+		jetP4_jesup = JetMETCorr.correctJet(*_ijet, event, rhoJetsToken, isAK8, reCorrectJet,1);
+		jetP4_jesdn = JetMETCorr.correctJet(*_ijet, event, rhoJetsToken, isAK8, reCorrectJet,2);
+		jetP4_jerup = JetMETCorr.correctJet(*_ijet, event, rhoJetsToken, isAK8, reCorrectJet,3);
+		jetP4_jerdn = JetMETCorr.correctJet(*_ijet, event, rhoJetsToken, isAK8, reCorrectJet,4);
       }*/
-      corrJet = JetMETCorr.correctJetReturnPatJet(*_ijet, event, isMc, rhoJetsToken, isAK8, reCorrectJet, syst);
+      corrJet = JetMETCorr.correctJetReturnPatJet(*_ijet, event, rhoJetsToken, isAK8, reCorrectJet, syst);
     }
 
     _isTagged = mBtagSfUtil.isJetTagged(*_ijet, jetP4, event, isMc);
@@ -1415,8 +1415,8 @@ void MultiLepEventSelector::AK8JetSelection(edm::Event const & event)
 			  if ( (*_i_const).key() == muDaughters[muI].key() ) {
 				tmpJet.setP4( tmpJet.p4() - muDaughters[muI]->p4() );
 				if (debug) std::cout << "  Cleaned Jet : pT = " << tmpJet.pt() << " eta = " << tmpJet.eta() << " phi = " << tmpJet.phi() << " mass = " << tmpJet.mass() << std::endl;
-				jetP4 = JetMETCorr.correctJet(tmpJet, event, isMc, rhoJetsToken, isAK8, reCorrectJet);
-				corrJet = JetMETCorr.correctJetReturnPatJet(tmpJet, event, isMc, rhoJetsToken, isAK8, reCorrectJet);
+				jetP4 = JetMETCorr.correctJet(tmpJet, event, rhoJetsToken, isAK8, reCorrectJet);
+				corrJet = JetMETCorr.correctJetReturnPatJet(tmpJet, event, rhoJetsToken, isAK8, reCorrectJet);
 				if (debug) std::cout << "Corrected Jet : pT = " << jetP4.Pt() << " eta = " << jetP4.Eta() << " phi = " << jetP4.Phi() << " mass = " << jetP4.M() << std::endl;
 				_cleaned = true;
 				muDaughters.erase( muDaughters.begin()+muI );
@@ -1445,8 +1445,8 @@ void MultiLepEventSelector::AK8JetSelection(edm::Event const & event)
 			  if ( (*_i_const).key() == elDaughters[elI].key() ) {
 				tmpJet.setP4( tmpJet.p4() - elDaughters[elI]->p4() );
 				if (debug) std::cout << "  Cleaned Jet : pT = " << tmpJet.pt() << " eta = " << tmpJet.eta() << " phi = " << tmpJet.phi() << " mass = " << tmpJet.mass() << std::endl;
-				jetP4 = JetMETCorr.correctJet(tmpJet, event, isMc, rhoJetsToken, isAK8, reCorrectJet);
-				corrJet = JetMETCorr.correctJetReturnPatJet(tmpJet, event, isMc, rhoJetsToken, isAK8, reCorrectJet);
+				jetP4 = JetMETCorr.correctJet(tmpJet, event, rhoJetsToken, isAK8, reCorrectJet);
+				corrJet = JetMETCorr.correctJetReturnPatJet(tmpJet, event, rhoJetsToken, isAK8, reCorrectJet);
 				if (debug) std::cout << "Corrected Jet : pT = " << jetP4.Pt() << " eta = " << jetP4.Eta() << " phi = " << jetP4.Phi() << " mass = " << jetP4.M() << std::endl;
 				_cleaned = true;
 				elDaughters.erase( elDaughters.begin()+elI );
@@ -1459,8 +1459,8 @@ void MultiLepEventSelector::AK8JetSelection(edm::Event const & event)
     }
 
     if (!_cleaned) {
-      jetP4 = JetMETCorr.correctJet(*_ijet, event, isMc, rhoJetsToken, isAK8, reCorrectJet);
-      corrJet = JetMETCorr.correctJetReturnPatJet(*_ijet, event, isMc, rhoJetsToken, isAK8, reCorrectJet);
+      jetP4 = JetMETCorr.correctJet(*_ijet, event, rhoJetsToken, isAK8, reCorrectJet);
+      corrJet = JetMETCorr.correctJetReturnPatJet(*_ijet, event, rhoJetsToken, isAK8, reCorrectJet);
     }
 
     // jet cuts //NOTE: THIS IDEALLY SHOULDN'T BE HARD CODED -- Mar 14, 2019
@@ -1561,7 +1561,7 @@ bool MultiLepEventSelector::METSelection(edm::Event const & event)
 	  bool passMaxMET = false;
 	  if ( pMet.isNonnull() && pMet.isAvailable() ) {
 	    pat::MET const & met = mhMet->at(0);
-	    TLorentzVector corrMET = JetMETCorr.correctMet(met,event,isMc,rhoJetsToken,vAllJets,reCorrectJet,syst);
+	    TLorentzVector corrMET = JetMETCorr.correctMet(met,event,rhoJetsToken,vAllJets,reCorrectJet,syst);
 
 	    //save to EventSelector object variable.
 	    correctedMET_p4 = corrMET;

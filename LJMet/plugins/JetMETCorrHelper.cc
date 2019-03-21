@@ -9,18 +9,20 @@ JetMETCorrHelper::JetMETCorrHelper()
     if(debug) std::cout << mLegend << "Creating JetMETCorrHelper object." << std::endl;
 }
 
-JetMETCorrHelper::JetMETCorrHelper(const edm::ParameterSet& iConfig, bool isMc)
+JetMETCorrHelper::JetMETCorrHelper(const edm::ParameterSet& iConfig)
 {
-    Initialize(iConfig,isMc);
+    Initialize(iConfig);
 }
 
 
-void JetMETCorrHelper::Initialize(const edm::ParameterSet& iConfig, bool isMc){
+void JetMETCorrHelper::Initialize(const edm::ParameterSet& iConfig){
 
     //JET CORRECTION  initialization
     std::cout << mLegend << "Initializing JetMETCorrHelper object." << std::endl;
 
     debug              = iConfig.getParameter<bool>("debug");
+
+    isMc               = iConfig.getParameter<bool>("isMc");
 
     std::string JEC_txtfile              = iConfig.getParameter<std::string>("JEC_txtfile");
     std::string JERSF_txtfile            = iConfig.getParameter<std::string>("JERSF_txtfile");
@@ -185,14 +187,13 @@ void JetMETCorrHelper::SetFacJetCorr(edm::EventBase const & event)
 
 TLorentzVector JetMETCorrHelper::correctJet(const pat::Jet & jet,
                                                  edm::Event const & event,
-                                                 bool isMc,
                                                  edm::EDGetTokenT<double> rhoJetsToken,
                                                  bool doAK8Corr,
                                                  bool reCorrectJet,
                                                  unsigned int syst)
 {
 
-  pat::Jet correctedJet = correctJetReturnPatJet(jet, event, isMc, rhoJetsToken, doAK8Corr, reCorrectJet, syst);
+  pat::Jet correctedJet = correctJetReturnPatJet(jet, event, rhoJetsToken, doAK8Corr, reCorrectJet, syst);
 
   TLorentzVector jetP4;
   jetP4.SetPtEtaPhiM(correctedJet.pt(), correctedJet.eta(),correctedJet.phi(), correctedJet.mass() ); // Should this use SetPtEtaPhiE ? -- Mar 19, 2019.
@@ -203,7 +204,6 @@ TLorentzVector JetMETCorrHelper::correctJet(const pat::Jet & jet,
 
 pat::Jet JetMETCorrHelper::correctJetReturnPatJet(const pat::Jet & jet,
                                                        edm::Event const & event,
-                                                       bool isMc,
                                                        edm::EDGetTokenT<double> rhoJetsToken,
                                                        bool doAK8Corr,
                                                        bool reCorrectJet,
@@ -385,7 +385,6 @@ pat::Jet JetMETCorrHelper::correctJetReturnPatJet(const pat::Jet & jet,
 
 TLorentzVector JetMETCorrHelper::correctMet(const pat::MET & met,
                                                  edm::Event const & event,
-                                                 bool isMc,
                                                  edm::EDGetTokenT<double> rhoJetsToken,
                                                  std::vector<edm::Ptr<pat::Jet>> vAllJets,
                                                  bool reCorrectjet,
@@ -397,7 +396,7 @@ TLorentzVector JetMETCorrHelper::correctMet(const pat::MET & met,
     if ( reCorrectjet ) {
         for (std::vector<edm::Ptr<pat::Jet> >::const_iterator ijet = vAllJets.begin(); ijet != vAllJets.end(); ++ijet) {
             if (!useHF && fabs((**ijet).eta())>2.6) continue;
-            TLorentzVector lv = correctJetForMet(**ijet, event, isMc, rhoJetsToken, syst);
+            TLorentzVector lv = correctJetForMet(**ijet, event, rhoJetsToken, syst);
             correctedMET_px += lv.Px();
             correctedMET_py += lv.Py();
         }
@@ -416,7 +415,6 @@ TLorentzVector JetMETCorrHelper::correctMet(const pat::MET & met,
 
 TLorentzVector JetMETCorrHelper::correctJetForMet(const pat::Jet & jet, 
                                                        edm::Event const & event,
-                                                       bool isMc,
                                                        edm::EDGetTokenT<double> rhoJetsToken,
                                                        unsigned int syst)
 {

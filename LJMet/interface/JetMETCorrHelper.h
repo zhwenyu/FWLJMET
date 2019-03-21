@@ -25,15 +25,14 @@ class JetMETCorrHelper{
 
     public:
     	JetMETCorrHelper();
-    	JetMETCorrHelper(const edm::ParameterSet& iConfig, bool isMc);
+    	JetMETCorrHelper(const edm::ParameterSet& iConfig);
     	
-    	void Initialize(const edm::ParameterSet& iConfig, bool isMc);
+    	void Initialize(const edm::ParameterSet& iConfig);
         
         void SetFacJetCorr(edm::EventBase const & event);
         
         TLorentzVector correctJet(const pat::Jet & jet,
 						  edm::Event const & event,
-						  bool isMc,
 						  edm::EDGetTokenT<double> rhoJetsToken,
 						  bool doAK8Corr=false,
 						  bool reCorrectJet=false,
@@ -42,7 +41,6 @@ class JetMETCorrHelper{
 						  
 		pat::Jet correctJetReturnPatJet(const pat::Jet & jet,
 								edm::Event const & event,
-								bool isMc,
 								edm::EDGetTokenT<double> rhoJetsToken,
 								bool doAK8Corr=false,
 								bool reCorrectJet=false,
@@ -50,7 +48,6 @@ class JetMETCorrHelper{
 								
 		TLorentzVector correctMet(const pat::MET & met, 
 						  edm::Event const & event,
-						  bool isMc, 
 						  edm::EDGetTokenT<double> rhoJetsToken,
 						  std::vector<edm::Ptr<pat::Jet>> vAllJets,
 						  bool reCorrectjet = false, 
@@ -60,13 +57,14 @@ class JetMETCorrHelper{
 						  
 		TLorentzVector correctJetForMet(const pat::Jet & jet, 
 								edm::Event const & event,
-								bool isMc, 
 								edm::EDGetTokenT<double> rhoJetsToken,
 								unsigned int syst = 0);
 
     private:
             
         bool debug;
+
+        bool isMc;
 
         std::string mLegend = "\t[JetMETCorrHelper]: ";
     
