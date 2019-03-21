@@ -62,7 +62,7 @@ private:
     bool doAllJetSyst;
     JetMETCorrHelper JetMETCorr;
 
-    BTagSFUtil mBtagSfUtil;
+    BTagSFUtil btagSfUtil;
 
     bool saveGenHT;
     bool orlhew;
@@ -180,7 +180,7 @@ int MultiLepCalc::BeginJob(edm::ConsumesCollector && iC)
 	JetMETCorr.Initialize(mPset);
 
 	//BTAG parameter initialization
-	mBtagSfUtil.Initialize(mPset);
+	btagSfUtil.Initialize(mPset);
 
 	return 0;
 }
@@ -998,10 +998,10 @@ void MultiLepCalc::AnalyzeJets(edm::Event const & event, BaseEventSelector * sel
 
       TLorentzVector jetP4; jetP4.SetPtEtaPhiE(ii->pt(), ii->eta(), ii->phi(), ii->energy() );
 
-      AK4JetBTag_bSFup.push_back(mBtagSfUtil.isJetTagged(*ii,jetP4, event, isMc, 1));
-      AK4JetBTag_bSFdn.push_back(mBtagSfUtil.isJetTagged(*ii,jetP4, event, isMc, 2));
-      AK4JetBTag_lSFup.push_back(mBtagSfUtil.isJetTagged(*ii,jetP4, event, isMc, 3));
-      AK4JetBTag_lSFdn.push_back(mBtagSfUtil.isJetTagged(*ii,jetP4, event, isMc, 4));
+      AK4JetBTag_bSFup.push_back(btagSfUtil.isJetTagged(*ii,jetP4, event, isMc, 1));
+      AK4JetBTag_bSFdn.push_back(btagSfUtil.isJetTagged(*ii,jetP4, event, isMc, 2));
+      AK4JetBTag_lSFup.push_back(btagSfUtil.isJetTagged(*ii,jetP4, event, isMc, 3));
+      AK4JetBTag_lSFdn.push_back(btagSfUtil.isJetTagged(*ii,jetP4, event, isMc, 4));
 
       AK4JetBDisc        . push_back(ii->bDiscriminator( "pfCombinedInclusiveSecondaryVertexV2BJetTags" ));
       AK4JetBDeepCSVb    . push_back(ii->bDiscriminator( "pfDeepCSVJetTags:probb" ));

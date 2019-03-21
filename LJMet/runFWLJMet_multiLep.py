@@ -18,8 +18,8 @@ MAXEVENTS = 100
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(MAXEVENTS) )
 
 ## Source / Input
-# isMC=True
 isMC=True
+#isMC=False
 if(isMC): INFILE='root://cmsxrootd.fnal.gov//store/mc/RunIIFall17MiniAODv2/TprimeTprime_M-1100_TuneCP5_13TeV-madgraph-pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14-v2/00000/8EA8FE89-254F-E811-835E-0090FAA58BF4.root'
 else: INFILE='root://cmsxrootd.fnal.gov//store/data/Run2017F/DoubleEG/MINIAOD/09May2018-v1/10000/444E03EB-B75F-E811-AFBA-F01FAFD8F16A.root'
 
@@ -343,7 +343,7 @@ MultiLepCalc_cfg = cms.PSet(
             BTagUncertDown           = cms.bool(False), # no longer needed, but can still be utilized. Keep false as default.
             MistagUncertUp           = cms.bool(False), # no longer needed, but can still be utilized. Keep false as default.
             MistagUncertDown          = cms.bool(False), # no longer needed, but can still be utilized. Keep false as default.
-        
+
             )
 
 TpTpCalc_cfg = cms.PSet(
@@ -351,6 +351,58 @@ TpTpCalc_cfg = cms.PSet(
     genParticlesCollection = cms.InputTag("prunedGenParticles"),
 
         )
+
+JetSubCalc_cfg = cms.PSet(
+
+            debug        = cms.bool(False),
+            isMc         = cms.bool(isMC),
+
+            genParticles       = cms.InputTag("prunedGenParticles"),
+
+            kappa              = cms.double(0.5), #for Jet Charge calculation
+            killHF             = cms.bool(False),
+            puppiCorrPath      = cms.string(relBase+'/src/FWLJMET/LJMet/data/PuppiSoftdropMassCorr/weights/puppiCorr.root'),
+
+            rhoJetsInputTag          = cms.InputTag("fixedGridRhoFastjetAll"), #this is for electron. Why is it different compared to muon?
+
+            # Jet recorrections needs to be passed here again if Calc uses jet correction
+            doNewJEC                 = cms.bool(doNewJEC),
+            JECup                    = cms.bool(JECup),
+            JECdown                  = cms.bool(JECdown),
+            JERup                    = cms.bool(JERup),
+            JERdown                  = cms.bool(JERdown),
+            doAllJetSyst             = cms.bool(doAllJetSyst),
+            JEC_txtfile              = cms.string(JEC_txtfile),
+            JERSF_txtfile            = cms.string(JERSF_txtfile),
+            JER_txtfile              = cms.string(JER_txtfile),
+            JERAK8_txtfile           = cms.string(JERAK8_txtfile),
+            MCL1JetPar               = cms.string(MCL1JetPar),
+            MCL2JetPar               = cms.string(MCL2JetPar),
+            MCL3JetPar               = cms.string(MCL3JetPar),
+            MCL1JetParAK8            = cms.string(MCL1JetParAK8),
+            MCL2JetParAK8            = cms.string(MCL2JetParAK8),
+            MCL3JetParAK8            = cms.string(MCL3JetParAK8),
+            DataL1JetPar             = cms.string(DataL1JetPar),
+            DataL2JetPar             = cms.string(DataL2JetPar),
+            DataL3JetPar             = cms.string(DataL3JetPar),
+            DataResJetPar            = cms.string(DataResJetPar),
+            DataL1JetParAK8          = cms.string(DataL1JetParAK8),
+            DataL2JetParAK8          = cms.string(DataL2JetParAK8),
+            DataL3JetParAK8          = cms.string(DataL3JetParAK8),
+            DataResJetParAK8         = cms.string(DataResJetParAK8),
+
+            #Btagging - Btag info needs to be passed here again if Calc uses Btagging.
+            btagOP                   = cms.string('MEDIUM'),
+            bdisc_min                = cms.double(0.4941), # THIS HAS TO MATCH btagOP !
+            applyBtagSF              = cms.bool(True), #This is implemented by BTagSFUtil.cc
+            DeepCSVfile              = cms.string(relBase+'/src/FWLJMET/LJMet/data/DeepCSV_94XSF_V3_B_F.csv'),
+            DeepCSVSubjetfile        = cms.string(relBase+'/src/FWLJMET/LJMet/data/subjet_DeepCSV_94XSF_V3_B_F.csv'),
+            BTagUncertUp             = cms.bool(False), # no longer needed, but can still be utilized. Keep false as default.
+            BTagUncertDown           = cms.bool(False), # no longer needed, but can still be utilized. Keep false as default.
+            MistagUncertUp           = cms.bool(False), # no longer needed, but can still be utilized. Keep false as default.
+            MistagUncertDown          = cms.bool(False), # no longer needed, but can still be utilized. Keep false as default.
+
+    )
 
 process.ljmet = cms.EDAnalyzer(
         'LJMet',
@@ -362,6 +414,7 @@ process.ljmet = cms.EDAnalyzer(
                         'MultiLepCalc',
                         'TpTpCalc',
                         'CommonCalc',
+                        'JetSubCalc',
         ),
         exclude_calcs = cms.vstring(
                         'TestCalc',
@@ -373,8 +426,9 @@ process.ljmet = cms.EDAnalyzer(
 
         # Calc cfg name has to match the name as registered in Calc.cc
         MultiLepCalc = cms.PSet(MultiLepCalc_cfg),
-        TpTpCalc = cms.PSet(TpTpCalc_cfg),
-        CommonCalc = cms.PSet(),
+        TpTpCalc     = cms.PSet(TpTpCalc_cfg),
+        CommonCalc   = cms.PSet(),
+        JetSubCalc   = cms.PSet(JetSubCalc_cfg),
 
 )
 

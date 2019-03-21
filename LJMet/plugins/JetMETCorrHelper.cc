@@ -6,7 +6,6 @@ using namespace std;
 
 JetMETCorrHelper::JetMETCorrHelper()
 {
-    if(debug) std::cout << mLegend << "Creating JetMETCorrHelper object." << std::endl;
 }
 
 JetMETCorrHelper::JetMETCorrHelper(const edm::ParameterSet& iConfig)

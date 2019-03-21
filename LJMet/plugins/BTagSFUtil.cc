@@ -27,7 +27,6 @@ v 1.2
 
 
 BTagSFUtil::BTagSFUtil() {
-    if(debug) std::cout << mLegend << "Creating BTagSFUtil object." << std::endl;
 }
 
 

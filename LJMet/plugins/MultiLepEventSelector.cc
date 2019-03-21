@@ -141,7 +141,7 @@ protected:
     
     //Btag
     bool        btag_cuts;
-    BTagSFUtil mBtagSfUtil;
+    BTagSFUtil btagSfUtil;
 
     //Tokens
     edm::EDGetTokenT<GenEventInfoProduct>            genToken;
@@ -290,7 +290,7 @@ void MultiLepEventSelector::BeginJob( const edm::ParameterSet& iConfig, edm::Con
     //BTAG
     btag_cuts          = selectorConfig.getParameter<bool>("btag_cuts");  // this is currently not used anywhere but could be useful in the future. -- Mar 19, 2019.  
     //BTAG parameter initialization
-    mBtagSfUtil.Initialize(selectorConfig);
+    btagSfUtil.Initialize(selectorConfig);
 
 
     //MET
@@ -1232,7 +1232,7 @@ bool MultiLepEventSelector::JetSelection(edm::Event const & event, pat::strbitse
       corrJet = JetMETCorr.correctJetReturnPatJet(*_ijet, event, rhoJetsToken, isAK8, reCorrectJet, syst);
     }
 
-    _isTagged = mBtagSfUtil.isJetTagged(*_ijet, jetP4, event, isMc);
+    _isTagged = btagSfUtil.isJetTagged(*_ijet, jetP4, event, isMc);
 
     // jet cuts  //NOTE: THIS IDEALLY SHOULDN'T BE HARD CODED -- Mar 13, 2019
     while(1){
