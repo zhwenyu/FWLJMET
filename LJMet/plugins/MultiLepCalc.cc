@@ -177,7 +177,7 @@ int MultiLepCalc::BeginJob(edm::ConsumesCollector && iC)
 	JERup                    = mPset.getParameter<bool>("JERup");
 	JERdown                  = mPset.getParameter<bool>("JERdown");
 	doAllJetSyst             = mPset.getParameter<bool>("doAllJetSyst");
-	JetMETCorr.Initialize(mPset,isMc);
+	JetMETCorr.Initialize(mPset);
 
 	//BTAG parameter initialization
 	mBtagSfUtil.Initialize(mPset);
@@ -1207,7 +1207,7 @@ void MultiLepCalc::AnalyzeMET(edm::Event const & event, BaseEventSelector * sele
 
             if (!doAllJetSyst) break;
 
-            TLorentzVector corrMET = JetMETCorr.correctMet(*pMet, event, isMc, rhoJetsToken, vAllJets, doNewJEC, corri);
+            TLorentzVector corrMET = JetMETCorr.correctMet(*pMet, event, rhoJetsToken, vAllJets, doNewJEC, corri);
 
             if(corrMET.Pt()>0) {
                 _corr_met.push_back(corrMET.Pt());
@@ -1251,7 +1251,7 @@ void MultiLepCalc::AnalyzeMET(edm::Event const & event, BaseEventSelector * sele
         _metnohf = metnohf->p4().pt();
         _metnohf_phi = metnohf->p4().phi();
 
-        TLorentzVector corrMETNOHF = JetMETCorr.correctMet(*metnohf, event, isMc, rhoJetsToken, vAllJets, doNewJEC, syst, useHF);
+        TLorentzVector corrMETNOHF = JetMETCorr.correctMet(*metnohf, event, rhoJetsToken, vAllJets, doNewJEC, syst, useHF);
         //std::cout<<(selector->GetCleanedCorrMet()).Pt()<<std::endl;
         if(corrMETNOHF.Pt()>0) {
 	  _corr_metnohf = corrMETNOHF.Pt();
@@ -1278,7 +1278,7 @@ void MultiLepCalc::AnalyzeMET(edm::Event const & event, BaseEventSelector * sele
         _metmod = metmod->p4().pt();
         _metmod_phi = metmod->p4().phi();
 
-        TLorentzVector corrMETMOD = JetMETCorr.correctMet(*metmod, event, isMc, rhoJetsToken, vAllJets, doNewJEC, syst, useHF);
+        TLorentzVector corrMETMOD = JetMETCorr.correctMet(*metmod, event, rhoJetsToken, vAllJets, doNewJEC, syst, useHF);
         //std::cout<<(selector->GetCleanedCorrMet()).Pt()<<std::endl;
         if(corrMETMOD.Pt()>0) {
 	  _corr_metmod = corrMETMOD.Pt();
