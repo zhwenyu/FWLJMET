@@ -354,7 +354,8 @@ TpTpCalc_cfg = cms.PSet(
 
 JetSubCalc_cfg = cms.PSet(
 
-            isMc  = cms.bool(isMC),
+            debug        = cms.bool(False),
+            isMc         = cms.bool(isMC),
 
             genParticles       = cms.InputTag("prunedGenParticles"),
 
@@ -362,9 +363,9 @@ JetSubCalc_cfg = cms.PSet(
             killHF             = cms.bool(False),
             puppiCorrPath      = cms.string(relBase+'/src/FWLJMET/LJMet/data/PuppiSoftdropMassCorr/weights/puppiCorr.root'),
 
-            bDiscriminant      = cms.string("pfDeepCSVJetTags:probb"),
+            rhoJetsInputTag          = cms.InputTag("fixedGridRhoFastjetAll"), #this is for electron. Why is it different compared to muon?
 
-            # Jet corrections needs to be passed here again if Calc uses jet correction
+            # Jet recorrections needs to be passed here again if Calc uses jet correction
             doNewJEC                 = cms.bool(doNewJEC),
             JECup                    = cms.bool(JECup),
             JECdown                  = cms.bool(JECdown),
@@ -413,7 +414,7 @@ process.ljmet = cms.EDAnalyzer(
                         'MultiLepCalc',
                         'TpTpCalc',
                         'CommonCalc',
-                        #'JetSubCalc',
+                        'JetSubCalc',
         ),
         exclude_calcs = cms.vstring(
                         'TestCalc',
@@ -427,7 +428,7 @@ process.ljmet = cms.EDAnalyzer(
         MultiLepCalc = cms.PSet(MultiLepCalc_cfg),
         TpTpCalc     = cms.PSet(TpTpCalc_cfg),
         CommonCalc   = cms.PSet(),
-        #JetSubCalc   = cms.PSet(JetSubCalc_cfg),
+        JetSubCalc   = cms.PSet(JetSubCalc_cfg),
 
 )
 
