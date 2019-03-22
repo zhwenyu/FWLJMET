@@ -177,7 +177,7 @@ int MultiLepCalc::BeginJob(edm::ConsumesCollector && iC)
 	JERup                    = mPset.getParameter<bool>("JERup");
 	JERdown                  = mPset.getParameter<bool>("JERdown");
 	doAllJetSyst             = mPset.getParameter<bool>("doAllJetSyst");
-	JetMETCorr.Initialize(mPset);
+	JetMETCorr.Initialize(mPset); // REMINDER: THIS NEEDS --if(!isMc)JetMETCorr.SetFacJetCorr(event)-- somewhere in AnalyzeEvent if correcting jets for data since it is era dependent. !!
 
 	//BTAG parameter initialization
 	btagSfUtil.Initialize(mPset);
@@ -189,6 +189,8 @@ int MultiLepCalc::AnalyzeEvent(edm::Event const & event, BaseEventSelector * sel
 {
 
 	if(debug)std::cout << "Processing Event in MultiLepCalc::AnalyzeEvent" << std::endl;
+
+	if(!isMc)JetMETCorr.SetFacJetCorr(event);
 
 	AnalyzeTriggers(event, selector);
 

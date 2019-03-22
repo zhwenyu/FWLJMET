@@ -155,7 +155,6 @@ void JetMETCorrHelper::SetFacJetCorr(edm::EventBase const & event)
 
   int iRun   = event.id().run();
 
-  // NOTE: Need to be careful about these as they are pointers. where to delete? how to use smart pointers?
 
   if(iRun <= 299330){
   	if(debug) std::cout << "\t\t\t using JEC for era B "<< std::endl;

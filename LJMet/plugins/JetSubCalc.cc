@@ -122,7 +122,7 @@ int JetSubCalc::BeginJob(edm::ConsumesCollector && iC)
   JERdown                  = mPset.getParameter<bool>("JERdown");
   doNewJEC                 = mPset.getParameter<bool>("doNewJEC");
   doAllJetSyst             = mPset.getParameter<bool>("doAllJetSyst");
-  JetMETCorr.Initialize(mPset);
+  JetMETCorr.Initialize(mPset); // REMINDER: THIS NEEDS --if(!isMc)JetMETCorr.SetFacJetCorr(event)-- somewhere in AnalyzeEvent if correcting jets for data since it is era dependent. !!
 
   //BTAG parameter initialization
   btagSfUtil.Initialize(mPset);
@@ -133,6 +133,9 @@ int JetSubCalc::BeginJob(edm::ConsumesCollector && iC)
 
 int JetSubCalc::AnalyzeEvent(edm::Event const & event, BaseEventSelector * selector)
 {
+
+    if(!isMc) JetMETCorr.SetFacJetCorr(event);
+
     // ----- Get AK4 jet objects from the selector -----
     // This is updated -- original version used all AK4 jets without selection
     std::vector<pat::Jet>                       const & theJets = selector->GetSelCorrJets();
