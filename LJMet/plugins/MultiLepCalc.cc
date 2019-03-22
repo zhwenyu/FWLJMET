@@ -177,7 +177,7 @@ int MultiLepCalc::BeginJob(edm::ConsumesCollector && iC)
 	JERup                    = mPset.getParameter<bool>("JERup");
 	JERdown                  = mPset.getParameter<bool>("JERdown");
 	doAllJetSyst             = mPset.getParameter<bool>("doAllJetSyst");
-	JetMETCorr.Initialize(mPset); // REMINDER: THIS NEEDS --if(!isMc)JetMETCorr.SetFacJetCorr(event)-- somewhere in AnalyzeEvent if correcting jets for data since it is era dependent. !!
+	JetMETCorr.Initialize(mPset); // REMINDER: THIS NEEDS --if(!isMc)JetMETCorr.SetFacJetCorr(event)-- somewhere before correcting jets for data, since data JEC is era dependent. !!
 
 	//BTAG parameter initialization
 	btagSfUtil.Initialize(mPset);

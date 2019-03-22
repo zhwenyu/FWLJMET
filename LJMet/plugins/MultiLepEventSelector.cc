@@ -285,7 +285,7 @@ void MultiLepEventSelector::BeginJob( const edm::ParameterSet& iConfig, edm::Con
     max_jet                  = selectorConfig.getParameter<int>("max_jet");
     leading_jet_pt           = selectorConfig.getParameter<double>("leading_jet_pt");
     //JET CORRECTION  initialization
-    JetMETCorr.Initialize(selectorConfig); // REMINDER: THIS NEEDS --if(!isMc)JetMETCorr.SetFacJetCorr(event)-- somewhere in AnalyzeEvent if correcting jets for data since it is era dependent. !!
+    JetMETCorr.Initialize(selectorConfig); // REMINDER: THIS NEEDS --if(!isMc)JetMETCorr.SetFacJetCorr(event)-- somewhere before correcting jets for data, since data JEC is era dependent. !!
 
     //BTAG
     btag_cuts          = selectorConfig.getParameter<bool>("btag_cuts");  // this is currently not used anywhere but could be useful in the future. -- Mar 19, 2019.

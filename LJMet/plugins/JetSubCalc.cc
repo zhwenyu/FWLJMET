@@ -122,7 +122,7 @@ int JetSubCalc::BeginJob(edm::ConsumesCollector && iC)
   JERdown                  = mPset.getParameter<bool>("JERdown");
   doNewJEC                 = mPset.getParameter<bool>("doNewJEC");
   doAllJetSyst             = mPset.getParameter<bool>("doAllJetSyst");
-  JetMETCorr.Initialize(mPset); // REMINDER: THIS NEEDS --if(!isMc)JetMETCorr.SetFacJetCorr(event)-- somewhere in AnalyzeEvent if correcting jets for data since it is era dependent. !!
+  JetMETCorr.Initialize(mPset); // REMINDER: THIS NEEDS --if(!isMc)JetMETCorr.SetFacJetCorr(event)-- somewhere correcting jets for data, since data JEC is era dependent. !!
 
   //BTAG parameter initialization
   btagSfUtil.Initialize(mPset);
