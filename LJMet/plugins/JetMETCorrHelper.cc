@@ -43,7 +43,7 @@ void JetMETCorrHelper::Initialize(const edm::ParameterSet& iConfig){
     mJetParStr["DataL3JetParAK8"] = iConfig.getParameter<std::string>("DataL3JetParAK8");
     mJetParStr["DataResJetParAK8"] = iConfig.getParameter<std::string>("DataResJetParAK8");
 
-    if ( isMc ) jecUnc = new JetCorrectionUncertainty(JEC_txtfile);
+    if ( isMc ) jecUnc = std::shared_ptr<JetCorrectionUncertainty>( new JetCorrectionUncertainty(JEC_txtfile) );
 
     resolution = JME::JetResolution(JER_txtfile);
     resolutionAK8 = JME::JetResolution(JERAK8_txtfile);
@@ -52,13 +52,12 @@ void JetMETCorrHelper::Initialize(const edm::ParameterSet& iConfig){
     if ( isMc ) {
 
       // Create the JetCorrectorParameter objects, the order does not matter.
-      // NOTE: Need to be careful about these as they are pointers. where to delete? how to use smart pointers?
-      mStrJetCorPar["L3JetPar"]  = new JetCorrectorParameters(mJetParStr["MCL3JetPar"]);
-      mStrJetCorPar["L2JetPar"]  = new JetCorrectorParameters(mJetParStr["MCL2JetPar"]);
-      mStrJetCorPar["L1JetPar"]  = new JetCorrectorParameters(mJetParStr["MCL1JetPar"]);
-      mStrJetCorPar["L3JetParAK8"]  = new JetCorrectorParameters(mJetParStr["MCL3JetParAK8"]);
-      mStrJetCorPar["L2JetParAK8"]  = new JetCorrectorParameters(mJetParStr["MCL2JetParAK8"]);
-      mStrJetCorPar["L1JetParAK8"]  = new JetCorrectorParameters(mJetParStr["MCL1JetParAK8"]);
+      mStrJetCorPar["L3JetPar"]  = std::shared_ptr<JetCorrectorParameters>(new JetCorrectorParameters(mJetParStr["MCL3JetPar"]) );
+      mStrJetCorPar["L2JetPar"]  = std::shared_ptr<JetCorrectorParameters>(new JetCorrectorParameters(mJetParStr["MCL2JetPar"]) );
+      mStrJetCorPar["L1JetPar"]  = std::shared_ptr<JetCorrectorParameters>(new JetCorrectorParameters(mJetParStr["MCL1JetPar"]) );
+      mStrJetCorPar["L3JetParAK8"]  = std::shared_ptr<JetCorrectorParameters>(new JetCorrectorParameters(mJetParStr["MCL3JetParAK8"]) );
+      mStrJetCorPar["L2JetParAK8"]  = std::shared_ptr<JetCorrectorParameters>(new JetCorrectorParameters(mJetParStr["MCL2JetParAK8"]) );
+      mStrJetCorPar["L1JetParAK8"]  = std::shared_ptr<JetCorrectorParameters>(new JetCorrectorParameters(mJetParStr["MCL1JetParAK8"]) );
 
       // Load the JetCorrectorParameter objects into a std::vector,
       // IMPORTANT: THE ORDER MATTERS HERE !!!!
@@ -70,24 +69,23 @@ void JetMETCorrHelper::Initialize(const edm::ParameterSet& iConfig){
       vParAK8.push_back(*mStrJetCorPar["L2JetParAK8"]);
       vParAK8.push_back(*mStrJetCorPar["L3JetParAK8"]);
 
-      // NOTE: Need to be careful about these as they are pointers. where to delete? how to use smart pointers?
-      JetCorrector = new FactorizedJetCorrector(vPar);
-      JetCorrectorAK8 = new FactorizedJetCorrector(vParAK8);
+      JetCorrector = std::shared_ptr<FactorizedJetCorrector>(new FactorizedJetCorrector(vPar) );
+      JetCorrectorAK8 = std::shared_ptr<FactorizedJetCorrector>(new FactorizedJetCorrector(vParAK8) );
 
     }
     else if ( !isMc ) {
       // Create the JetCorrectorParameter objects, the order does not matter.
-      
+
       mEraReplaceStr["B"] = "B_V";
       mEraReplaceStr["C"] = "C_V";
       mEraReplaceStr["DE"] = "DE_V";
       mEraReplaceStr["F"] = "F_V";
-      
+
       for (std::map<std::string,std::string>::iterator it=mEraReplaceStr.begin();it!=mEraReplaceStr.end();it++){
-          
+
           std::string era = it->first;
           std::string replaceStr = it->second;
-          
+
           //Fetch the text files
           mEraJetParStr[era]["DataL1JetParByIOV"]  = std::regex_replace(mJetParStr["DataL1JetPar"],std::regex("B_V"), replaceStr);
           mEraJetParStr[era]["DataL2JetParByIOV"]  = std::regex_replace(mJetParStr["DataL2JetPar"],std::regex("B_V"), replaceStr);
@@ -108,17 +106,16 @@ void JetMETCorrHelper::Initialize(const edm::ParameterSet& iConfig){
           if(debug) std::cout << mLegend << "Using JEC files DataL2JetParAK8ByIOV : era "+era+": " <<  mEraJetParStr[era]["DataL2JetParAK8ByIOV"] << std::endl;
           if(debug) std::cout << mLegend << "Using JEC files DataL3JetParAK8ByIOV : era "+era+": " <<  mEraJetParStr[era]["DataL3JetParAK8ByIOV"] << std::endl;
           if(debug) std::cout << mLegend << "Using JEC files DataResJetParAK8ByIOV : era "+era+": " <<  mEraJetParStr[era]["DataResJetParAK8ByIOV"] << std::endl;
-          
-          
-          // NOTE: Need to be careful about these as they are pointers. where to delete? how to use smart pointers?
-          mEra_mStrJetCorPar[era]["ResJetPar"] = new JetCorrectorParameters(mEraJetParStr[era]["DataResJetParByIOV"]);
-          mEra_mStrJetCorPar[era]["L3JetPar"]  = new JetCorrectorParameters(mEraJetParStr[era]["DataL3JetParByIOV"]);
-          mEra_mStrJetCorPar[era]["L2JetPar"]  = new JetCorrectorParameters(mEraJetParStr[era]["DataL2JetParByIOV"]);
-          mEra_mStrJetCorPar[era]["L1JetPar"]  = new JetCorrectorParameters(mEraJetParStr[era]["DataL1JetParByIOV"]);
-          mEra_mStrJetCorPar[era]["ResJetParAK8"] = new JetCorrectorParameters(mEraJetParStr[era]["DataResJetParAK8ByIOV"]);
-          mEra_mStrJetCorPar[era]["L3JetParAK8"]  = new JetCorrectorParameters(mEraJetParStr[era]["DataL3JetParAK8ByIOV"]);
-          mEra_mStrJetCorPar[era]["L2JetParAK8"]  = new JetCorrectorParameters(mEraJetParStr[era]["DataL2JetParAK8ByIOV"]);
-          mEra_mStrJetCorPar[era]["L1JetParAK8"]  = new JetCorrectorParameters(mEraJetParStr[era]["DataL1JetParAK8ByIOV"]);
+
+
+          mEra_mStrJetCorPar[era]["ResJetPar"] = std::shared_ptr<JetCorrectorParameters>( new JetCorrectorParameters(mEraJetParStr[era]["DataResJetParByIOV"]) );
+          mEra_mStrJetCorPar[era]["L3JetPar"]  = std::shared_ptr<JetCorrectorParameters>( new JetCorrectorParameters(mEraJetParStr[era]["DataL3JetParByIOV"]) );
+          mEra_mStrJetCorPar[era]["L2JetPar"]  = std::shared_ptr<JetCorrectorParameters>( new JetCorrectorParameters(mEraJetParStr[era]["DataL2JetParByIOV"]) );
+          mEra_mStrJetCorPar[era]["L1JetPar"]  = std::shared_ptr<JetCorrectorParameters>( new JetCorrectorParameters(mEraJetParStr[era]["DataL1JetParByIOV"]) );
+          mEra_mStrJetCorPar[era]["ResJetParAK8"] = std::shared_ptr<JetCorrectorParameters>( new JetCorrectorParameters(mEraJetParStr[era]["DataResJetParAK8ByIOV"]) );
+          mEra_mStrJetCorPar[era]["L3JetParAK8"]  = std::shared_ptr<JetCorrectorParameters>( new JetCorrectorParameters(mEraJetParStr[era]["DataL3JetParAK8ByIOV"]) );
+          mEra_mStrJetCorPar[era]["L2JetParAK8"]  = std::shared_ptr<JetCorrectorParameters>( new JetCorrectorParameters(mEraJetParStr[era]["DataL2JetParAK8ByIOV"]) );
+          mEra_mStrJetCorPar[era]["L1JetParAK8"]  = std::shared_ptr<JetCorrectorParameters>( new JetCorrectorParameters(mEraJetParStr[era]["DataL1JetParAK8ByIOV"]) );
 
           // Load the JetCorrectorParameter objects into a std::vector,
           // IMPORTANT: THE ORDER MATTERS HERE !!!!
@@ -130,10 +127,9 @@ void JetMETCorrHelper::Initialize(const edm::ParameterSet& iConfig){
           mEraVParAK8[era].push_back(*mEra_mStrJetCorPar[era]["L2JetParAK8"]);
           mEraVParAK8[era].push_back(*mEra_mStrJetCorPar[era]["L3JetParAK8"]);
           mEraVParAK8[era].push_back(*mEra_mStrJetCorPar[era]["ResJetParAK8"]);
-          
-          // NOTE: Need to be careful about these as they are pointers. where to delete? how to use smart pointers?
-          mEraFacJetCorr[era] = new FactorizedJetCorrector(mEraVPar[era]);
-          mEraFacJetCorrAK8[era] = new FactorizedJetCorrector(mEraVParAK8[era]);
+
+          mEraFacJetCorr[era] = std::shared_ptr<FactorizedJetCorrector>( new FactorizedJetCorrector(mEraVPar[era]) );
+	  mEraFacJetCorrAK8[era] = std::shared_ptr<FactorizedJetCorrector> (new FactorizedJetCorrector(mEraVParAK8[era]) );
 
       }
 
@@ -158,27 +154,27 @@ void JetMETCorrHelper::SetFacJetCorr(edm::EventBase const & event)
 
 
   int iRun   = event.id().run();
-  
+
   // NOTE: Need to be careful about these as they are pointers. where to delete? how to use smart pointers?
 
-  if(iRun <= 299330){ 
+  if(iRun <= 299330){
   	if(debug) std::cout << "\t\t\t using JEC for era B "<< std::endl;
-  	JetCorrector = mEraFacJetCorr["B"]; 
+  	JetCorrector = mEraFacJetCorr["B"];
   	JetCorrectorAK8 = mEraFacJetCorrAK8["B"];
   }
-  else if(iRun <= 302029){ 
+  else if(iRun <= 302029){
   	if(debug) std::cout << "\t\t\t using JEC for era C "<< std::endl;
-  	JetCorrector = mEraFacJetCorr["C"]; 
+  	JetCorrector = mEraFacJetCorr["C"];
   	JetCorrectorAK8 = mEraFacJetCorrAK8["C"];
   }
-  else if(iRun <= 304827){ 
+  else if(iRun <= 304827){
   	if(debug) std::cout << "\t\t\t using JEC for era DE "<< std::endl;
-  	JetCorrector = mEraFacJetCorr["DE"]; 
+  	JetCorrector = mEraFacJetCorr["DE"];
   	JetCorrectorAK8 = mEraFacJetCorrAK8["DE"];
   	}
-  else{ 
+  else{
   	if(debug) std::cout << "\t\t\t using JEC for era F "<< std::endl;
-  	JetCorrector = mEraFacJetCorr["F"]; 
+  	JetCorrector = mEraFacJetCorr["F"];
   	JetCorrectorAK8 = mEraFacJetCorrAK8["F"];
   }
 
@@ -404,7 +400,7 @@ TLorentzVector JetMETCorrHelper::correctMet(const pat::MET & met,
         correctedMET_px = met.px();
         correctedMET_py = met.py();
     }
-    
+
     TLorentzVector correctedMET_p4_temp;
 
     correctedMET_p4_temp.SetPxPyPzE(correctedMET_px, correctedMET_py, 0, sqrt(correctedMET_px*correctedMET_px+correctedMET_py*correctedMET_py));
@@ -412,7 +408,7 @@ TLorentzVector JetMETCorrHelper::correctMet(const pat::MET & met,
     return correctedMET_p4_temp;
 }
 
-TLorentzVector JetMETCorrHelper::correctJetForMet(const pat::Jet & jet, 
+TLorentzVector JetMETCorrHelper::correctJetForMet(const pat::Jet & jet,
                                                        edm::Event const & event,
                                                        edm::EDGetTokenT<double> rhoJetsToken,
                                                        unsigned int syst)
@@ -473,7 +469,7 @@ TLorentzVector JetMETCorrHelper::correctJetForMet(const pat::Jet & jet,
         Variation JERsystematic = Variation::NOMINAL;
         if(syst==3) JERsystematic = Variation::UP;
         if(syst==4) JERsystematic = Variation::DOWN;
-        
+
         JME::JetParameters parameters;
         parameters.setJetPt(pt);
         parameters.setJetEta(jetP4.Eta());

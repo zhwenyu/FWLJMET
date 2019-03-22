@@ -24,75 +24,75 @@
 class JetMETCorrHelper{
 
     public:
-    	JetMETCorrHelper();
-    	JetMETCorrHelper(const edm::ParameterSet& iConfig);
-    	
-    	void Initialize(const edm::ParameterSet& iConfig);
-        
+        JetMETCorrHelper();
+        JetMETCorrHelper(const edm::ParameterSet& iConfig);
+
+        void Initialize(const edm::ParameterSet& iConfig);
+
         void SetFacJetCorr(edm::EventBase const & event);
-        
+
         TLorentzVector correctJet(const pat::Jet & jet,
-						  edm::Event const & event,
-						  edm::EDGetTokenT<double> rhoJetsToken,
-						  bool doAK8Corr=false,
-						  bool reCorrectJet=false,
-						  unsigned int syst=0);
-						  
-						  
-		pat::Jet correctJetReturnPatJet(const pat::Jet & jet,
-								edm::Event const & event,
-								edm::EDGetTokenT<double> rhoJetsToken,
-								bool doAK8Corr=false,
-								bool reCorrectJet=false,
-								unsigned int syst=0);
-								
-		TLorentzVector correctMet(const pat::MET & met, 
-						  edm::Event const & event,
-						  edm::EDGetTokenT<double> rhoJetsToken,
-						  std::vector<edm::Ptr<pat::Jet>> vAllJets,
-						  bool reCorrectjet = false, 
-						  unsigned int syst = 0, 
-						  bool useHF = true);
-						  
-						  
-		TLorentzVector correctJetForMet(const pat::Jet & jet, 
-								edm::Event const & event,
-								edm::EDGetTokenT<double> rhoJetsToken,
-								unsigned int syst = 0);
+                                                  edm::Event const & event,
+                                                  edm::EDGetTokenT<double> rhoJetsToken,
+                                                  bool doAK8Corr=false,
+                                                  bool reCorrectJet=false,
+                                                  unsigned int syst=0);
+
+
+        pat::Jet correctJetReturnPatJet(const pat::Jet & jet,
+                                        edm::Event const & event,
+                                        edm::EDGetTokenT<double> rhoJetsToken,
+                                        bool doAK8Corr=false,
+                                        bool reCorrectJet=false,
+                                        unsigned int syst=0);
+
+        TLorentzVector correctMet(const pat::MET & met,
+                                  edm::Event const & event,
+                                  edm::EDGetTokenT<double> rhoJetsToken,
+                                  std::vector<edm::Ptr<pat::Jet>> vAllJets,
+                                  bool reCorrectjet = false,
+                                  unsigned int syst = 0,
+                                  bool useHF = true);
+
+
+        TLorentzVector correctJetForMet(const pat::Jet & jet,
+                                        edm::Event const & event,
+                                        edm::EDGetTokenT<double> rhoJetsToken,
+                                        unsigned int syst = 0);
 
     private:
-            
+
         bool debug;
 
         bool isMc;
 
         std::string mLegend = "\t[JetMETCorrHelper]: ";
-    
+
         TRandom3 JERrand;
 
-		JetCorrectionUncertainty *jecUnc;
+	std::shared_ptr<JetCorrectionUncertainty> jecUnc;
 
-		JME::JetResolution resolution;
-		JME::JetResolution resolutionAK8;
-		JME::JetResolutionScaleFactor resolution_SF;
+        JME::JetResolution resolution;
+        JME::JetResolution resolutionAK8;
+        JME::JetResolutionScaleFactor resolution_SF;
 
-		std::vector<JetCorrectorParameters> vPar;
-		std::vector<JetCorrectorParameters> vParAK8;
-		FactorizedJetCorrector *JetCorrector;
-		FactorizedJetCorrector *JetCorrectorAK8;
+        std::vector<JetCorrectorParameters> vPar;
+        std::vector<JetCorrectorParameters> vParAK8;
+	std::shared_ptr<FactorizedJetCorrector> JetCorrector;
+	std::shared_ptr<FactorizedJetCorrector> JetCorrectorAK8;
 
-		std::map<std::string,std::string> mJetParStr;
-	
-		std::map<std::string, std::vector<JetCorrectorParameters> > mEraVPar;
-		std::map<std::string, std::vector<JetCorrectorParameters> > mEraVParAK8;    
-		std::map<std::string, JetCorrectorParameters*> mStrJetCorPar; 
+        std::map<std::string,std::string> mJetParStr;
 
-		std::map<std::string, std::map<std::string, JetCorrectorParameters*> > mEra_mStrJetCorPar; 
-		std::map<std::string, std::map<std::string, std::string>>              mEraJetParStr;
-		std::map<std::string, std::string> mEraReplaceStr;
-	
-		std::map<std::string, FactorizedJetCorrector*> mEraFacJetCorr;
-		std::map<std::string, FactorizedJetCorrector*> mEraFacJetCorrAK8;
+        std::map<std::string, std::vector<JetCorrectorParameters> > mEraVPar;
+        std::map<std::string, std::vector<JetCorrectorParameters> > mEraVParAK8;
+        std::map<std::string, std::shared_ptr<JetCorrectorParameters>> mStrJetCorPar;
+
+        std::map<std::string, std::map<std::string, std::shared_ptr<JetCorrectorParameters> > > mEra_mStrJetCorPar;
+        std::map<std::string, std::map<std::string, std::string>>              mEraJetParStr;
+        std::map<std::string, std::string> mEraReplaceStr;
+
+        std::map<std::string, std::shared_ptr<FactorizedJetCorrector> > mEraFacJetCorr;
+        std::map<std::string, std::shared_ptr<FactorizedJetCorrector> > mEraFacJetCorrAK8;
 
 };
 
