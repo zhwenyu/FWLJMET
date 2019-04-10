@@ -12,4 +12,9 @@
 <use name="SimDataFormats/GeneratorProducts"/>
 <use name="SimGeneral/HepPDTRecord"/>
 <use name="lhapdf"/>
+<use name="fastjet"/>
+<use name="fastjet-contrib"/>
+<use name="PhysicsTools/CandUtils"/>
+<use name="lwtnn/lwtnn"/>
+<use name="TopTagger/TopTagger"/>
 <flags EDM_PLUGIN="1"/>
