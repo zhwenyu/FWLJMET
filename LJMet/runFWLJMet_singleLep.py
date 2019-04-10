@@ -20,8 +20,14 @@ process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(MAXEVENTS) )
 ## Source / Input
 isMC=True
 #isMC=False
-if(isMC): INFILE='root://cmsxrootd.fnal.gov//store/mc/RunIIFall17MiniAODv2/TprimeTprime_M-1100_TuneCP5_13TeV-madgraph-pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14-v2/00000/8EA8FE89-254F-E811-835E-0090FAA58BF4.root'
-else: INFILE='root://cmsxrootd.fnal.gov//store/data/Run2017F/DoubleEG/MINIAOD/09May2018-v1/10000/444E03EB-B75F-E811-AFBA-F01FAFD8F16A.root'
+isTTbar = False
+if(isMC): 
+    INFILE='root://cmsxrootd.fnal.gov//store/mc/RunIIFall17MiniAODv2/TprimeTprime_M-1100_TuneCP5_13TeV-madgraph-pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14-v2/00000/8EA8FE89-254F-E811-835E-0090FAA58BF4.root'
+    #INFILE='root://cmsxrootd.fnal.gov//store/mc/RunIIFall17MiniAODv2/TTTT_TuneCP5_PSweights_13TeV-amcatnlo-pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14-v1/70000/0ED34A55-DD52-E811-91CC-E0071B73B6B0.root',
+    if (isTTbar):
+        INFILE='root://cmsxrootd.fnal.gov//store/mc/RunIIFall17MiniAODv2/TTToSemiLeptonic_TuneCP5_PSweights_13TeV-powheg-pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14-v1/50000/5E7E4AA9-0743-E811-999A-0CC47A7C35A8.root'
+else: 
+    INFILE='root://cmsxrootd.fnal.gov//store/data/Run2017F/DoubleEG/MINIAOD/09May2018-v1/10000/444E03EB-B75F-E811-AFBA-F01FAFD8F16A.root'
 
 process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring(
@@ -35,16 +41,23 @@ if(isMC):
 else:
         OUTFILENAME = 'DoubleEG_Run2017F'
         POSTFIX = 'DATA'
-# TFileService
+## TFileService
 process.TFileService = cms.Service("TFileService", fileName = cms.string(OUTFILENAME+'_FWLJMET_'+POSTFIX+'.root'))
 
 
-# Output Module Configuration (expects a path 'p')
+## Output Module Configuration (expects a path 'p')
 # process.out = cms.OutputModule("PoolOutputModule",
 #                                fileName = cms.untracked.string(OUTFILENAME+'_postReco_MC.root'),
 #                                #SelectEvents = cms.untracked.PSet( SelectEvents = cms.vstring('p') ),
-#                                #outputCommands = cms.untracked.vstring('keep *')
+#                                outputCommands = cms.untracked.vstring('keep *')
 #                                )
+
+################################
+## For updateJetCollection
+################################
+from PhysicsTools.PatAlgos.tools.helpers import getPatAlgosToolsTask
+patAlgosToolsTask = getPatAlgosToolsTask(process)
+# process.outpath = cms.EndPath(process.out, patAlgosToolsTask)
 
 
 ## Geometry and Detector Conditions (needed for a few patTuple production steps)
@@ -60,7 +73,7 @@ print 'Using global tag', process.GlobalTag.globaltag
 
 
 ################################################
-## Produce new slimmedElectrons with V2 IDs
+## Produce new slimmedElectrons with V2 IDs - https://twiki.cern.ch/twiki/bin/view/CMS/EgammaMiniAODV2
 ################################################
 from RecoEgamma.EgammaTools.EgammaPostRecoTools import setupEgammaPostRecoSeq
 setupEgammaPostRecoSeq(process,
@@ -80,6 +93,36 @@ runMetCorAndUncFromMiniAOD(
     fixEE2017Params = {'userawPt': True, 'ptThreshold':50.0, 'minEtaThreshold':2.65, 'maxEtaThreshold': 3.139},
     postfix = "ModifiedMET"
     )
+
+################################
+## Rerun the ecalBadCalibFilter
+################################
+process.load('RecoMET.METFilters.ecalBadCalibFilter_cfi')
+
+baddetEcallist = cms.vuint32(
+    [872439604,872422825,872420274,872423218,
+     872423215,872416066,872435036,872439336,
+     872420273,872436907,872420147,872439731,
+     872436657,872420397,872439732,872439339,
+     872439603,872422436,872439861,872437051,
+     872437052,872420649,872421950,872437185,
+     872422564,872421566,872421695,872421955,
+     872421567,872437184,872421951,872421694,
+     872437056,872437057,872437313,872438182,
+     872438951,872439990,872439864,872439609,
+     872437181,872437182,872437053,872436794,
+     872436667,872436536,872421541,872421413,
+     872421414,872421031,872423083,872421439] 
+)
+
+process.ecalBadCalibReducedMINIAODFilter = cms.EDFilter(
+    "EcalBadCalibFilter",
+    EcalRecHitSource = cms.InputTag("reducedEgamma:reducedEERecHits"),
+    ecalMinEt        = cms.double(50.),
+    baddetEcal    = baddetEcallist, 
+    taggingMode = cms.bool(True),
+    debug = cms.bool(False)
+)
 
 
 ################################
@@ -138,47 +181,31 @@ process.packedJetsAK8Puppi = cms.EDProducer("JetSubstructurePacker",
                                             algoLabels =cms.vstring('SoftDropPuppi')
 )
 
-################################
-## Produce L1 Prefiring probabilities
-################################
-process.prefiringweight = cms.EDProducer("L1ECALPrefiringWeightProducer",
-                                         ThePhotons = cms.InputTag("slimmedPhotons"),
-                                         TheJets = cms.InputTag("slimmedJets"),
-                                         L1Maps = cms.string(relBase+"/src/L1Prefiring/EventWeightProducer/files/L1PrefiringMaps_new.root"),
-                                         DataEra = cms.string("2017BtoF"),
-                                         UseJetEMPt = cms.bool(False),
-                                         PrefiringRateSystematicUncty = cms.double(0.2)
+
+##############################################
+#run QGTagger code again to calculate jet axis1  (HOT Tagger) - https://github.com/susy2015/TopTagger/tree/master/TopTagger#instructions-for-saving-tagger-results-to-nanoaod-with-cmssw_9_4_11
+##############################################
+updateJetCollection(
+    process,
+    jetSource = cms.InputTag('slimmedJets'),
 )
+process.load('RecoJets.JetProducers.QGTagger_cfi')
+# patAlgosToolsTask.add(process.QGTagger)
+process.QGTagger.srcJets = cms.InputTag('slimmedJets')
+process.updatedPatJets.userData.userFloats.src += ['QGTagger:ptD','QGTagger:axis1','QGTagger:axis2']
+process.updatedPatJets.userData.userInts.src += ['QGTagger:mult']
+
 
 ################################
-## Rerun the ecalBadCalibFilter
+## Produce L1 Prefiring probabilities - https://twiki.cern.ch/twiki/bin/viewauth/CMS/L1ECALPrefiringWeightRecipe
 ################################
-process.load('RecoMET.METFilters.ecalBadCalibFilter_cfi')
+from PhysicsTools.PatUtils.l1ECALPrefiringWeightProducer_cfi import l1ECALPrefiringWeightProducer
+process.prefiringweight = l1ECALPrefiringWeightProducer.clone(
+    DataEra = cms.string("2017BtoF"),
+    UseJetEMPt = cms.bool(False),
+    PrefiringRateSystematicUncty = cms.double(0.2),
+    SkipWarnings = False)
 
-baddetEcallist = cms.vuint32(
-    [872439604,872422825,872420274,872423218,
-     872423215,872416066,872435036,872439336,
-     872420273,872436907,872420147,872439731,
-     872436657,872420397,872439732,872439339,
-     872439603,872422436,872439861,872437051,
-     872437052,872420649,872421950,872437185,
-     872422564,872421566,872421695,872421955,
-     872421567,872437184,872421951,872421694,
-     872437056,872437057,872437313,872438182,
-     872438951,872439990,872439864,872439609,
-     872437181,872437182,872437053,872436794,
-     872436667,872436536,872421541,872421413,
-     872421414,872421031,872423083,872421439] 
-)
-
-process.ecalBadCalibReducedMINIAODFilter = cms.EDFilter(
-    "EcalBadCalibFilter",
-    EcalRecHitSource = cms.InputTag("reducedEgamma:reducedEERecHits"),
-    ecalMinEt        = cms.double(50.),
-    baddetEcal    = baddetEcallist, 
-    taggingMode = cms.bool(True),
-    debug = cms.bool(False)
-)
 
 
 ################################################
@@ -333,7 +360,8 @@ MultiLepSelector_cfg = cms.PSet(
             maxLeptons          = cms.int32(1),
 
             # Jets
-            jet_collection           = cms.InputTag('slimmedJets'),
+            # jet_collection           = cms.InputTag('slimmedJets'),
+            jet_collection           = cms.InputTag('updatedPatJets::LJMET'),
             AK8jet_collection        = cms.InputTag('slimmedJetsAK8'),
             JECup                    = cms.bool(JECup),
             JECdown                  = cms.bool(JECdown),
@@ -522,6 +550,35 @@ TTbarMassCalc_cfg = cms.PSet(
         genTtbarId = cms.InputTag("categorizeGenTtbar:genTtbarId")
         )
 
+BestCalc_cfg = cms.PSet(
+
+    dnnFile = cms.string(relBase+'/src/FWLJMET/LJMet/data/BEST_mlp.json'),
+
+    numSubjetsMin = cms.int32(2),
+    numDaughtersMin = cms.int32(3),
+    jetSoftDropMassMin = cms.double(10.0),
+    jetPtMin = cms.double(170.0),
+    radiusSmall = cms.double(0.4),
+    radiusLarge = cms.double(0.8),
+    reclusterJetPtMin = cms.double(20.0),
+    jetChargeKappa = cms.double(0.6),
+    maxJetSize = cms.int32(4),
+    )
+
+HOTTaggerCalc_cfg = cms.PSet(
+    
+    ak4PtCut         = cms.double(20),
+    qgTaggerKey      = cms.string('QGTagger'),
+    deepCSVBJetTags  = cms.string('pfDeepCSVJetTags'),
+    CvsBCJetTags     = cms.string('pfCombinedCvsBJetTags'),
+    CvsLCJetTags     = cms.string('pfCombinedCvsLJetTags'),
+    bTagKeyString    = cms.string('pfCombinedInclusiveSecondaryVertexV2BJetTags'),
+    taggerCfgFile    = cms.string(relBase+'/src/TopTagger/TopTagger/data/TopTaggerCfg-DeepResolved_DeepCSV_GR_noDisc_Release_v1.0.0/TopTagger.cfg'),
+    discriminatorCut = cms.double(0.5),
+    saveAllTopCandidates = cms.bool(False)
+
+    )
+
 process.ljmet = cms.EDAnalyzer(
         'LJMet',
 
@@ -529,12 +586,14 @@ process.ljmet = cms.EDAnalyzer(
         verbosity     = cms.int32(1),
         selector      = cms.string('MultiLepSelector'),
         include_calcs = cms.vstring(
-                        # 'MultiLepCalc',
-                        # 'TpTpCalc',
-                        # 'CommonCalc',
-                        # 'JetSubCalc',
-                        # 'BestCalc',
+                        'MultiLepCalc',
+                        'TpTpCalc',
+                        'CommonCalc',
+                        'JetSubCalc',
                         'TTbarMassCalc',
+                        'DeepAK8Calc',
+                        'HOTTaggerCalc',
+                        # 'BestCalc', #NOT WORKING at the moment, April 5, 2019.--Rizki.
         ),
         exclude_calcs = cms.vstring(
                         'TestCalc',
@@ -545,26 +604,53 @@ process.ljmet = cms.EDAnalyzer(
         MultiLepSelector = cms.PSet(MultiLepSelector_cfg),
 
         # Calc cfg name has to match the name as registered in Calc.cc
-        # MultiLepCalc = cms.PSet(MultiLepCalc_cfg),
-        # TpTpCalc     = cms.PSet(TpTpCalc_cfg),
-        # CommonCalc   = cms.PSet(), #current ljmet wants all calc to send a PSet, event if its empty.
-        # JetSubCalc   = cms.PSet(JetSubCalc_cfg),
+        MultiLepCalc  = cms.PSet(MultiLepCalc_cfg),
+        TpTpCalc      = cms.PSet(TpTpCalc_cfg),
+        CommonCalc    = cms.PSet(), #current ljmet wants all calc to send a PSet, event if its empty.
+        JetSubCalc    = cms.PSet(JetSubCalc_cfg),
         TTbarMassCalc = cms.PSet(TTbarMassCalc_cfg), 
+        DeepAK8Calc    = cms.PSet(), #current ljmet wants all calc to send a PSet, event if its empty.
+        HOTTaggerCalc = cms.PSet(HOTTaggerCalc_cfg)
+        # BestCalc      = cms.PSet(BestCalc_cfg),
 
 )
 
 
+################################################
+### PROCESS PATH 
+################################################
 
 # Configure a path and endpath to run the producer and output modules
 process.p = cms.Path(
    process.fullPatMetSequenceModifiedMET *
-   # process.prefiringweight * 
+   process.prefiringweight * 
    process.egammaPostRecoSeq *
-   # process.updatedJetsAK8PuppiSoftDropPacked * 
-   # process.packedJetsAK8Puppi *
+   process.updatedJetsAK8PuppiSoftDropPacked * 
+   process.packedJetsAK8Puppi *
+   process.QGTagger *
    process.ecalBadCalibReducedMINIAODFilter *
-   process.ljmet
+   process.ljmet #(ntuplizer)
 )
+
+process.p.associate(patAlgosToolsTask)
+
+#from Configuration.EventContent.EventContent_cff import MINIAODSIMEventContent
+# process.out.outputCommands.append('drop *_*_*_LJMET')
+# process.out.outputCommands.append('keep *_prefiringweight*_*_LJMET')
+# process.out.outputCommands.append('keep *_slimmedElectrons_*_LJMET')
+# process.out.outputCommands.append('keep *_packedJetsAK8Puppi*_*_LJMET')
+# process.out.outputCommands.append('keep *_*_SubJets_*')
+# process.out.outputCommands.append('keep *_updatedPatJets_*_LJMET')
+# process.out.outputCommands.append('keep *_updatedPatJets*_tagInfos_LJMET')
+# # process.out.outputCommands.append('keep *_QGTagger_*_LJMET')
+# process.out.outputCommands.append('keep *_slimmedMETsModifiedMET_*_LJMET')
+# process.out.outputCommands.append('keep *_ecalBadCalibReducedMINIAODFilter_*_LJMET')
+# process.out.outputCommands.append('keep int_categorize*_*_LJMET'),
 
 
 # process.ep = cms.EndPath(process.out)
+# process.ep = cms.EndPath(process.out,patAlgosToolsTask)
+# process.scedule = cms.Schedule(
+#     process.p,
+#     process.outpath)
+
