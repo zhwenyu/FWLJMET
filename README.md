@@ -22,6 +22,7 @@ install:
 	getTaggerCfg.sh -o -n -t DeepResolved_DeepCSV_GR_noDisc_Release_v1.0.0 -d $CMSSW_BASE/src/TopTagger/TopTagger/data
 
 	### BestCalc: copy lwtnn so that BestCalc.cc will compile. ( This is bad practice, should always try to get official CMSSW recipes whenever possible)
+	cd ${CMSSW_BASE}/src
 	cp -r ~jmanagan/nobackup/CMSSW_9_4_12/src/lwtnn .   ## use scp after a Fermilab kinit to copy onto non-LPC clusters
 
 
