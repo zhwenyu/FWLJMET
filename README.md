@@ -18,6 +18,7 @@ install:
 	git cms-merge-topic -u pastika:AddAxis1_946p1
 	git clone git@github.com:susy2015/TopTagger.git
 	cd ${CMSSW_BASE}/src
+	cmsenv
 	mkdir -p ${CMSSW_BASE}/src/TopTagger/TopTagger/data
 	getTaggerCfg.sh -o -n -t DeepResolved_DeepCSV_GR_noDisc_Release_v1.0.0 -d $CMSSW_BASE/src/TopTagger/TopTagger/data
 
