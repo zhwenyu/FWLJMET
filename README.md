@@ -37,6 +37,6 @@ Some info:
 - el ID V2 : https://twiki.cern.ch/twiki/bin/view/CMS/EgammaMiniAODV2
 - HOT tagger : https://github.com/susy2015/TopTagger/tree/master/TopTagger#instructions-for-saving-tagger-results-to-nanoaod-with-cmssw_9_4_11
 
-run LJMet by running:
+run LJMet:
 
-    cmsRun LJMet/runFWLJMet_multiLep.py
+    cmsRun LJMet/runFWLJMet_multiLep.py (or runFWLJMet_singleLep.py)
