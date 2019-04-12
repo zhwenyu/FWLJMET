@@ -45,6 +45,11 @@ Some info:
 - LJMet/plugins/LJMet.cc : the EDAnalyzer that wraps LJMet classes
 - el ID V2 : https://twiki.cern.ch/twiki/bin/view/CMS/EgammaMiniAODV2
 - HOT tagger : https://github.com/susy2015/TopTagger/tree/master/TopTagger#instructions-for-saving-tagger-results-to-nanoaod-with-cmssw_9_4_11
+- BoostedEventShapeTagger(BEST) :
+     - https://bregnery.github.io/docs/BESTstandaloneTutorial/
+     - https://github.com/justinrpilot/BESTAnalysis/tree/master
+     - https://github.com/demarley/lwtnn/tree/CMSSW_8_0_X-compatible#cmssw-compatibility
+
 
 run LJMet:
 

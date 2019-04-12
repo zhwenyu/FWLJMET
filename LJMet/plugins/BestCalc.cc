@@ -56,6 +56,9 @@ Requires MiniAOD inputs to access proper set of information
 #include "lwtnn/lwtnn/interface/parse_json.hh"
 
 
+#include "FWCore/ParameterSet/interface/FileInPath.h"
+
+
 using namespace std;
 
 class LjmetFactory;
@@ -144,7 +147,7 @@ public:
 };
 
 
-//static int reg = LjmetFactory::GetInstance()->Register(new BestCalc(), "BestCalc");
+static int reg = LjmetFactory::GetInstance()->Register(new BestCalc(), "BestCalc");
 
 
 BestCalc::BestCalc(){
@@ -164,11 +167,11 @@ int BestCalc::BeginJob(edm::ConsumesCollector && iC){
     m_reclusterJetPtMin = mPset.getParameter<double>("reclusterJetPtMin");
     m_jetChargeKappa = mPset.getParameter<double>("jetChargeKappa");
     m_maxJetSize = mPset.getParameter<int>("maxJetSize");
-    m_dnnFile = mPset.getParameter<std::string>("dnnFile");
+    m_dnnFile = mPset.getParameter<edm::FileInPath>("dnnFile").fullPath();
 
     std::cout << "["+GetName()+"]: using json file: " << m_dnnFile << std::endl;     
     std::ifstream input_cfg( m_dnnFile );                     // original: "data/BEST_mlp.json"
-    //lwt::JSONConfig cfg = lwt::parse_json( input_cfg );
+    // lwt::JSONConfig cfg = lwt::parse_json( input_cfg );
     cfg = lwt::parse_json( input_cfg );
     m_lwtnn = new lwt::LightweightNeuralNetwork(cfg.inputs, cfg.layers, cfg.outputs);
     
@@ -186,442 +189,442 @@ int BestCalc::AnalyzeEvent(edm::Event const & event, BaseEventSelector * selecto
   //edm::Handle<std::vector<pat::Jet> > AK8Jets;
   //event.getByLabel(AK8JetColl, AK8Jets);
 
-//   std::vector<pat::Jet> const & vSelCorrJets_AK8 = selector->GetSelCorrJetsAK8();
-// 
-//   //Four std::vector
-//                                   
-//   std::vector <double> AK8JetPt;
-//   std::vector <double> AK8JetEta;
-//   std::vector <double> AK8JetPhi;
-//   std::vector <double> AK8JetEnergy;
-// 
-//   std::vector <double> dnn_QCD;
-//   std::vector <double> dnn_Top;
-//   std::vector <double> dnn_Higgs;
-//   std::vector <double> dnn_Z;
-//   std::vector <double> dnn_W;
-//   std::vector <double> dnn_B;
-// 
-//   std::vector <double> bDisc;
-//   std::vector <double> bDisc1;
-//   std::vector <double> bDisc2;
-// 
-//   std::vector <double> et;
-//   std::vector <double> eta;
-//   std::vector <double> mass;
-//   std::vector <double> SDmass;
-//   std::vector <double> tau32;
-//   std::vector <double> tau21;
-//   std::vector <double> q;
-// 
-//   std::vector <double> m1234_jet;
-//   std::vector <double> m12_jet;
-//   std::vector <double> m23_jet;
-//   std::vector <double> m13_jet;
-//   
-//   std::vector <double> m1234top;
-//   std::vector <double> m12top;
-//   std::vector <double> m23top;
-//   std::vector <double> m13top;
-// 
-//   std::vector <double> m1234W;
-//   std::vector <double> m12W;
-//   std::vector <double> m23W;
-//   std::vector <double> m13W;
-// 
-//   std::vector <double> m1234Z;
-//   std::vector <double> m12Z;
-//   std::vector <double> m23Z;
-//   std::vector <double> m13Z;
-// 
-//   std::vector <double> m1234H;
-//   std::vector <double> m12H;
-//   std::vector <double> m23H;
-//   std::vector <double> m13H;
-// 
-//   std::vector <double> pzOverp_top;
-//   std::vector <double> pzOverp_W;
-//   std::vector <double> pzOverp_Z;
-//   std::vector <double> pzOverp_H;
-//   std::vector <double> pzOverp_jet;
-// 
-//   std::vector <double> Njets_top;
-//   std::vector <double> Njets_W;
-//   std::vector <double> Njets_Z;
-//   std::vector <double> Njets_H;
-//   std::vector <double> Njets_jet;
-//   std::vector <double> Njets_orig;
-// 
-//   std::vector <double> FWmoment1top;
-//   std::vector <double> FWmoment2top;
-//   std::vector <double> FWmoment3top;
-//   std::vector <double> FWmoment4top;
-//   std::vector <double> isotropytop;
-//   std::vector <double> sphericitytop;
-//   std::vector <double> aplanaritytop;
-//   std::vector <double> thrusttop;
-// 
-//   std::vector <double> FWmoment1W;
-//   std::vector <double> FWmoment2W;
-//   std::vector <double> FWmoment3W;
-//   std::vector <double> FWmoment4W;
-//   std::vector <double> isotropyW;
-//   std::vector <double> sphericityW;
-//   std::vector <double> aplanarityW;
-//   std::vector <double> thrustW;
-// 
-//   std::vector <double> FWmoment1Z;
-//   std::vector <double> FWmoment2Z;
-//   std::vector <double> FWmoment3Z;
-//   std::vector <double> FWmoment4Z;
-//   std::vector <double> isotropyZ;
-//   std::vector <double> sphericityZ;
-//   std::vector <double> aplanarityZ;
-//   std::vector <double> thrustZ;
-// 
-//   std::vector <double> FWmoment1H;
-//   std::vector <double> FWmoment2H;
-//   std::vector <double> FWmoment3H;
-//   std::vector <double> FWmoment4H;
-//   std::vector <double> isotropyH;
-//   std::vector <double> sphericityH;
-//   std::vector <double> aplanarityH;
-//   std::vector <double> thrustH;
-// 
-//   std::vector <int>    dnn_largest;
-// 
-//   std::vector <double> AK8JetCSV;
-// 
-//   //   std::vector <double> AK8JetRCN;                                                                                                                                                                    
-//   //for (std::vector<pat::Jet>::const_iterator ijet = AK8Jets->begin(); ijet != AK8Jets->end(); ijet++){
-//   for (std::vector<pat::Jet>::const_iterator ii = vSelCorrJets_AK8.begin(); ii != vSelCorrJets_AK8.end(); ii++){
-// 
-//     if(ii->pt() < 170) continue; // not all info there for lower pt                                                                                                                                     
-//     //pat::Jet corrak8 = 	selector->correctJetReturnPatJet(*ijet, event, true);
-//     //Four std::vector                                                                                                                                                                                  
-//     AK8JetPt     . push_back(ii->pt());
-//     AK8JetEta    . push_back(ii->eta());
-//     AK8JetPhi    . push_back(ii->phi());
-//     AK8JetEnergy . push_back(ii->energy());
-// 
-//     AK8JetCSV    . push_back(ii->bDiscriminator( "pfCombinedInclusiveSecondaryVertexV2BJetTags" ));
-//     //     AK8JetRCN    . push_back((corrak8.chargedEmEnergy()+corrak8.chargedHadronEnergy()) / (corrak8.neutralEmEnergy()+corrak8.neutralHadronEnergy()));
-// 
-//     std::map<std::string,double> myMap;
-//     std::map<std::string,double> varMap;
-//     myMap = {
-//       {"dnn_qcd",  -999},
-//       {"dnn_top",  -999},
-//       {"dnn_higgs",-999},
-//       {"dnn_z",    -999},
-//       {"dnn_w",    -999},
-//       {"dnn_b",    -999}
-//     };
-//     varMap = {
-//       {"bDisc",      -999},
-//       {"bDisc1",     -999},
-//       {"bDisc2",     -999},
-//       {"et",         -999},
-//       {"eta",        -999},
-//       {"mass",       -999},
-//       {"SDmass",     -999},
-//       {"tau32",      -999},
-//       {"tau21",      -999},
-//       {"q",          -999},
-//       {"m1234_jet",  -999},
-//       {"m12_jet",    -999},
-//       {"m23_jet",    -999},
-//       {"m13_jet",    -999},
-//       {"m1234top",   -999},
-//       {"m12top",     -999},
-//       {"m23top",     -999},
-//       {"m13top",     -999},
-//       {"m1234W",     -999},
-//       {"m12W",       -999},
-//       {"m23W",       -999},
-//       {"m13W",       -999},
-//       {"m1234Z",     -999},
-//       {"m12Z",       -999},
-//       {"m23Z",       -999},
-//       {"m13Z",       -999},
-//       {"m1234H",     -999},
-//       {"m12H",       -999},
-//       {"m23H",       -999},
-//       {"m13H",       -999},
-//       {"pzOverp_top",-999},
-//       {"pzOverp_W",  -999},
-//       {"pzOverp_Z",  -999},
-//       {"pzOverp_H",  -999},
-//       {"pzOverp_jet",-999},
-//       {"Njets_top",      -999},
-//       {"Njets_W",        -999},
-//       {"Njets_Z",        -999},
-//       {"Njets_H",        -999},
-//       {"Njets_jet",      -999},
-//       {"Njets_orig",     -999},
-//       {"FWmoment1top",   -999},
-//       {"FWmoment2top",   -999},
-//       {"FWmoment3top",   -999},
-//       {"FWmoment4top",   -999},
-//       {"isotropytop",    -999},
-//       {"sphericitytop",  -999},
-//       {"aplanaritytop",  -999},
-//       {"thrusttop",      -999},
-//       {"FWmoment1W",     -999},
-//       {"FWmoment2W",     -999},
-//       {"FWmoment3W",     -999},
-//       {"FWmoment4W",     -999},
-//       {"isotropyW",      -999},
-//       {"sphericityW",    -999},
-//       {"aplanarityW",    -999},
-//       {"thrustW",        -999},
-//       {"FWmoment1Z",     -999},
-//       {"FWmoment2Z",     -999},
-//       {"FWmoment3Z",     -999},
-//       {"FWmoment4Z",     -999},
-//       {"isotropyZ",      -999},
-//       {"sphericityZ",    -999},
-//       {"aplanarityZ",    -999},
-//       {"thrustZ",        -999},
-//       {"FWmoment1H",     -999},
-//       {"FWmoment2H",     -999},
-//       {"FWmoment3H",     -999},
-//       {"FWmoment4H",     -999},
-//       {"isotropyH",      -999},
-//       {"sphericityH",    -999},
-//       {"aplanarityH",    -999},
-//       {"thrustH",        -999}
-//     };
-// 
-//     std::vector<std::string> labels = ii->subjetCollectionNames();
-//     if(labels.size() == 0) std::cout << "there are no subjet collection labels" << std::endl;
-//     // for (unsigned int j = 0; j < labels.size(); j++){
-//     //   std::cout << labels.at(j) << std::endl;
-//     // }
-//     auto const& thisSubjets   = ii->subjets("SoftDropPuppi");
-// 
-//     unsigned int numDaughters = ii->numberOfDaughters();
-//     float softdropmass = ii->userFloat("ak8PFJetsPuppiSoftDropMass");
-//     int largest = 10;
-// 
-//     if (thisSubjets.size() >= m_numSubjetsMin && numDaughters >= m_numDaughtersMin && softdropmass >= m_jetSoftDropMassMin){
-//       varMap = BestCalc::execute(*ii);
-//       myMap = m_lwtnn->compute(varMap);
-// 
-//       if (myMap["dnn_qcd"] > myMap["dnn_top"] && myMap["dnn_qcd"] > myMap["dnn_higgs"] && myMap["dnn_qcd"] > myMap["dnn_z"] && myMap["dnn_qcd"] > myMap["dnn_w"] && myMap["dnn_qcd"] > myMap["dnn_b"]){
-// 	largest = 0;
-//       } else if (myMap["dnn_top"] > myMap["dnn_qcd"] && myMap["dnn_top"] > myMap["dnn_higgs"] && myMap["dnn_top"] > myMap["dnn_z"] && myMap["dnn_top"] > myMap["dnn_w"] && myMap["dnn_top"] > myMap["dnn_b"]){
-// 	largest = 1;
-//       } else if (myMap["dnn_higgs"] > myMap["dnn_top"] && myMap["dnn_higgs"] > myMap["dnn_qcd"] && myMap["dnn_higgs"] > myMap["dnn_z"] && myMap["dnn_higgs"] > myMap["dnn_w"] && myMap["dnn_higgs"] > myMap["dnn_b"]){
-// 	largest = 2;
-//       } else if (myMap["dnn_z"] > myMap["dnn_top"] && myMap["dnn_z"] > myMap["dnn_higgs"] && myMap["dnn_z"] > myMap["dnn_qcd"] && myMap["dnn_z"] > myMap["dnn_w"] && myMap["dnn_z"] > myMap["dnn_b"]){
-// 	largest = 3;
-//       } else if (myMap["dnn_w"] > myMap["dnn_top"] && myMap["dnn_w"] > myMap["dnn_higgs"] && myMap["dnn_w"] > myMap["dnn_qcd"] && myMap["dnn_w"] > myMap["dnn_z"] && myMap["dnn_w"] > myMap["dnn_b"]){
-// 	largest = 4;
-//       } else if (myMap["dnn_b"] > myMap["dnn_top"] && myMap["dnn_b"] > myMap["dnn_higgs"] && myMap["dnn_b"] > myMap["dnn_qcd"] && myMap["dnn_b"] > myMap["dnn_z"] && myMap["dnn_b"] > myMap["dnn_w"]){
-//         largest = 5;
-//       } else
-// 	largest = 10;
-//     }
-// 
-//     bDisc.push_back(varMap["bDisc"]);
-//     bDisc1.push_back(varMap["bDisc1"]);
-//     bDisc2.push_back(varMap["bDisc2"]);
-// 
-//     et.push_back(varMap["et"]);
-//     eta.push_back(varMap["eta"]);
-//     mass.push_back(varMap["mass"]);
-//     SDmass.push_back(varMap["SDmass"]);
-//     tau32.push_back(varMap["tau32"]);
-//     tau21.push_back(varMap["tau21"]);
-//     q.push_back(varMap["q"]);
-// 
-//     m1234_jet.push_back(varMap["m1234_jet"]);
-//     m12_jet.push_back(varMap["m12_jet"]);
-//     m23_jet.push_back(varMap["m23_jet"]);
-//     m13_jet.push_back(varMap["m13_jet"]);
-// 
-//     m1234top.push_back(varMap["m1234top"]);
-//     m12top.push_back(varMap["m12top"]);
-//     m23top.push_back(varMap["m23top"]);
-//     m13top.push_back(varMap["m13top"]);
-// 
-//     m1234W.push_back(varMap["m1234W"]);
-//     m12W.push_back(varMap["m12W"]);
-//     m23W.push_back(varMap["m23W"]);
-//     m13W.push_back(varMap["m13W"]);
-// 
-//     m1234Z.push_back(varMap["m1234Z"]);
-//     m12Z.push_back(varMap["m12Z"]);
-//     m23Z.push_back(varMap["m23Z"]);
-//     m13Z.push_back(varMap["m13Z"]);
-// 
-//     m1234H.push_back(varMap["m1234H"]);
-//     m12H.push_back(varMap["m12H"]);
-//     m23H.push_back(varMap["m23H"]);
-//     m13H.push_back(varMap["m13H"]);
-// 
-//     pzOverp_top.push_back(varMap["pzOverp_top"]);
-//     pzOverp_W.push_back(varMap["pzOverp_W"]);
-//     pzOverp_Z.push_back(varMap["pzOverp_Z"]);
-//     pzOverp_H.push_back(varMap["pzOverp_H"]);
-//     pzOverp_jet.push_back(varMap["pzOverp_jet"]);
-// 
-//     Njets_top.push_back(varMap["Njets_top"]);
-//     Njets_W.push_back(varMap["Njets_W"]);
-//     Njets_Z.push_back(varMap["Njets_Z"]);
-//     Njets_H.push_back(varMap["Njets_H"]);
-//     Njets_jet.push_back(varMap["Njets_jet"]);
-//     Njets_orig.push_back(varMap["Njets_orig"]);
-// 
-//     FWmoment1top.push_back(varMap["FWmoment1top"]);
-//     FWmoment2top.push_back(varMap["FWmoment2top"]);
-//     FWmoment3top.push_back(varMap["FWmoment3top"]);
-//     FWmoment4top.push_back(varMap["FWmoment4top"]);
-//     isotropytop.push_back(varMap["isotropytop"]);
-//     sphericitytop.push_back(varMap["sphericitytop"]);
-//     aplanaritytop.push_back(varMap["aplanaritytop"]);
-//     thrusttop.push_back(varMap["thrusttop"]);
-// 
-//     FWmoment1W.push_back(varMap["FWmoment1W"]);
-//     FWmoment2W.push_back(varMap["FWmoment2W"]);
-//     FWmoment3W.push_back(varMap["FWmoment3W"]);
-//     FWmoment4W.push_back(varMap["FWmoment4W"]);
-//     isotropyW.push_back(varMap["isotropyW"]);
-//     sphericityW.push_back(varMap["sphericityW"]);
-//     aplanarityW.push_back(varMap["aplanarityW"]);
-//     thrustW.push_back(varMap["thrustW"]);
-// 
-//     FWmoment1Z.push_back(varMap["FWmoment1Z"]);
-//     FWmoment2Z.push_back(varMap["FWmoment2Z"]);
-//     FWmoment3Z.push_back(varMap["FWmoment3Z"]);
-//     FWmoment4Z.push_back(varMap["FWmoment4Z"]);
-//     isotropyZ.push_back(varMap["isotropyZ"]);
-//     sphericityZ.push_back(varMap["sphericityZ"]);
-//     aplanarityZ.push_back(varMap["aplanarityZ"]);
-//     thrustZ.push_back(varMap["thrustZ"]);
-// 
-//     FWmoment1H.push_back(varMap["FWmoment1H"]);
-//     FWmoment2H.push_back(varMap["FWmoment2H"]);
-//     FWmoment3H.push_back(varMap["FWmoment3H"]);
-//     FWmoment4H.push_back(varMap["FWmoment4H"]);
-//     isotropyH.push_back(varMap["isotropyH"]);
-//     sphericityH.push_back(varMap["sphericityH"]);
-//     aplanarityH.push_back(varMap["aplanarityH"]);
-//     thrustH.push_back(varMap["thrustH"]);
-// 
-//     dnn_QCD.push_back(myMap["dnn_qcd"]);
-//     dnn_Top.push_back(myMap["dnn_top"]);
-//     dnn_Higgs.push_back(myMap["dnn_higgs"]);
-//     dnn_Z.push_back(myMap["dnn_z"]);
-//     dnn_W.push_back(myMap["dnn_w"]);
-//     dnn_B.push_back(myMap["dnn_b"]);
-// 
-//     dnn_largest.push_back(largest);
-//     
-//   }
-// 
-//   //Four std::vector                                                                                                                                                                                      
-//   SetValue("AK8JetPt"     , AK8JetPt);
-//   SetValue("AK8JetEta"    , AK8JetEta);
-//   SetValue("AK8JetPhi"    , AK8JetPhi);
-//   SetValue("AK8JetEnergy" , AK8JetEnergy);
-//   SetValue("AK8JetCSV"    , AK8JetCSV);
-//   
-//   SetValue("dnn_QCD", dnn_QCD);
-//   SetValue("dnn_Top",dnn_Top);
-//   SetValue("dnn_Higgs",dnn_Higgs);
-//   SetValue("dnn_Z",dnn_Z);
-//   SetValue("dnn_W",dnn_W);
-//   SetValue("dnn_B",dnn_B);
-// 
-//   SetValue("dnn_largest",dnn_largest);
-// 
-//   SetValue("bDisc",bDisc);
-//   SetValue("bDisc1",bDisc1);
-//   SetValue("bDisc2",bDisc2);
-// 
-//   SetValue("et",et);
-//   SetValue("eta",eta);
-//   SetValue("mass",mass);
-//   SetValue("SDmass",SDmass);
-//   SetValue("tau32",tau32);
-//   SetValue("tau21",tau21);
-//   SetValue("q",q);
-// 
-//   SetValue("m1234_jet",m1234_jet);
-//   SetValue("m12_jet",m12_jet);
-//   SetValue("m23_jet",m23_jet);
-//   SetValue("m13_jet",m13_jet);
-// 
-//   SetValue("m1234top",m1234top);
-//   SetValue("m12top",m12top);
-//   SetValue("m23top",m23top);
-//   SetValue("m13top",m13top);
-// 
-//   SetValue("m1234W",m1234W);
-//   SetValue("m12W",m12W);
-//   SetValue("m23W",m23W);
-//   SetValue("m13W",m13W);
-// 
-//   SetValue("m1234Z",m1234Z);
-//   SetValue("m12Z",m12Z);
-//   SetValue("m23Z",m23Z);
-//   SetValue("m13Z",m13Z);
-// 
-//   SetValue("m1234H",m1234H);
-//   SetValue("m12H",m12H);
-//   SetValue("m23H",m23H);
-//   SetValue("m13H",m13H);
-// 
-//   SetValue("pzOverp_top",pzOverp_top);
-//   SetValue("pzOverp_W",pzOverp_W);
-//   SetValue("pzOverp_Z",pzOverp_Z);
-//   SetValue("pzOverp_H",pzOverp_H);
-//   SetValue("pzOverp_jet",pzOverp_jet);
-// 
-//   SetValue("Njets_top",Njets_top);
-//   SetValue("Njets_W",Njets_W);
-//   SetValue("Njets_Z",Njets_Z);
-//   SetValue("Njets_H",Njets_H);
-//   SetValue("Njets_jet",Njets_jet);
-//   SetValue("Njets_orig",Njets_orig);
-// 
-//   SetValue("FWmoment1top",FWmoment1top);
-//   SetValue("FWmoment2top",FWmoment2top);
-//   SetValue("FWmoment3top",FWmoment3top);
-//   SetValue("FWmoment4top",FWmoment4top);
-//   SetValue("isotropytop",isotropytop);
-//   SetValue("sphericitytop",sphericitytop);
-//   SetValue("aplanaritytop",aplanaritytop);
-//   SetValue("thrusttop",thrusttop);
-// 
-//   SetValue("FWmoment1W",FWmoment1W);
-//   SetValue("FWmoment2W",FWmoment2W);
-//   SetValue("FWmoment3W",FWmoment3W);
-//   SetValue("FWmoment4W",FWmoment4W);
-//   SetValue("isotropyW",isotropyW);
-//   SetValue("sphericityW",sphericityW);
-//   SetValue("aplanarityW",aplanarityW);
-//   SetValue("thrustW",thrustW);
-// 
-//   SetValue("FWmoment1Z",FWmoment1Z);
-//   SetValue("FWmoment2Z",FWmoment2Z);
-//   SetValue("FWmoment3Z",FWmoment3Z);
-//   SetValue("FWmoment4Z",FWmoment4Z);
-//   SetValue("isotropyZ",isotropyZ);
-//   SetValue("sphericityZ",sphericityZ);
-//   SetValue("aplanarityZ",aplanarityZ);
-//   SetValue("thrustZ",thrustZ);
-// 
-//   SetValue("FWmoment1H",FWmoment1H);
-//   SetValue("FWmoment2H",FWmoment2H);
-//   SetValue("FWmoment3H",FWmoment3H);
-//   SetValue("FWmoment4H",FWmoment4H);
-//   SetValue("isotropyH",isotropyH);
-//   SetValue("sphericityH",sphericityH);
-//   SetValue("aplanarityH",aplanarityH);
-//   SetValue("thrustH",thrustH);
+  std::vector<pat::Jet> const & vSelCorrJets_AK8 = selector->GetSelCorrJetsAK8();
+
+  //Four std::vector
+                                  
+  std::vector <double> AK8JetPt;
+  std::vector <double> AK8JetEta;
+  std::vector <double> AK8JetPhi;
+  std::vector <double> AK8JetEnergy;
+
+  std::vector <double> dnn_QCD;
+  std::vector <double> dnn_Top;
+  std::vector <double> dnn_Higgs;
+  std::vector <double> dnn_Z;
+  std::vector <double> dnn_W;
+  std::vector <double> dnn_B;
+
+  std::vector <double> bDisc;
+  std::vector <double> bDisc1;
+  std::vector <double> bDisc2;
+
+  std::vector <double> et;
+  std::vector <double> eta;
+  std::vector <double> mass;
+  std::vector <double> SDmass;
+  std::vector <double> tau32;
+  std::vector <double> tau21;
+  std::vector <double> q;
+
+  std::vector <double> m1234_jet;
+  std::vector <double> m12_jet;
+  std::vector <double> m23_jet;
+  std::vector <double> m13_jet;
+  
+  std::vector <double> m1234top;
+  std::vector <double> m12top;
+  std::vector <double> m23top;
+  std::vector <double> m13top;
+
+  std::vector <double> m1234W;
+  std::vector <double> m12W;
+  std::vector <double> m23W;
+  std::vector <double> m13W;
+
+  std::vector <double> m1234Z;
+  std::vector <double> m12Z;
+  std::vector <double> m23Z;
+  std::vector <double> m13Z;
+
+  std::vector <double> m1234H;
+  std::vector <double> m12H;
+  std::vector <double> m23H;
+  std::vector <double> m13H;
+
+  std::vector <double> pzOverp_top;
+  std::vector <double> pzOverp_W;
+  std::vector <double> pzOverp_Z;
+  std::vector <double> pzOverp_H;
+  std::vector <double> pzOverp_jet;
+
+  std::vector <double> Njets_top;
+  std::vector <double> Njets_W;
+  std::vector <double> Njets_Z;
+  std::vector <double> Njets_H;
+  std::vector <double> Njets_jet;
+  std::vector <double> Njets_orig;
+
+  std::vector <double> FWmoment1top;
+  std::vector <double> FWmoment2top;
+  std::vector <double> FWmoment3top;
+  std::vector <double> FWmoment4top;
+  std::vector <double> isotropytop;
+  std::vector <double> sphericitytop;
+  std::vector <double> aplanaritytop;
+  std::vector <double> thrusttop;
+
+  std::vector <double> FWmoment1W;
+  std::vector <double> FWmoment2W;
+  std::vector <double> FWmoment3W;
+  std::vector <double> FWmoment4W;
+  std::vector <double> isotropyW;
+  std::vector <double> sphericityW;
+  std::vector <double> aplanarityW;
+  std::vector <double> thrustW;
+
+  std::vector <double> FWmoment1Z;
+  std::vector <double> FWmoment2Z;
+  std::vector <double> FWmoment3Z;
+  std::vector <double> FWmoment4Z;
+  std::vector <double> isotropyZ;
+  std::vector <double> sphericityZ;
+  std::vector <double> aplanarityZ;
+  std::vector <double> thrustZ;
+
+  std::vector <double> FWmoment1H;
+  std::vector <double> FWmoment2H;
+  std::vector <double> FWmoment3H;
+  std::vector <double> FWmoment4H;
+  std::vector <double> isotropyH;
+  std::vector <double> sphericityH;
+  std::vector <double> aplanarityH;
+  std::vector <double> thrustH;
+
+  std::vector <int>    dnn_largest;
+
+  std::vector <double> AK8JetCSV;
+
+  //   std::vector <double> AK8JetRCN;                                                                                                                                                                    
+  //for (std::vector<pat::Jet>::const_iterator ijet = AK8Jets->begin(); ijet != AK8Jets->end(); ijet++){
+  for (std::vector<pat::Jet>::const_iterator ii = vSelCorrJets_AK8.begin(); ii != vSelCorrJets_AK8.end(); ii++){
+
+    if(ii->pt() < 170) continue; // not all info there for lower pt                                                                                                                                     
+    //pat::Jet corrak8 = 	selector->correctJetReturnPatJet(*ijet, event, true);
+    //Four std::vector                                                                                                                                                                                  
+    AK8JetPt     . push_back(ii->pt());
+    AK8JetEta    . push_back(ii->eta());
+    AK8JetPhi    . push_back(ii->phi());
+    AK8JetEnergy . push_back(ii->energy());
+
+    AK8JetCSV    . push_back(ii->bDiscriminator( "pfCombinedInclusiveSecondaryVertexV2BJetTags" ));
+    //     AK8JetRCN    . push_back((corrak8.chargedEmEnergy()+corrak8.chargedHadronEnergy()) / (corrak8.neutralEmEnergy()+corrak8.neutralHadronEnergy()));
+
+    std::map<std::string,double> myMap;
+    std::map<std::string,double> varMap;
+    myMap = {
+      {"dnn_qcd",  -999},
+      {"dnn_top",  -999},
+      {"dnn_higgs",-999},
+      {"dnn_z",    -999},
+      {"dnn_w",    -999},
+      {"dnn_b",    -999}
+    };
+    varMap = {
+      {"bDisc",      -999},
+      {"bDisc1",     -999},
+      {"bDisc2",     -999},
+      {"et",         -999},
+      {"eta",        -999},
+      {"mass",       -999},
+      {"SDmass",     -999},
+      {"tau32",      -999},
+      {"tau21",      -999},
+      {"q",          -999},
+      {"m1234_jet",  -999},
+      {"m12_jet",    -999},
+      {"m23_jet",    -999},
+      {"m13_jet",    -999},
+      {"m1234top",   -999},
+      {"m12top",     -999},
+      {"m23top",     -999},
+      {"m13top",     -999},
+      {"m1234W",     -999},
+      {"m12W",       -999},
+      {"m23W",       -999},
+      {"m13W",       -999},
+      {"m1234Z",     -999},
+      {"m12Z",       -999},
+      {"m23Z",       -999},
+      {"m13Z",       -999},
+      {"m1234H",     -999},
+      {"m12H",       -999},
+      {"m23H",       -999},
+      {"m13H",       -999},
+      {"pzOverp_top",-999},
+      {"pzOverp_W",  -999},
+      {"pzOverp_Z",  -999},
+      {"pzOverp_H",  -999},
+      {"pzOverp_jet",-999},
+      {"Njets_top",      -999},
+      {"Njets_W",        -999},
+      {"Njets_Z",        -999},
+      {"Njets_H",        -999},
+      {"Njets_jet",      -999},
+      {"Njets_orig",     -999},
+      {"FWmoment1top",   -999},
+      {"FWmoment2top",   -999},
+      {"FWmoment3top",   -999},
+      {"FWmoment4top",   -999},
+      {"isotropytop",    -999},
+      {"sphericitytop",  -999},
+      {"aplanaritytop",  -999},
+      {"thrusttop",      -999},
+      {"FWmoment1W",     -999},
+      {"FWmoment2W",     -999},
+      {"FWmoment3W",     -999},
+      {"FWmoment4W",     -999},
+      {"isotropyW",      -999},
+      {"sphericityW",    -999},
+      {"aplanarityW",    -999},
+      {"thrustW",        -999},
+      {"FWmoment1Z",     -999},
+      {"FWmoment2Z",     -999},
+      {"FWmoment3Z",     -999},
+      {"FWmoment4Z",     -999},
+      {"isotropyZ",      -999},
+      {"sphericityZ",    -999},
+      {"aplanarityZ",    -999},
+      {"thrustZ",        -999},
+      {"FWmoment1H",     -999},
+      {"FWmoment2H",     -999},
+      {"FWmoment3H",     -999},
+      {"FWmoment4H",     -999},
+      {"isotropyH",      -999},
+      {"sphericityH",    -999},
+      {"aplanarityH",    -999},
+      {"thrustH",        -999}
+    };
+
+    std::vector<std::string> labels = ii->subjetCollectionNames();
+    if(labels.size() == 0) std::cout << "there are no subjet collection labels" << std::endl;
+    // for (unsigned int j = 0; j < labels.size(); j++){
+    //   std::cout << labels.at(j) << std::endl;
+    // }
+    auto const& thisSubjets   = ii->subjets("SoftDropPuppi");
+
+    unsigned int numDaughters = ii->numberOfDaughters();
+    float softdropmass = ii->userFloat("ak8PFJetsPuppiSoftDropMass");
+    int largest = 10;
+
+    if (thisSubjets.size() >= m_numSubjetsMin && numDaughters >= m_numDaughtersMin && softdropmass >= m_jetSoftDropMassMin){
+      varMap = BestCalc::execute(*ii);
+      myMap = m_lwtnn->compute(varMap);
+
+      if (myMap["dnn_qcd"] > myMap["dnn_top"] && myMap["dnn_qcd"] > myMap["dnn_higgs"] && myMap["dnn_qcd"] > myMap["dnn_z"] && myMap["dnn_qcd"] > myMap["dnn_w"] && myMap["dnn_qcd"] > myMap["dnn_b"]){
+	largest = 0;
+      } else if (myMap["dnn_top"] > myMap["dnn_qcd"] && myMap["dnn_top"] > myMap["dnn_higgs"] && myMap["dnn_top"] > myMap["dnn_z"] && myMap["dnn_top"] > myMap["dnn_w"] && myMap["dnn_top"] > myMap["dnn_b"]){
+	largest = 1;
+      } else if (myMap["dnn_higgs"] > myMap["dnn_top"] && myMap["dnn_higgs"] > myMap["dnn_qcd"] && myMap["dnn_higgs"] > myMap["dnn_z"] && myMap["dnn_higgs"] > myMap["dnn_w"] && myMap["dnn_higgs"] > myMap["dnn_b"]){
+	largest = 2;
+      } else if (myMap["dnn_z"] > myMap["dnn_top"] && myMap["dnn_z"] > myMap["dnn_higgs"] && myMap["dnn_z"] > myMap["dnn_qcd"] && myMap["dnn_z"] > myMap["dnn_w"] && myMap["dnn_z"] > myMap["dnn_b"]){
+	largest = 3;
+      } else if (myMap["dnn_w"] > myMap["dnn_top"] && myMap["dnn_w"] > myMap["dnn_higgs"] && myMap["dnn_w"] > myMap["dnn_qcd"] && myMap["dnn_w"] > myMap["dnn_z"] && myMap["dnn_w"] > myMap["dnn_b"]){
+	largest = 4;
+      } else if (myMap["dnn_b"] > myMap["dnn_top"] && myMap["dnn_b"] > myMap["dnn_higgs"] && myMap["dnn_b"] > myMap["dnn_qcd"] && myMap["dnn_b"] > myMap["dnn_z"] && myMap["dnn_b"] > myMap["dnn_w"]){
+        largest = 5;
+      } else
+	largest = 10;
+    }
+
+    bDisc.push_back(varMap["bDisc"]);
+    bDisc1.push_back(varMap["bDisc1"]);
+    bDisc2.push_back(varMap["bDisc2"]);
+
+    et.push_back(varMap["et"]);
+    eta.push_back(varMap["eta"]);
+    mass.push_back(varMap["mass"]);
+    SDmass.push_back(varMap["SDmass"]);
+    tau32.push_back(varMap["tau32"]);
+    tau21.push_back(varMap["tau21"]);
+    q.push_back(varMap["q"]);
+
+    m1234_jet.push_back(varMap["m1234_jet"]);
+    m12_jet.push_back(varMap["m12_jet"]);
+    m23_jet.push_back(varMap["m23_jet"]);
+    m13_jet.push_back(varMap["m13_jet"]);
+
+    m1234top.push_back(varMap["m1234top"]);
+    m12top.push_back(varMap["m12top"]);
+    m23top.push_back(varMap["m23top"]);
+    m13top.push_back(varMap["m13top"]);
+
+    m1234W.push_back(varMap["m1234W"]);
+    m12W.push_back(varMap["m12W"]);
+    m23W.push_back(varMap["m23W"]);
+    m13W.push_back(varMap["m13W"]);
+
+    m1234Z.push_back(varMap["m1234Z"]);
+    m12Z.push_back(varMap["m12Z"]);
+    m23Z.push_back(varMap["m23Z"]);
+    m13Z.push_back(varMap["m13Z"]);
+
+    m1234H.push_back(varMap["m1234H"]);
+    m12H.push_back(varMap["m12H"]);
+    m23H.push_back(varMap["m23H"]);
+    m13H.push_back(varMap["m13H"]);
+
+    pzOverp_top.push_back(varMap["pzOverp_top"]);
+    pzOverp_W.push_back(varMap["pzOverp_W"]);
+    pzOverp_Z.push_back(varMap["pzOverp_Z"]);
+    pzOverp_H.push_back(varMap["pzOverp_H"]);
+    pzOverp_jet.push_back(varMap["pzOverp_jet"]);
+
+    Njets_top.push_back(varMap["Njets_top"]);
+    Njets_W.push_back(varMap["Njets_W"]);
+    Njets_Z.push_back(varMap["Njets_Z"]);
+    Njets_H.push_back(varMap["Njets_H"]);
+    Njets_jet.push_back(varMap["Njets_jet"]);
+    Njets_orig.push_back(varMap["Njets_orig"]);
+
+    FWmoment1top.push_back(varMap["FWmoment1top"]);
+    FWmoment2top.push_back(varMap["FWmoment2top"]);
+    FWmoment3top.push_back(varMap["FWmoment3top"]);
+    FWmoment4top.push_back(varMap["FWmoment4top"]);
+    isotropytop.push_back(varMap["isotropytop"]);
+    sphericitytop.push_back(varMap["sphericitytop"]);
+    aplanaritytop.push_back(varMap["aplanaritytop"]);
+    thrusttop.push_back(varMap["thrusttop"]);
+
+    FWmoment1W.push_back(varMap["FWmoment1W"]);
+    FWmoment2W.push_back(varMap["FWmoment2W"]);
+    FWmoment3W.push_back(varMap["FWmoment3W"]);
+    FWmoment4W.push_back(varMap["FWmoment4W"]);
+    isotropyW.push_back(varMap["isotropyW"]);
+    sphericityW.push_back(varMap["sphericityW"]);
+    aplanarityW.push_back(varMap["aplanarityW"]);
+    thrustW.push_back(varMap["thrustW"]);
+
+    FWmoment1Z.push_back(varMap["FWmoment1Z"]);
+    FWmoment2Z.push_back(varMap["FWmoment2Z"]);
+    FWmoment3Z.push_back(varMap["FWmoment3Z"]);
+    FWmoment4Z.push_back(varMap["FWmoment4Z"]);
+    isotropyZ.push_back(varMap["isotropyZ"]);
+    sphericityZ.push_back(varMap["sphericityZ"]);
+    aplanarityZ.push_back(varMap["aplanarityZ"]);
+    thrustZ.push_back(varMap["thrustZ"]);
+
+    FWmoment1H.push_back(varMap["FWmoment1H"]);
+    FWmoment2H.push_back(varMap["FWmoment2H"]);
+    FWmoment3H.push_back(varMap["FWmoment3H"]);
+    FWmoment4H.push_back(varMap["FWmoment4H"]);
+    isotropyH.push_back(varMap["isotropyH"]);
+    sphericityH.push_back(varMap["sphericityH"]);
+    aplanarityH.push_back(varMap["aplanarityH"]);
+    thrustH.push_back(varMap["thrustH"]);
+
+    dnn_QCD.push_back(myMap["dnn_qcd"]);
+    dnn_Top.push_back(myMap["dnn_top"]);
+    dnn_Higgs.push_back(myMap["dnn_higgs"]);
+    dnn_Z.push_back(myMap["dnn_z"]);
+    dnn_W.push_back(myMap["dnn_w"]);
+    dnn_B.push_back(myMap["dnn_b"]);
+
+    dnn_largest.push_back(largest);
+    
+  }
+
+  //Four std::vector                                                                                                                                                                                      
+  SetValue("AK8JetPt"     , AK8JetPt);
+  SetValue("AK8JetEta"    , AK8JetEta);
+  SetValue("AK8JetPhi"    , AK8JetPhi);
+  SetValue("AK8JetEnergy" , AK8JetEnergy);
+  SetValue("AK8JetCSV"    , AK8JetCSV);
+  
+  SetValue("dnn_QCD", dnn_QCD);
+  SetValue("dnn_Top",dnn_Top);
+  SetValue("dnn_Higgs",dnn_Higgs);
+  SetValue("dnn_Z",dnn_Z);
+  SetValue("dnn_W",dnn_W);
+  SetValue("dnn_B",dnn_B);
+
+  SetValue("dnn_largest",dnn_largest);
+
+  SetValue("bDisc",bDisc);
+  SetValue("bDisc1",bDisc1);
+  SetValue("bDisc2",bDisc2);
+
+  SetValue("et",et);
+  SetValue("eta",eta);
+  SetValue("mass",mass);
+  SetValue("SDmass",SDmass);
+  SetValue("tau32",tau32);
+  SetValue("tau21",tau21);
+  SetValue("q",q);
+
+  SetValue("m1234_jet",m1234_jet);
+  SetValue("m12_jet",m12_jet);
+  SetValue("m23_jet",m23_jet);
+  SetValue("m13_jet",m13_jet);
+
+  SetValue("m1234top",m1234top);
+  SetValue("m12top",m12top);
+  SetValue("m23top",m23top);
+  SetValue("m13top",m13top);
+
+  SetValue("m1234W",m1234W);
+  SetValue("m12W",m12W);
+  SetValue("m23W",m23W);
+  SetValue("m13W",m13W);
+
+  SetValue("m1234Z",m1234Z);
+  SetValue("m12Z",m12Z);
+  SetValue("m23Z",m23Z);
+  SetValue("m13Z",m13Z);
+
+  SetValue("m1234H",m1234H);
+  SetValue("m12H",m12H);
+  SetValue("m23H",m23H);
+  SetValue("m13H",m13H);
+
+  SetValue("pzOverp_top",pzOverp_top);
+  SetValue("pzOverp_W",pzOverp_W);
+  SetValue("pzOverp_Z",pzOverp_Z);
+  SetValue("pzOverp_H",pzOverp_H);
+  SetValue("pzOverp_jet",pzOverp_jet);
+
+  SetValue("Njets_top",Njets_top);
+  SetValue("Njets_W",Njets_W);
+  SetValue("Njets_Z",Njets_Z);
+  SetValue("Njets_H",Njets_H);
+  SetValue("Njets_jet",Njets_jet);
+  SetValue("Njets_orig",Njets_orig);
+
+  SetValue("FWmoment1top",FWmoment1top);
+  SetValue("FWmoment2top",FWmoment2top);
+  SetValue("FWmoment3top",FWmoment3top);
+  SetValue("FWmoment4top",FWmoment4top);
+  SetValue("isotropytop",isotropytop);
+  SetValue("sphericitytop",sphericitytop);
+  SetValue("aplanaritytop",aplanaritytop);
+  SetValue("thrusttop",thrusttop);
+
+  SetValue("FWmoment1W",FWmoment1W);
+  SetValue("FWmoment2W",FWmoment2W);
+  SetValue("FWmoment3W",FWmoment3W);
+  SetValue("FWmoment4W",FWmoment4W);
+  SetValue("isotropyW",isotropyW);
+  SetValue("sphericityW",sphericityW);
+  SetValue("aplanarityW",aplanarityW);
+  SetValue("thrustW",thrustW);
+
+  SetValue("FWmoment1Z",FWmoment1Z);
+  SetValue("FWmoment2Z",FWmoment2Z);
+  SetValue("FWmoment3Z",FWmoment3Z);
+  SetValue("FWmoment4Z",FWmoment4Z);
+  SetValue("isotropyZ",isotropyZ);
+  SetValue("sphericityZ",sphericityZ);
+  SetValue("aplanarityZ",aplanarityZ);
+  SetValue("thrustZ",thrustZ);
+
+  SetValue("FWmoment1H",FWmoment1H);
+  SetValue("FWmoment2H",FWmoment2H);
+  SetValue("FWmoment3H",FWmoment3H);
+  SetValue("FWmoment4H",FWmoment4H);
+  SetValue("isotropyH",isotropyH);
+  SetValue("sphericityH",sphericityH);
+  SetValue("aplanarityH",aplanarityH);
+  SetValue("thrustH",thrustH);
 
   return 0;
 
