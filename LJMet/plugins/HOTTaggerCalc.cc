@@ -50,6 +50,8 @@
 //this include is necessary to handle exceptions thrown by the top tagger code
 #include "TopTagger/CfgParser/include/TTException.h"
 
+#include "FWCore/ParameterSet/interface/FileInPath.h"
+
 using namespace std;
 
 class LjmetFactory;
@@ -89,7 +91,7 @@ int HOTTaggerCalc::BeginJob(edm::ConsumesCollector && iC){
     qgTaggerKey_ = mPset.getParameter<std::string>("qgTaggerKey");
     deepCSVBJetTags_ = mPset.getParameter<std::string>("deepCSVBJetTags");
     bTagKeyString_ = mPset.getParameter<std::string>("bTagKeyString");    
-    taggerCfgFile_ = mPset.getParameter<std::string>("taggerCfgFile");
+    taggerCfgFile_ = mPset.getParameter<edm::FileInPath>("taggerCfgFile").fullPath();
     discriminatorCut_ = mPset.getParameter<double>("discriminatorCut");
     
     //configure the top tagger

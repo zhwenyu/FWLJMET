@@ -23,25 +23,30 @@ void JetMETCorrHelper::Initialize(const edm::ParameterSet& iConfig){
 
     isMc               = iConfig.getParameter<bool>("isMc");
 
-    std::string JEC_txtfile              = iConfig.getParameter<std::string>("JEC_txtfile");
-    std::string JERSF_txtfile            = iConfig.getParameter<std::string>("JERSF_txtfile");
-    std::string JER_txtfile              = iConfig.getParameter<std::string>("JER_txtfile");
-    std::string JERAK8_txtfile           = iConfig.getParameter<std::string>("JERAK8_txtfile");
+    std::string JEC_txtfile              = iConfig.getParameter<edm::FileInPath>("JEC_txtfile").fullPath();
+    std::string JERSF_txtfile            = iConfig.getParameter<edm::FileInPath>("JERSF_txtfile").fullPath();
+    std::string JER_txtfile              = iConfig.getParameter<edm::FileInPath>("JER_txtfile").fullPath();
+    std::string JERAK8_txtfile           = iConfig.getParameter<edm::FileInPath>("JERAK8_txtfile").fullPath();
 
-    mJetParStr["MCL1JetPar"] = iConfig.getParameter<std::string>("MCL1JetPar");
-    mJetParStr["MCL2JetPar"] = iConfig.getParameter<std::string>("MCL2JetPar");
-    mJetParStr["MCL3JetPar"] = iConfig.getParameter<std::string>("MCL3JetPar");
-    mJetParStr["MCL1JetParAK8"] = iConfig.getParameter<std::string>("MCL1JetParAK8");
-    mJetParStr["MCL2JetParAK8"] = iConfig.getParameter<std::string>("MCL2JetParAK8");
-    mJetParStr["MCL3JetParAK8"] = iConfig.getParameter<std::string>("MCL3JetParAK8");
-    mJetParStr["DataL1JetPar"] = iConfig.getParameter<std::string>("DataL1JetPar");
-    mJetParStr["DataL2JetPar"] = iConfig.getParameter<std::string>("DataL2JetPar");
-    mJetParStr["DataL3JetPar"] = iConfig.getParameter<std::string>("DataL3JetPar");
-    mJetParStr["DataResJetPar"] = iConfig.getParameter<std::string>("DataResJetPar");
-    mJetParStr["DataL1JetParAK8"] = iConfig.getParameter<std::string>("DataL1JetParAK8");
-    mJetParStr["DataL2JetParAK8"] = iConfig.getParameter<std::string>("DataL2JetParAK8");
-    mJetParStr["DataL3JetParAK8"] = iConfig.getParameter<std::string>("DataL3JetParAK8");
-    mJetParStr["DataResJetParAK8"] = iConfig.getParameter<std::string>("DataResJetParAK8");
+    if(debug) std::cout << mLegend << "Using JEC files JEC_txtfile    : " << JEC_txtfile << std::endl;
+    if(debug) std::cout << mLegend << "Using JEC files JERSF_txtfile  : " << JERSF_txtfile << std::endl;
+    if(debug) std::cout << mLegend << "Using JEC files JER_txtfile    : " << JER_txtfile << std::endl;
+    if(debug) std::cout << mLegend << "Using JEC files JERAK8_txtfile : " << JERAK8_txtfile << std::endl;
+
+    mJetParStr["MCL1JetPar"] = iConfig.getParameter<edm::FileInPath>("MCL1JetPar").fullPath();
+    mJetParStr["MCL2JetPar"] = iConfig.getParameter<edm::FileInPath>("MCL2JetPar").fullPath();
+    mJetParStr["MCL3JetPar"] = iConfig.getParameter<edm::FileInPath>("MCL3JetPar").fullPath();
+    mJetParStr["MCL1JetParAK8"] = iConfig.getParameter<edm::FileInPath>("MCL1JetParAK8").fullPath();
+    mJetParStr["MCL2JetParAK8"] = iConfig.getParameter<edm::FileInPath>("MCL2JetParAK8").fullPath();
+    mJetParStr["MCL3JetParAK8"] = iConfig.getParameter<edm::FileInPath>("MCL3JetParAK8").fullPath();
+    mJetParStr["DataL1JetPar"] = iConfig.getParameter<edm::FileInPath>("DataL1JetPar").fullPath();
+    mJetParStr["DataL2JetPar"] = iConfig.getParameter<edm::FileInPath>("DataL2JetPar").fullPath();
+    mJetParStr["DataL3JetPar"] = iConfig.getParameter<edm::FileInPath>("DataL3JetPar").fullPath();
+    mJetParStr["DataResJetPar"] = iConfig.getParameter<edm::FileInPath>("DataResJetPar").fullPath();
+    mJetParStr["DataL1JetParAK8"] = iConfig.getParameter<edm::FileInPath>("DataL1JetParAK8").fullPath();
+    mJetParStr["DataL2JetParAK8"] = iConfig.getParameter<edm::FileInPath>("DataL2JetParAK8").fullPath();
+    mJetParStr["DataL3JetParAK8"] = iConfig.getParameter<edm::FileInPath>("DataL3JetParAK8").fullPath();
+    mJetParStr["DataResJetParAK8"] = iConfig.getParameter<edm::FileInPath>("DataResJetParAK8").fullPath();
 
     if ( isMc ) jecUnc = std::shared_ptr<JetCorrectionUncertainty>( new JetCorrectionUncertainty(JEC_txtfile) );
 

@@ -106,7 +106,7 @@ int JetSubCalc::BeginJob(edm::ConsumesCollector && iC)
   kappa = mPset.getParameter<double>("kappa");
   killHF = mPset.getParameter<bool>("killHF");
 
-  puppiCorrPath        = mPset.getParameter<std::string>("puppiCorrPath");
+  puppiCorrPath        = mPset.getParameter<edm::FileInPath>("puppiCorrPath").fullPath();
   TFile* file          = TFile::Open(puppiCorrPath.c_str(),"READ");
   puppisd_corrGEN      = (TF1*)file->Get("puppiJECcorr_gen");
   puppisd_corrRECO_cen = (TF1*)file->Get("puppiJECcorr_reco_0eta1v3");

@@ -51,8 +51,8 @@ void BTagSFUtil::Initialize(const edm::ParameterSet& iConfig){
     debug              = iConfig.getParameter<bool>("debug");
 
     bdisc_min          = iConfig.getParameter<double>("bdisc_min");
-    DeepCSVfile        = iConfig.getParameter<std::string>("DeepCSVfile");
-    DeepCSVSubjetfile  = iConfig.getParameter<std::string>("DeepCSVSubjetfile");
+    DeepCSVfile        = iConfig.getParameter<edm::FileInPath>("DeepCSVfile").fullPath();
+    DeepCSVSubjetfile  = iConfig.getParameter<edm::FileInPath>("DeepCSVSubjetfile").fullPath();
     btagOP             = iConfig.getParameter<std::string>("btagOP");
     applyBtagSF        = iConfig.getParameter<bool>("applyBtagSF");
     BTagUncertUp       = iConfig.getParameter<bool>("BTagUncertUp");

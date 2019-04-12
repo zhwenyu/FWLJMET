@@ -34,6 +34,7 @@
 #include "FWLJMET/LJMet/interface/LjmetFactory.h"
 
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
+#include "FWCore/ParameterSet/interface/FileInPath.h"
 
 #include "FWLJMET/LJMet/interface/BtagHardcodedConditions.h"
 #include "CondFormats/BTauObjects/interface/BTagCalibration.h"

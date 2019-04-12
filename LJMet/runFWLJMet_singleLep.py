@@ -20,13 +20,13 @@ process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(MAXEVENTS) )
 ## Source / Input
 isMC=True
 #isMC=False
-isTTbar = False
-if(isMC): 
-    INFILE='root://cmsxrootd.fnal.gov//store/mc/RunIIFall17MiniAODv2/TprimeTprime_M-1100_TuneCP5_13TeV-madgraph-pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14-v2/00000/8EA8FE89-254F-E811-835E-0090FAA58BF4.root'
-    #INFILE='root://cmsxrootd.fnal.gov//store/mc/RunIIFall17MiniAODv2/TTTT_TuneCP5_PSweights_13TeV-amcatnlo-pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14-v1/70000/0ED34A55-DD52-E811-91CC-E0071B73B6B0.root',
+isTTbar = True
+if(isMC):
+    #INFILE='root://cmsxrootd.fnal.gov//store/mc/RunIIFall17MiniAODv2/TprimeTprime_M-1100_TuneCP5_13TeV-madgraph-pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14-v2/00000/8EA8FE89-254F-E811-835E-0090FAA58BF4.root'
+    INFILE='root://cmsxrootd.fnal.gov//store/mc/RunIIFall17MiniAODv2/TTTT_TuneCP5_PSweights_13TeV-amcatnlo-pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14-v1/70000/0ED34A55-DD52-E811-91CC-E0071B73B6B0.root',
     if (isTTbar):
         INFILE='root://cmsxrootd.fnal.gov//store/mc/RunIIFall17MiniAODv2/TTToSemiLeptonic_TuneCP5_PSweights_13TeV-powheg-pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14-v1/50000/5E7E4AA9-0743-E811-999A-0CC47A7C35A8.root'
-else: 
+else:
     INFILE='root://cmsxrootd.fnal.gov//store/data/Run2017F/DoubleEG/MINIAOD/09May2018-v1/10000/444E03EB-B75F-E811-AFBA-F01FAFD8F16A.root'
 
 process.source = cms.Source("PoolSource",
@@ -36,7 +36,10 @@ process.source = cms.Source("PoolSource",
 )
 
 if(isMC):
-        OUTFILENAME = 'TprimeTprime_M-1100_TuneCP5_13TeV-madgraph-pythia8'
+        # OUTFILENAME = 'TprimeTprime_M-1100_TuneCP5_13TeV-madgraph-pythia8'
+        OUTFILENAME = 'TTTT_TuneCP5_PSweights_13TeV-amcatnlo-pythia8'
+        if (isTTbar):
+            OUTFILENAME = 'TTToSemiLeptonic_TuneCP5_PSweights_13TeV-powheg-pythia8'
         POSTFIX = 'MC'
 else:
         OUTFILENAME = 'DoubleEG_Run2017F'
@@ -112,14 +115,14 @@ baddetEcallist = cms.vuint32(
      872438951,872439990,872439864,872439609,
      872437181,872437182,872437053,872436794,
      872436667,872436536,872421541,872421413,
-     872421414,872421031,872423083,872421439] 
+     872421414,872421031,872423083,872421439]
 )
 
 process.ecalBadCalibReducedMINIAODFilter = cms.EDFilter(
     "EcalBadCalibFilter",
     EcalRecHitSource = cms.InputTag("reducedEgamma:reducedEERecHits"),
     ecalMinEt        = cms.double(50.),
-    baddetEcal    = baddetEcallist, 
+    baddetEcal    = baddetEcallist,
     taggingMode = cms.bool(True),
     debug = cms.bool(False)
 )
@@ -139,25 +142,25 @@ updateJetCollection(
    rParam = 0.8,
    jetCorrections = ('AK8PFPuppi', cms.vstring(['L2Relative', 'L3Absolute']), 'None'),
    btagDiscriminators = ['pfCombinedInclusiveSecondaryVertexV2BJetTags',
-                         'pfDeepBoostedJetTags:probTbcq', 'pfDeepBoostedJetTags:probTbqq', 
-                         'pfDeepBoostedJetTags:probWcq', 'pfDeepBoostedJetTags:probWqq', 
-                         'pfDeepBoostedJetTags:probZbb', 'pfDeepBoostedJetTags:probZcc', 'pfDeepBoostedJetTags:probZqq', 
-                         'pfDeepBoostedJetTags:probHbb', 'pfDeepBoostedJetTags:probHcc', 'pfDeepBoostedJetTags:probHqqqq', 
-                         'pfDeepBoostedJetTags:probQCDbb', 'pfDeepBoostedJetTags:probQCDcc', 
-                         'pfDeepBoostedJetTags:probQCDb', 'pfDeepBoostedJetTags:probQCDc', 
-                         'pfDeepBoostedJetTags:probQCDothers', 
-                         'pfDeepBoostedDiscriminatorsJetTags:TvsQCD', 'pfDeepBoostedDiscriminatorsJetTags:WvsQCD', 
-                         'pfDeepBoostedDiscriminatorsJetTags:ZvsQCD', 'pfDeepBoostedDiscriminatorsJetTags:ZbbvsQCD', 
-                         'pfDeepBoostedDiscriminatorsJetTags:HbbvsQCD', 'pfDeepBoostedDiscriminatorsJetTags:H4qvsQCD', 
-                         'pfMassDecorrelatedDeepBoostedJetTags:probTbcq', 'pfMassDecorrelatedDeepBoostedJetTags:probTbqq', 
-                         'pfMassDecorrelatedDeepBoostedJetTags:probWcq', 'pfMassDecorrelatedDeepBoostedJetTags:probWqq', 
-                         'pfMassDecorrelatedDeepBoostedJetTags:probZbb', 'pfMassDecorrelatedDeepBoostedJetTags:probZcc', 'pfMassDecorrelatedDeepBoostedJetTags:probZqq', 
-                         'pfMassDecorrelatedDeepBoostedJetTags:probHbb', 'pfMassDecorrelatedDeepBoostedJetTags:probHcc', 'pfMassDecorrelatedDeepBoostedJetTags:probHqqqq', 
-                         'pfMassDecorrelatedDeepBoostedJetTags:probQCDbb', 'pfMassDecorrelatedDeepBoostedJetTags:probQCDcc', 
-                         'pfMassDecorrelatedDeepBoostedJetTags:probQCDb', 'pfMassDecorrelatedDeepBoostedJetTags:probQCDc', 
-                         'pfMassDecorrelatedDeepBoostedJetTags:probQCDothers', 
-                         'pfMassDecorrelatedDeepBoostedDiscriminatorsJetTags:TvsQCD', 'pfMassDecorrelatedDeepBoostedDiscriminatorsJetTags:WvsQCD', 
-                         'pfMassDecorrelatedDeepBoostedDiscriminatorsJetTags:ZHbbvsQCD', 'pfMassDecorrelatedDeepBoostedDiscriminatorsJetTags:ZHccvsQCD', 
+                         'pfDeepBoostedJetTags:probTbcq', 'pfDeepBoostedJetTags:probTbqq',
+                         'pfDeepBoostedJetTags:probWcq', 'pfDeepBoostedJetTags:probWqq',
+                         'pfDeepBoostedJetTags:probZbb', 'pfDeepBoostedJetTags:probZcc', 'pfDeepBoostedJetTags:probZqq',
+                         'pfDeepBoostedJetTags:probHbb', 'pfDeepBoostedJetTags:probHcc', 'pfDeepBoostedJetTags:probHqqqq',
+                         'pfDeepBoostedJetTags:probQCDbb', 'pfDeepBoostedJetTags:probQCDcc',
+                         'pfDeepBoostedJetTags:probQCDb', 'pfDeepBoostedJetTags:probQCDc',
+                         'pfDeepBoostedJetTags:probQCDothers',
+                         'pfDeepBoostedDiscriminatorsJetTags:TvsQCD', 'pfDeepBoostedDiscriminatorsJetTags:WvsQCD',
+                         'pfDeepBoostedDiscriminatorsJetTags:ZvsQCD', 'pfDeepBoostedDiscriminatorsJetTags:ZbbvsQCD',
+                         'pfDeepBoostedDiscriminatorsJetTags:HbbvsQCD', 'pfDeepBoostedDiscriminatorsJetTags:H4qvsQCD',
+                         'pfMassDecorrelatedDeepBoostedJetTags:probTbcq', 'pfMassDecorrelatedDeepBoostedJetTags:probTbqq',
+                         'pfMassDecorrelatedDeepBoostedJetTags:probWcq', 'pfMassDecorrelatedDeepBoostedJetTags:probWqq',
+                         'pfMassDecorrelatedDeepBoostedJetTags:probZbb', 'pfMassDecorrelatedDeepBoostedJetTags:probZcc', 'pfMassDecorrelatedDeepBoostedJetTags:probZqq',
+                         'pfMassDecorrelatedDeepBoostedJetTags:probHbb', 'pfMassDecorrelatedDeepBoostedJetTags:probHcc', 'pfMassDecorrelatedDeepBoostedJetTags:probHqqqq',
+                         'pfMassDecorrelatedDeepBoostedJetTags:probQCDbb', 'pfMassDecorrelatedDeepBoostedJetTags:probQCDcc',
+                         'pfMassDecorrelatedDeepBoostedJetTags:probQCDb', 'pfMassDecorrelatedDeepBoostedJetTags:probQCDc',
+                         'pfMassDecorrelatedDeepBoostedJetTags:probQCDothers',
+                         'pfMassDecorrelatedDeepBoostedDiscriminatorsJetTags:TvsQCD', 'pfMassDecorrelatedDeepBoostedDiscriminatorsJetTags:WvsQCD',
+                         'pfMassDecorrelatedDeepBoostedDiscriminatorsJetTags:ZHbbvsQCD', 'pfMassDecorrelatedDeepBoostedDiscriminatorsJetTags:ZHccvsQCD',
                          'pfMassDecorrelatedDeepBoostedDiscriminatorsJetTags:bbvsLight', 'pfMassDecorrelatedDeepBoostedDiscriminatorsJetTags:ccvsLight'],
    postfix = 'AK8Puppi',
    printWarning = False
@@ -566,7 +569,7 @@ BestCalc_cfg = cms.PSet(
     )
 
 HOTTaggerCalc_cfg = cms.PSet(
-    
+
     ak4PtCut         = cms.double(20),
     qgTaggerKey      = cms.string('QGTagger'),
     deepCSVBJetTags  = cms.string('pfDeepCSVJetTags'),
@@ -608,7 +611,7 @@ process.ljmet = cms.EDAnalyzer(
         TpTpCalc      = cms.PSet(TpTpCalc_cfg),
         CommonCalc    = cms.PSet(), #current ljmet wants all calc to send a PSet, event if its empty.
         JetSubCalc    = cms.PSet(JetSubCalc_cfg),
-        TTbarMassCalc = cms.PSet(TTbarMassCalc_cfg), 
+        TTbarMassCalc = cms.PSet(TTbarMassCalc_cfg),
         DeepAK8Calc    = cms.PSet(), #current ljmet wants all calc to send a PSet, event if its empty.
         HOTTaggerCalc = cms.PSet(HOTTaggerCalc_cfg)
         # BestCalc      = cms.PSet(BestCalc_cfg),
@@ -617,20 +620,64 @@ process.ljmet = cms.EDAnalyzer(
 
 
 ################################################
-### PROCESS PATH 
+### PROCESS PATH
 ################################################
 
 # Configure a path and endpath to run the producer and output modules
-process.p = cms.Path(
-   process.fullPatMetSequenceModifiedMET *
-   process.prefiringweight * 
-   process.egammaPostRecoSeq *
-   process.updatedJetsAK8PuppiSoftDropPacked * 
-   process.packedJetsAK8Puppi *
-   process.QGTagger *
-   process.ecalBadCalibReducedMINIAODFilter *
-   process.ljmet #(ntuplizer)
-)
+
+# ----------------------- GenHFHadronMatcher -----------------                                                
+if (isTTbar):
+    process.load("PhysicsTools.JetMCAlgos.GenHFHadronMatcher_cff")
+
+    from PhysicsTools.JetMCAlgos.HadronAndPartonSelector_cfi import selectedHadronsAndPartons
+    process.selectedHadronsAndPartons = selectedHadronsAndPartons.clone(
+        particles = cms.InputTag("prunedGenParticles")
+        )
+    from PhysicsTools.JetMCAlgos.AK4PFJetsMCFlavourInfos_cfi import ak4JetFlavourInfos
+    process.genJetFlavourInfos = ak4JetFlavourInfos.clone(
+        jets = cms.InputTag("slimmedGenJets")
+        )
+    from PhysicsTools.JetMCAlgos.GenHFHadronMatcher_cff import matchGenBHadron
+    process.matchGenBHadron = matchGenBHadron.clone(
+        genParticles = cms.InputTag("prunedGenParticles"),
+        jetFlavourInfos = "genJetFlavourInfos"
+        )
+    from PhysicsTools.JetMCAlgos.GenHFHadronMatcher_cff import matchGenCHadron
+    process.matchGenCHadron = matchGenCHadron.clone(
+        genParticles = cms.InputTag("prunedGenParticles"),
+        jetFlavourInfos = "genJetFlavourInfos"
+        )
+    process.load("TopQuarkAnalysis.TopTools.GenTtbarCategorizer_cfi")
+    process.categorizeGenTtbar.genJets = cms.InputTag("slimmedGenJets")
+
+    process.ttbarcat = cms.Sequence(
+        process.selectedHadronsAndPartons * process.genJetFlavourInfos * process.matchGenBHadron 
+        * process.matchGenCHadron* ## gen HF flavour matching            
+        process.categorizeGenTtbar  ## return already a categorization id for tt                  
+        )
+
+    process.p = cms.Path(process.fullPatMetSequenceModifiedMET * 
+                         process.prefiringweight * 
+                         process.egammaPostRecoSeq * 
+                         process.updatedJetsAK8PuppiSoftDropPacked * 
+                         process.packedJetsAK8Puppi *
+                         process.QGTagger *
+                         process.ecalBadCalibReducedMINIAODFilter *
+                         process.ttbarcat *
+                         process.ljmet #(ntuplizer)
+                         )
+
+else:
+    process.p = cms.Path(
+       process.fullPatMetSequenceModifiedMET *
+       process.prefiringweight *
+       process.egammaPostRecoSeq *
+       process.updatedJetsAK8PuppiSoftDropPacked *
+       process.packedJetsAK8Puppi *
+       process.QGTagger *
+       process.ecalBadCalibReducedMINIAODFilter *
+       process.ljmet #(ntuplizer)
+    )
 
 process.p.associate(patAlgosToolsTask)
 

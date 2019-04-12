@@ -16,6 +16,7 @@
 #include "JetMETCorrections/Modules/interface/JetResolution.h"
 
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
+#include "FWCore/ParameterSet/interface/FileInPath.h"
 
 #include <TRandom3.h>
 #include <regex>
