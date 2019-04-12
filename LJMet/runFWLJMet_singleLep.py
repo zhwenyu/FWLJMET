@@ -4,6 +4,28 @@ import os
 
 relBase = os.environ['CMSSW_BASE']
 
+
+## PARSE ARGUMENTS
+from FWCore.ParameterSet.VarParsing import VarParsing
+options = VarParsing('analysis')
+options.register('isMC', '', VarParsing.multiplicity.singleton, VarParsing.varType.bool, 'Is MC') 
+options.register('isTTbar', '', VarParsing.multiplicity.singleton, VarParsing.varType.bool, 'Is TTbar') 
+options.isMC = True
+options.isTTbar = False
+options.inputFiles = [
+    'root://cmsxrootd.fnal.gov//store/mc/RunIIFall17MiniAODv2/TTTT_TuneCP5_PSweights_13TeV-amcatnlo-pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14-v1/70000/0ED34A55-DD52-E811-91CC-E0071B73B6B0.root',
+    #'root://cmsxrootd.fnal.gov//store/data/Run2017B/SingleMuon/MINIAOD/31Mar2018-v1/80000/4462B46E-653C-E811-BA97-0025905A6064.root'
+    #'root://cmsxrootd.fnal.gov//store/mc/RunIIFall17MiniAODv2/TprimeTprime_M-1800_TuneCP5_13TeV-madgraph-pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14-v2/80000/12A585B9-F46B-E811-A775-FA163EFD0C51.root'
+    #'root://cmsxrootd.fnal.gov//store/mc/RunIIFall17MiniAODv2/TTToSemiLeptonic_TuneCP5_PSweights_13TeV-powheg-pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14-v1/50000/5E7E4AA9-0743-E811-999A-0CC47A7C35A8.root'
+    ]
+options.maxEvents = 100
+options.parseArguments()
+
+isMC= options.isMC
+isTTbar = options.isTTbar
+
+
+## LJMET
 process = cms.Process("LJMET")
 
 ## MessageLogger
@@ -14,24 +36,10 @@ process.MessageLogger.cerr.FwkReport.reportEvery = 20
 process.options = cms.untracked.PSet( wantSummary = cms.untracked.bool(False) )
 
 ## Maximal Number of Events
-MAXEVENTS = 100
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(MAXEVENTS) )
-
-## Source / Input
-isMC=True
-#isMC=False
-isTTbar = True
-if(isMC):
-    #INFILE='root://cmsxrootd.fnal.gov//store/mc/RunIIFall17MiniAODv2/TprimeTprime_M-1100_TuneCP5_13TeV-madgraph-pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14-v2/00000/8EA8FE89-254F-E811-835E-0090FAA58BF4.root'
-    INFILE='root://cmsxrootd.fnal.gov//store/mc/RunIIFall17MiniAODv2/TTTT_TuneCP5_PSweights_13TeV-amcatnlo-pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14-v1/70000/0ED34A55-DD52-E811-91CC-E0071B73B6B0.root',
-    if (isTTbar):
-        INFILE='root://cmsxrootd.fnal.gov//store/mc/RunIIFall17MiniAODv2/TTToSemiLeptonic_TuneCP5_PSweights_13TeV-powheg-pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14-v1/50000/5E7E4AA9-0743-E811-999A-0CC47A7C35A8.root'
-else:
-    INFILE='root://cmsxrootd.fnal.gov//store/data/Run2017F/DoubleEG/MINIAOD/09May2018-v1/10000/444E03EB-B75F-E811-AFBA-F01FAFD8F16A.root'
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(options.maxEvents) )
 
 process.source = cms.Source("PoolSource",
-    fileNames = cms.untracked.vstring(
-        INFILE,
+    fileNames = cms.untracked.vstring(cms.untracked.vstring(options.inputFiles),
     )
 )
 
@@ -226,24 +234,24 @@ JECdown                  = False
 JERup                    = False
 JERdown                  = False
 doAllJetSyst             = False #this determines whether to save JER/JER up/down in one job. Default is currently false. Mar 19,2019.
-JEC_txtfile              = relBase+'/src/FWLJMET/LJMet/data/Fall17V32/Fall17_17Nov2017_V32_MC_Uncertainty_AK4PFchs.txt'
-JERSF_txtfile            = relBase+'/src/FWLJMET/LJMet/data/Fall17V3/Fall17_V3_MC_SF_AK4PFchs.txt'
-JER_txtfile              = relBase+'/src/FWLJMET/LJMet/data/Fall17V3/Fall17_V3_MC_PtResolution_AK4PFchs.txt'
-JERAK8_txtfile           = relBase+'/src/FWLJMET/LJMet/data/Fall17V3/Fall17_V3_MC_PtResolution_AK8PFPuppi.txt'
-MCL1JetPar               = relBase+'/src/FWLJMET/LJMet/data/Fall17V32/Fall17_17Nov2017_V32_MC_L1FastJet_AK4PFchs.txt'
-MCL2JetPar               = relBase+'/src/FWLJMET/LJMet/data/Fall17V32/Fall17_17Nov2017_V32_MC_L2Relative_AK4PFchs.txt'
-MCL3JetPar               = relBase+'/src/FWLJMET/LJMet/data/Fall17V32/Fall17_17Nov2017_V32_MC_L3Absolute_AK4PFchs.txt'
-MCL1JetParAK8            = relBase+'/src/FWLJMET/LJMet/data/Fall17V32/Fall17_17Nov2017_V32_MC_L1FastJet_AK8PFPuppi.txt'
-MCL2JetParAK8            = relBase+'/src/FWLJMET/LJMet/data/Fall17V32/Fall17_17Nov2017_V32_MC_L2Relative_AK8PFPuppi.txt'
-MCL3JetParAK8            = relBase+'/src/FWLJMET/LJMet/data/Fall17V32/Fall17_17Nov2017_V32_MC_L3Absolute_AK8PFPuppi.txt'
-DataL1JetPar             = relBase+'/src/FWLJMET/LJMet/data/Fall17V32/Fall17_17Nov2017B_V32_DATA_L1FastJet_AK4PFchs.txt'
-DataL2JetPar             = relBase+'/src/FWLJMET/LJMet/data/Fall17V32/Fall17_17Nov2017B_V32_DATA_L2Relative_AK4PFchs.txt'
-DataL3JetPar             = relBase+'/src/FWLJMET/LJMet/data/Fall17V32/Fall17_17Nov2017B_V32_DATA_L3Absolute_AK4PFchs.txt'
-DataResJetPar            = relBase+'/src/FWLJMET/LJMet/data/Fall17V32/Fall17_17Nov2017B_V32_DATA_L2L3Residual_AK4PFchs.txt'
-DataL1JetParAK8          = relBase+'/src/FWLJMET/LJMet/data/Fall17V32/Fall17_17Nov2017B_V32_DATA_L1FastJet_AK8PFPuppi.txt'
-DataL2JetParAK8          = relBase+'/src/FWLJMET/LJMet/data/Fall17V32/Fall17_17Nov2017B_V32_DATA_L2Relative_AK8PFPuppi.txt'
-DataL3JetParAK8          = relBase+'/src/FWLJMET/LJMet/data/Fall17V32/Fall17_17Nov2017B_V32_DATA_L3Absolute_AK8PFPuppi.txt'
-DataResJetParAK8         = relBase+'/src/FWLJMET/LJMet/data/Fall17V32/Fall17_17Nov2017B_V32_DATA_L2L3Residual_AK8PFPuppi.txt'
+JEC_txtfile              = 'FWLJMET/LJMet/data/Fall17V32/Fall17_17Nov2017_V32_MC_Uncertainty_AK4PFchs.txt'
+JERSF_txtfile            = 'FWLJMET/LJMet/data/Fall17V3/Fall17_V3_MC_SF_AK4PFchs.txt'
+JER_txtfile              = 'FWLJMET/LJMet/data/Fall17V3/Fall17_V3_MC_PtResolution_AK4PFchs.txt'
+JERAK8_txtfile           = 'FWLJMET/LJMet/data/Fall17V3/Fall17_V3_MC_PtResolution_AK8PFPuppi.txt'
+MCL1JetPar               = 'FWLJMET/LJMet/data/Fall17V32/Fall17_17Nov2017_V32_MC_L1FastJet_AK4PFchs.txt'
+MCL2JetPar               = 'FWLJMET/LJMet/data/Fall17V32/Fall17_17Nov2017_V32_MC_L2Relative_AK4PFchs.txt'
+MCL3JetPar               = 'FWLJMET/LJMet/data/Fall17V32/Fall17_17Nov2017_V32_MC_L3Absolute_AK4PFchs.txt'
+MCL1JetParAK8            = 'FWLJMET/LJMet/data/Fall17V32/Fall17_17Nov2017_V32_MC_L1FastJet_AK8PFPuppi.txt'
+MCL2JetParAK8            = 'FWLJMET/LJMet/data/Fall17V32/Fall17_17Nov2017_V32_MC_L2Relative_AK8PFPuppi.txt'
+MCL3JetParAK8            = 'FWLJMET/LJMet/data/Fall17V32/Fall17_17Nov2017_V32_MC_L3Absolute_AK8PFPuppi.txt'
+DataL1JetPar             = 'FWLJMET/LJMet/data/Fall17V32/Fall17_17Nov2017B_V32_DATA_L1FastJet_AK4PFchs.txt'
+DataL2JetPar             = 'FWLJMET/LJMet/data/Fall17V32/Fall17_17Nov2017B_V32_DATA_L2Relative_AK4PFchs.txt'
+DataL3JetPar             = 'FWLJMET/LJMet/data/Fall17V32/Fall17_17Nov2017B_V32_DATA_L3Absolute_AK4PFchs.txt'
+DataResJetPar            = 'FWLJMET/LJMet/data/Fall17V32/Fall17_17Nov2017B_V32_DATA_L2L3Residual_AK4PFchs.txt'
+DataL1JetParAK8          = 'FWLJMET/LJMet/data/Fall17V32/Fall17_17Nov2017B_V32_DATA_L1FastJet_AK8PFPuppi.txt'
+DataL2JetParAK8          = 'FWLJMET/LJMet/data/Fall17V32/Fall17_17Nov2017B_V32_DATA_L2Relative_AK8PFPuppi.txt'
+DataL3JetParAK8          = 'FWLJMET/LJMet/data/Fall17V32/Fall17_17Nov2017B_V32_DATA_L3Absolute_AK8PFPuppi.txt'
+DataResJetParAK8         = 'FWLJMET/LJMet/data/Fall17V32/Fall17_17Nov2017B_V32_DATA_L2L3Residual_AK8PFPuppi.txt'
 
 
 MultiLepSelector_cfg = cms.PSet(
@@ -385,24 +393,24 @@ MultiLepSelector_cfg = cms.PSet(
             # Jet corrections are read from txt files
             doNewJEC                 = cms.bool(doNewJEC),
             doAllJetSyst             = cms.bool(doAllJetSyst),
-            JEC_txtfile              = cms.string(JEC_txtfile),
-            JERSF_txtfile            = cms.string(JERSF_txtfile),
-            JER_txtfile              = cms.string(JER_txtfile),
-            JERAK8_txtfile           = cms.string(JERAK8_txtfile),
-            MCL1JetPar               = cms.string(MCL1JetPar),
-            MCL2JetPar               = cms.string(MCL2JetPar),
-            MCL3JetPar               = cms.string(MCL3JetPar),
-            MCL1JetParAK8            = cms.string(MCL1JetParAK8),
-            MCL2JetParAK8            = cms.string(MCL2JetParAK8),
-            MCL3JetParAK8            = cms.string(MCL3JetParAK8),
-            DataL1JetPar             = cms.string(DataL1JetPar),
-            DataL2JetPar             = cms.string(DataL2JetPar),
-            DataL3JetPar             = cms.string(DataL3JetPar),
-            DataResJetPar            = cms.string(DataResJetPar),
-            DataL1JetParAK8          = cms.string(DataL1JetParAK8),
-            DataL2JetParAK8          = cms.string(DataL2JetParAK8),
-            DataL3JetParAK8          = cms.string(DataL3JetParAK8),
-            DataResJetParAK8         = cms.string(DataResJetParAK8),
+            JEC_txtfile              = cms.FileInPath(JEC_txtfile),
+            JERSF_txtfile            = cms.FileInPath(JERSF_txtfile),
+            JER_txtfile              = cms.FileInPath(JER_txtfile),
+            JERAK8_txtfile           = cms.FileInPath(JERAK8_txtfile),
+            MCL1JetPar               = cms.FileInPath(MCL1JetPar),
+            MCL2JetPar               = cms.FileInPath(MCL2JetPar),
+            MCL3JetPar               = cms.FileInPath(MCL3JetPar),
+            MCL1JetParAK8            = cms.FileInPath(MCL1JetParAK8),
+            MCL2JetParAK8            = cms.FileInPath(MCL2JetParAK8),
+            MCL3JetParAK8            = cms.FileInPath(MCL3JetParAK8),
+            DataL1JetPar             = cms.FileInPath(DataL1JetPar),
+            DataL2JetPar             = cms.FileInPath(DataL2JetPar),
+            DataL3JetPar             = cms.FileInPath(DataL3JetPar),
+            DataResJetPar            = cms.FileInPath(DataResJetPar),
+            DataL1JetParAK8          = cms.FileInPath(DataL1JetParAK8),
+            DataL2JetParAK8          = cms.FileInPath(DataL2JetParAK8),
+            DataL3JetParAK8          = cms.FileInPath(DataL3JetParAK8),
+            DataResJetParAK8         = cms.FileInPath(DataResJetParAK8),
 
 
             #Btag
@@ -410,8 +418,8 @@ MultiLepSelector_cfg = cms.PSet(
             btagOP                   = cms.string('MEDIUM'),
             bdisc_min                = cms.double(0.4941), # THIS HAS TO MATCH btagOP !
             applyBtagSF              = cms.bool(True), #This is implemented by BTagSFUtil.cc
-            DeepCSVfile              = cms.string(relBase+'/src/FWLJMET/LJMet/data/DeepCSV_94XSF_V3_B_F.csv'),
-            DeepCSVSubjetfile        = cms.string(relBase+'/src/FWLJMET/LJMet/data/subjet_DeepCSV_94XSF_V3_B_F.csv'),
+            DeepCSVfile              = cms.FileInPath('FWLJMET/LJMet/data/DeepCSV_94XSF_V3_B_F.csv'),
+            DeepCSVSubjetfile        = cms.FileInPath('FWLJMET/LJMet/data/subjet_DeepCSV_94XSF_V3_B_F.csv'),
             BTagUncertUp             = cms.bool(False), # no longer needed, but can still be utilized. Keep false as default.
             BTagUncertDown           = cms.bool(False), # no longer needed, but can still be utilized. Keep false as default.
             MistagUncertUp           = cms.bool(False), # no longer needed, but can still be utilized. Keep false as default.
@@ -480,8 +488,8 @@ MultiLepCalc_cfg = cms.PSet(
             btagOP                   = cms.string('MEDIUM'),
             bdisc_min                = cms.double(0.4941), # THIS HAS TO MATCH btagOP !
             applyBtagSF              = cms.bool(True), #This is implemented by BTagSFUtil.cc
-            DeepCSVfile              = cms.string(relBase+'/src/FWLJMET/LJMet/data/DeepCSV_94XSF_V3_B_F.csv'),
-            DeepCSVSubjetfile        = cms.string(relBase+'/src/FWLJMET/LJMet/data/subjet_DeepCSV_94XSF_V3_B_F.csv'),
+            DeepCSVfile              = cms.FileInPath('FWLJMET/LJMet/data/DeepCSV_94XSF_V3_B_F.csv'),
+            DeepCSVSubjetfile        = cms.FileInPath('FWLJMET/LJMet/data/subjet_DeepCSV_94XSF_V3_B_F.csv'),
             BTagUncertUp             = cms.bool(False), # no longer needed, but can still be utilized. Keep false as default.
             BTagUncertDown           = cms.bool(False), # no longer needed, but can still be utilized. Keep false as default.
             MistagUncertUp           = cms.bool(False), # no longer needed, but can still be utilized. Keep false as default.
@@ -504,7 +512,7 @@ JetSubCalc_cfg = cms.PSet(
 
             kappa              = cms.double(0.5), #for Jet Charge calculation
             killHF             = cms.bool(False),
-            puppiCorrPath      = cms.string(relBase+'/src/FWLJMET/LJMet/data/PuppiSoftdropMassCorr/weights/puppiCorr.root'),
+            puppiCorrPath      = cms.FileInPath('FWLJMET/LJMet/data/PuppiSoftdropMassCorr/weights/puppiCorr.root'),
 
             rhoJetsInputTag          = cms.InputTag("fixedGridRhoFastjetAll"), #this is for electron. Why is it different compared to muon?
 
@@ -538,8 +546,8 @@ JetSubCalc_cfg = cms.PSet(
             btagOP                   = cms.string('MEDIUM'),
             bdisc_min                = cms.double(0.4941), # THIS HAS TO MATCH btagOP !
             applyBtagSF              = cms.bool(True), #This is implemented by BTagSFUtil.cc
-            DeepCSVfile              = cms.string(relBase+'/src/FWLJMET/LJMet/data/DeepCSV_94XSF_V3_B_F.csv'),
-            DeepCSVSubjetfile        = cms.string(relBase+'/src/FWLJMET/LJMet/data/subjet_DeepCSV_94XSF_V3_B_F.csv'),
+            DeepCSVfile              = cms.FileInPath('FWLJMET/LJMet/data/DeepCSV_94XSF_V3_B_F.csv'),
+            DeepCSVSubjetfile        = cms.FileInPath('FWLJMET/LJMet/data/subjet_DeepCSV_94XSF_V3_B_F.csv'),
             BTagUncertUp             = cms.bool(False), # no longer needed, but can still be utilized. Keep false as default.
             BTagUncertDown           = cms.bool(False), # no longer needed, but can still be utilized. Keep false as default.
             MistagUncertUp           = cms.bool(False), # no longer needed, but can still be utilized. Keep false as default.
@@ -555,7 +563,7 @@ TTbarMassCalc_cfg = cms.PSet(
 
 BestCalc_cfg = cms.PSet(
 
-    dnnFile = cms.string(relBase+'/src/FWLJMET/LJMet/data/BEST_mlp.json'),
+    dnnFile = cms.FileInPath('FWLJMET/LJMet/data/BEST_mlp.json'),
 
     numSubjetsMin = cms.int32(2),
     numDaughtersMin = cms.int32(3),
@@ -576,7 +584,7 @@ HOTTaggerCalc_cfg = cms.PSet(
     CvsBCJetTags     = cms.string('pfCombinedCvsBJetTags'),
     CvsLCJetTags     = cms.string('pfCombinedCvsLJetTags'),
     bTagKeyString    = cms.string('pfCombinedInclusiveSecondaryVertexV2BJetTags'),
-    taggerCfgFile    = cms.string(relBase+'/src/TopTagger/TopTagger/data/TopTaggerCfg-DeepResolved_DeepCSV_GR_noDisc_Release_v1.0.0/TopTagger.cfg'),
+    taggerCfgFile    = cms.FileInPath('TopTagger/TopTagger/data/TopTaggerCfg-DeepResolved_DeepCSV_GR_noDisc_Release_v1.0.0/TopTagger.cfg'),
     discriminatorCut = cms.double(0.5),
     saveAllTopCandidates = cms.bool(False)
 
