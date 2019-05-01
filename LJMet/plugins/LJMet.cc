@@ -89,6 +89,7 @@ class LJMet : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
       std::string selection;
       std::vector<std::string> vExcl;
       std::vector<std::string> vIncl;
+      std::string ttree_name;
 
 };
 
@@ -113,6 +114,7 @@ LJMet::LJMet(const edm::ParameterSet& iConfig)
    selection  = iConfig.getParameter<std::string>("selector");
    vExcl      = iConfig.getParameter<std::vector<std::string>>("exclude_calcs");
    vIncl      = iConfig.getParameter<std::vector<std::string>>("include_calcs");
+   ttree_name = iConfig.getParameter<std::string>("ttree_name");
 
 
    usesResource("TFileService"); // came originally with EDAnalyzer
@@ -121,7 +123,7 @@ LJMet::LJMet(const edm::ParameterSet& iConfig)
 
    // output tree
    std::cout << "[FWLJMet] : " << "Creating output tree" << std::endl;
-   std::string const _treename = "ljmet";
+   std::string const _treename = ttree_name;
    _tree = fs->make<TTree>(_treename.c_str(), _treename.c_str(), 64000000);
 
    // internal LJMet event content
