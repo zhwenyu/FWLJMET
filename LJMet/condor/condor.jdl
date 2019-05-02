@@ -1,0 +1,13 @@
+universe = vanilla
+use_x509userproxy = true
+Executable = condor_exec.sh
+request_memory = 2500
+Should_Transfer_Files = YES
+WhenToTransferOutput = ON_EXIT
+Transfer_Input_Files = runFWLJMet_singleLep.py, condor_exec.sh, ljmet.tar
+Output = TTTT_fwljmet_test.out
+Error  = TTTT_fwljmet_test.err
+Log    = TTTT_fwljmet_test.condor
++UseSL5 = False
+Arguments = TAR_DIR TAR_FILE OUTPUT_DIR PREFIX JOBID
+Queue 1
