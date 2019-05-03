@@ -8,8 +8,8 @@ relBase = os.environ['CMSSW_BASE']
 ## PARSE ARGUMENTS
 from FWCore.ParameterSet.VarParsing import VarParsing
 options = VarParsing('analysis')
-options.register('isMC', '', VarParsing.multiplicity.singleton, VarParsing.varType.bool, 'Is MC') 
-options.register('isTTbar', '', VarParsing.multiplicity.singleton, VarParsing.varType.bool, 'Is TTbar') 
+options.register('isMC', '', VarParsing.multiplicity.singleton, VarParsing.varType.bool, 'Is MC')
+options.register('isTTbar', '', VarParsing.multiplicity.singleton, VarParsing.varType.bool, 'Is TTbar')
 options.isMC = True
 options.isTTbar = False
 options.inputFiles = [
@@ -363,8 +363,8 @@ MultiLepSelector_cfg = cms.PSet(
             #nLeptons
             minLooseLeptons_cut = cms.bool(False), #inclusive Loose.
             minLooseLeptons     = cms.int32(0),
-            maxLooseLeptons_cut = cms.bool(False),
-            maxLooseLeptons     = cms.int32(9999),
+            maxLooseLeptons_cut = cms.bool(True), #to veto second lepton, as in old ljmet, turn this on, and require only 1 loose lepton, since this is inclusive loose.
+            maxLooseLeptons     = cms.int32(1),
             minLeptons_cut      = cms.bool(True),
             minLeptons          = cms.int32(1),
             maxLeptons_cut      = cms.bool(True),
@@ -633,7 +633,7 @@ process.ljmet = cms.EDAnalyzer(
 
 # Configure a path and endpath to run the producer and output modules
 
-# ----------------------- GenHFHadronMatcher -----------------                                                
+# ----------------------- GenHFHadronMatcher -----------------
 if (isTTbar):
     process.load("PhysicsTools.JetMCAlgos.GenHFHadronMatcher_cff")
 
@@ -659,15 +659,15 @@ if (isTTbar):
     process.categorizeGenTtbar.genJets = cms.InputTag("slimmedGenJets")
 
     process.ttbarcat = cms.Sequence(
-        process.selectedHadronsAndPartons * process.genJetFlavourInfos * process.matchGenBHadron 
-        * process.matchGenCHadron* ## gen HF flavour matching            
-        process.categorizeGenTtbar  ## return already a categorization id for tt                  
+        process.selectedHadronsAndPartons * process.genJetFlavourInfos * process.matchGenBHadron
+        * process.matchGenCHadron* ## gen HF flavour matching
+        process.categorizeGenTtbar  ## return already a categorization id for tt
         )
 
-    process.p = cms.Path(process.fullPatMetSequenceModifiedMET * 
-                         process.prefiringweight * 
-                         process.egammaPostRecoSeq * 
-                         process.updatedJetsAK8PuppiSoftDropPacked * 
+    process.p = cms.Path(process.fullPatMetSequenceModifiedMET *
+                         process.prefiringweight *
+                         process.egammaPostRecoSeq *
+                         process.updatedJetsAK8PuppiSoftDropPacked *
                          process.packedJetsAK8Puppi *
                          process.QGTagger *
                          process.ecalBadCalibReducedMINIAODFilter *
