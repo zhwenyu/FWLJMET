@@ -1039,6 +1039,9 @@ bool MultiLepEventSelector::LeptonsSelection(edm::Event const & event, pat::strb
 			passCut(ret, "Min Loose Leptons");
 			if(debug)std::cout << "\t\t\t" << "pass_minLooseLeptons"<<std::endl;
 		}
+		else{
+			return false;
+		}
 	}
 
 	if(considerCut("Max Loose Leptons")){
@@ -1046,6 +1049,9 @@ bool MultiLepEventSelector::LeptonsSelection(edm::Event const & event, pat::strb
 			pass_maxLooseLeptons = true;
 			passCut(ret, "Max Loose Leptons");
 			if(debug)std::cout << "\t\t\t" << "pass_maxLooseLeptons"<<std::endl;
+		}
+		else{
+			return false;
 		}
 	}
 
@@ -1056,6 +1062,9 @@ bool MultiLepEventSelector::LeptonsSelection(edm::Event const & event, pat::strb
 			passCut(ret, "Min Leptons");
 			if(debug)std::cout << "\t\t\t" << "pass_minLeptons"<<std::endl;
 		}
+		else{
+			return false;
+		}
 	}
 
 	if(considerCut("Max Leptons")){
@@ -1063,6 +1072,9 @@ bool MultiLepEventSelector::LeptonsSelection(edm::Event const & event, pat::strb
 			pass_maxLeptons = true;
 			passCut(ret, "Max Leptons");
 			if(debug)std::cout << "\t\t\t" << "pass_maxLeptons"<<std::endl;
+		}
+		else{
+			return false;
 		}
 	}
 
