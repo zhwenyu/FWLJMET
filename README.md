@@ -13,14 +13,10 @@ install:
 	## if wanting to use el ID v2 (for 2017 data):
 	git cms-merge-topic cms-egamma:EgammaPostRecoTools
 
-	## HOT tagger
+	## HOT tagger part1
 	cd ${CMSSW_BASE}/src
 	git cms-merge-topic -u pastika:AddAxis1_946p1
 	git clone git@github.com:susy2015/TopTagger.git
-	cd ${CMSSW_BASE}/src
-	cmsenv
-	mkdir -p ${CMSSW_BASE}/src/TopTagger/TopTagger/data
-	getTaggerCfg.sh -o -n -t DeepResolved_DeepCSV_GR_noDisc_Release_v1.0.0 -d $CMSSW_BASE/src/TopTagger/TopTagger/data
 
 	### BestCalc: copy lwtnn so that BestCalc.cc will compile. ( This is bad practice, should always try to get official CMSSW recipes whenever possible)
 	cd ${CMSSW_BASE}/src
@@ -39,6 +35,12 @@ install:
 
 	#Compile
 	scram b
+
+	## HOT tagger part2
+	cd ${CMSSW_BASE}/src
+	mkdir -p ${CMSSW_BASE}/src/TopTagger/TopTagger/data
+	getTaggerCfg.sh -o -n -t DeepResolved_DeepCSV_GR_noDisc_Release_v1.0.0 -d $CMSSW_BASE/src/TopTagger/TopTagger/data
+
 
 Some info:
 
