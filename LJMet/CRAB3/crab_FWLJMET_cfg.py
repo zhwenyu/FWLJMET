@@ -15,6 +15,7 @@ config.JobType.psetName = '../runFWLJMet_singleLep.py'
 config.JobType.pyCfgParams = ['isMC=True','isTTbar=False','maxEvents=-1']
 config.JobType.maxMemoryMB = 2500 #MB
 config.JobType.maxJobRuntimeMin = 2750 #minutes
+config.JobType.numCores = 4 #use wisely
 
 config.section_("Data")
 config.Data.inputDataset = '/TTTT_TuneCP5_PSweights_13TeV-amcatnlo-pythia8/RunIIFall17MiniAODv2-PU2017_12Apr2018_94X_mc2017_realistic_v14-v1/MINIAODSIM'
