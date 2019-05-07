@@ -208,8 +208,8 @@ void MultiLepEventSelector::BeginJob( const edm::ParameterSet& iConfig, edm::Con
     dump_trigger        = selectorConfig.getParameter<bool>("dump_trigger");
     mctrigger_path_el   = selectorConfig.getParameter<std::vector<std::string>>("mctrigger_path_el");
     mctrigger_path_mu   = selectorConfig.getParameter<std::vector<std::string>>("mctrigger_path_mu");
-    trigger_path_el     = mctrigger_path_el;
-    trigger_path_mu     = mctrigger_path_el;
+    trigger_path_el     = selectorConfig.getParameter<std::vector<std::string>>("trigger_path_el");;
+    trigger_path_mu     = selectorConfig.getParameter<std::vector<std::string>>("trigger_path_mu");;
 
     //PV
     const edm::ParameterSet& PVconfig = selectorConfig.getParameterSet("pvSelector") ;
