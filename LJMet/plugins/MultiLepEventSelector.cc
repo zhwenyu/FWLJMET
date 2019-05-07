@@ -768,7 +768,10 @@ void MultiLepEventSelector::MuonSelection(edm::Event const & event)
 		    vSelLooseMuons.push_back( edm::Ptr<pat::Muon>( muonsHandle, _n_muons) );
 		    ++nSelLooseMuons;
 		  }
-		  else continue; //skip to next muon if fail loose
+		  else{
+		  	_n_muons++;
+		  	continue;
+		  } //skip to next muon if fail loose
 
 		  //check tight
 		  while(1){
@@ -935,7 +938,10 @@ void MultiLepEventSelector::ElectronSelection(edm::Event const & event)
 			vSelLooseElectrons.push_back( edm::Ptr<pat::Electron>( electronsHandle, _n_electrons) );
 			++nSelLooseElectrons;
 		  }
-		  else continue; //skip to next el if fail loose
+		  else{ 
+		  	_n_electrons++;
+		  	continue;
+		  } //skip to next el if fail loose
 
 
 		  //check tight
