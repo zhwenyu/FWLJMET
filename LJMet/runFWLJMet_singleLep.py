@@ -737,7 +737,9 @@ if (isTTbar):
         process.categorizeGenTtbar  ## return already a categorization id for tt
         )
 
-    process.p = cms.Path(process.fullPatMetSequenceModifiedMET *
+    process.p = cms.Path(
+                         process.filter_any_explicit *
+                         process.fullPatMetSequenceModifiedMET *
                          process.prefiringweight *
                          process.egammaPostRecoSeq *
                          process.updatedJetsAK8PuppiSoftDropPacked *
