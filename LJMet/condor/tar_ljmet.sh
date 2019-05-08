@@ -1,8 +1,8 @@
 #!/bin/bash
 
-thisDir=/uscms_data/d3/rsyarif/Brown2018/Validating_FWLJMET/CMSSW_9_4_13/src/FWLJMET/LJMet/condor
+thisDir=$PWD
 
-cd /uscms_data/d3/rsyarif/Brown2018/Validating_FWLJMET/CMSSW_9_4_13/src/
+cd $PWD/../../../ #make sure this is ${CMSSW_BASE}/src/
 
 tar --exclude "*/.git" --exclude "git*" --exclude "FWLJMET/LJMet/CRAB3" --exclude "FWLJMET/LJMet/condor" -zcvf $thisDir/ljmet.tar *
 
