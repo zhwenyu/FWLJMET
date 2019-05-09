@@ -10,6 +10,12 @@ install:
 	cd CMSSW_9_4_13/src/
 	cmsenv
 
+	## Modified MET
+	git cms-merge-topic cms-met:METFixEE2017_949_v2
+
+	## Redo MET filter
+	git cms-addpkg RecoMET/METFilters
+
 	## if wanting to use el ID v2 (for 2017 data):
 	git cms-merge-topic cms-egamma:EgammaPostRecoTools
 
@@ -45,6 +51,8 @@ install:
 Some info:
 
 - LJMet/plugins/LJMet.cc : the EDAnalyzer that wraps LJMet classes
+- Modified MET: https ://twiki.cern.ch/twiki/bin/viewauth/CMS/MissingETUncertaintyPrescription#Instructions_for_9_4_X_X_9_or_10
+- Redo MET filter : https://twiki.cern.ch/twiki/bin/viewauth/CMS/MissingETOptionalFiltersRun2#How_to_run_ecal_BadCalibReducedM
 - el ID V2 : https://twiki.cern.ch/twiki/bin/view/CMS/EgammaMiniAODV2
 - HOT tagger : https://github.com/susy2015/TopTagger/tree/master/TopTagger#instructions-for-saving-tagger-results-to-nanoaod-with-cmssw_9_4_11
 - BoostedEventShapeTagger(BEST) :
