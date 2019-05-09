@@ -122,7 +122,7 @@ LJMet::LJMet(const edm::ParameterSet& iConfig)
    edm::Service<TFileService> fs; //for purpose of creating / saving to root file
 
    // output tree
-   std::cout << "[FWLJMet] : " << "Creating output tree" << std::endl;
+   std::cout << "[FWLJMet] : " << "Creating output tree : "<< ttree_name << std::endl;
    std::string const _treename = ttree_name;
    _tree = fs->make<TTree>(_treename.c_str(), _treename.c_str(), 64000000);
 
@@ -134,7 +134,7 @@ LJMet::LJMet(const edm::ParameterSet& iConfig)
    factory = LjmetFactory::GetInstance();
 
    // choose event selector
-   std::cout << "[FWLJMet] : " << "instantiating the event selector" << std::endl;
+   std::cout << "[FWLJMet] : " << "instantiating the event selector : "<< ttree_name << std::endl;
    theSelector = factory->GetEventSelector(selection);
 
    // sanity check histograms from the selector
@@ -264,8 +264,7 @@ LJMet::beginJob()
 void
 LJMet::endJob()
 {
-    if(debug) std::cout << " " <<std::endl;
-    if(debug) std::cout << "[FWLJMet] : " << "Selection" << std::endl;
+    std::cout << "\n[FWLJMet] : " << "Selection (" << ttree_name << ")" << std::endl;
     theSelector->print(std::cout);
 
 

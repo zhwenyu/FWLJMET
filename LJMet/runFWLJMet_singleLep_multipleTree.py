@@ -13,7 +13,11 @@ options.register('isTTbar', '', VarParsing.multiplicity.singleton, VarParsing.va
 options.isMC = True
 options.isTTbar = False
 options.inputFiles = [
-    'root://cmsxrootd.fnal.gov//store/mc/RunIIFall17MiniAODv2/TTTT_TuneCP5_PSweights_13TeV-amcatnlo-pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14-v1/70000/0ED34A55-DD52-E811-91CC-E0071B73B6B0.root',
+	#matched with ~jmanagan/nobackup/LJMet94X_1lep_013019_logs/nominal/TTTT_TuneCP5_PSweights_13TeV-amcatnlo-pythia8/producer_TTTT_TuneCP5_PSweights_13TeV-amcatnlo-pythia8_1.py
+	#'root://cmsxrootd.fnal.gov//store/mc/RunIIFall17MiniAODv2/TTTT_TuneCP5_PSweights_13TeV-amcatnlo-pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14-v1/70000/0ED34A55-DD52-E811-91CC-E0071B73B6B0.root',
+	#'root://cmsxrootd.fnal.gov//store/mc/RunIIFall17MiniAODv2/TTTT_TuneCP5_PSweights_13TeV-amcatnlo-pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14-v1/70000/E2A4455F-FA53-E811-8017-E0071B7A8560.root',
+    'file:TTTT_TuneCP5_PSweights_13TeV-amcatnlo-pythia8_postReco_MC.root'
+
     #'root://cmsxrootd.fnal.gov//store/data/Run2017B/SingleMuon/MINIAOD/31Mar2018-v1/80000/4462B46E-653C-E811-BA97-0025905A6064.root'
     #'root://cmsxrootd.fnal.gov//store/mc/RunIIFall17MiniAODv2/TprimeTprime_M-1800_TuneCP5_13TeV-madgraph-pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14-v2/80000/12A585B9-F46B-E811-A775-FA163EFD0C51.root'
     #'root://cmsxrootd.fnal.gov//store/mc/RunIIFall17MiniAODv2/TTToSemiLeptonic_TuneCP5_PSweights_13TeV-powheg-pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14-v1/50000/5E7E4AA9-0743-E811-999A-0CC47A7C35A8.root'
@@ -26,7 +30,7 @@ isTTbar = options.isTTbar
 
 
 ## LJMET
-process = cms.Process("LJMET")
+process = cms.Process("postRecoLJMET")
 
 ## MessageLogger
 process.load("FWCore.MessageService.MessageLogger_cfi")
@@ -34,6 +38,33 @@ process.MessageLogger.cerr.FwkReport.reportEvery = 20
 
 ## Options and Output Report
 process.options = cms.untracked.PSet( wantSummary = cms.untracked.bool(False) )
+
+## Check memory and timing - TURN OFF when not testing!
+import FWCore.ParameterSet.Config as cms
+def customise(process):
+
+    #Adding SimpleMemoryCheck service:
+    process.SimpleMemoryCheck=cms.Service("SimpleMemoryCheck",
+                                          ignoreTotal=cms.untracked.int32(1),
+                                          oncePerEventMode=cms.untracked.bool(True))
+    #Adding Timing service:
+    process.Timing=cms.Service("Timing")
+    
+    #Add these 3 lines to put back the summary for timing information at the end of the logfile
+    #(needed for TimeReport report)
+    if hasattr(process,'options'):
+        process.options.wantSummary = cms.untracked.bool(True)
+    else:
+        process.options = cms.untracked.PSet(
+            wantSummary = cms.untracked.bool(True)
+        )
+        
+    return(process)
+# customise(process)
+
+## Multithreading option
+process.options.numberOfThreads=cms.untracked.uint32(4)
+process.options.numberOfStreams=cms.untracked.uint32(0)
 
 ## Maximal Number of Events
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(options.maxEvents) )
@@ -62,6 +93,49 @@ process.TFileService = cms.Service("TFileService", fileName = cms.string(OUTFILE
 #                                #SelectEvents = cms.untracked.PSet( SelectEvents = cms.vstring('p') ),
 #                                outputCommands = cms.untracked.vstring('keep *')
 #                                )
+
+
+################################
+## Trigger filter
+################################
+import HLTrigger.HLTfilters.hltHighLevel_cfi as hlt
+# accept if any path succeeds (explicit)
+process.filter_any_explicit = hlt.hltHighLevel.clone(
+    HLTPaths = [
+                        'HLT_Ele35_WPTight_Gsf*',
+                        'HLT_Ele38_WPTight_Gsf*',
+                        'HLT_Ele40_WPTight_Gsf*',
+                        'HLT_Ele28_eta2p1_WPTight_Gsf_HT150*',
+                        'HLT_Ele15_IsoVVVL_PFHT450_PFMET50*',
+                        'HLT_Ele15_IsoVVVL_PFHT450*',
+                        'HLT_Ele50_IsoVVVL_PFHT450*',
+                        'HLT_Ele15_IsoVVVL_PFHT600*',
+                        'HLT_Ele50_CaloIdVT_GsfTrkIdT_PFJet165*',
+                        'HLT_Ele115_CaloIdVT_GsfTrkIdT*'
+
+                        'HLT_Ele32_WPTight_Gsf*',
+                        'HLT_Ele32_WPTight_Gsf_L1DoubleEG*',
+                        'HLT_Ele30_eta2p1_WPTight_Gsf_CentralPFJet35_EleCleaned*',
+
+                        'HLT_IsoMu24*',
+                        'HLT_IsoMu24_eta2p1*',
+                        'HLT_IsoMu27*',
+                        'HLT_IsoMu30*',
+                        'HLT_Mu50*',
+                        'HLT_TkMu50*',
+                        'HLT_Mu55*',
+                        'HLT_Mu15_IsoVVVL_PFHT450_PFMET50*',
+                        'HLT_Mu15_IsoVVVL_PFHT450*',
+                        'HLT_Mu50_IsoVVVL_PFHT450*',
+                        'HLT_Mu15_IsoVVVL_PFHT600*',
+
+                        'HLT_IsoTkMu24*',
+                        'HLT_IsoMu24_2p1*',
+
+    ],
+    throw = False
+    )
+
 
 ################################
 ## For updateJetCollection
@@ -363,8 +437,8 @@ MultiLepSelector_cfg = cms.PSet(
             #nLeptons
             minLooseLeptons_cut = cms.bool(False), #inclusive Loose.
             minLooseLeptons     = cms.int32(0),
-            maxLooseLeptons_cut = cms.bool(False),
-            maxLooseLeptons     = cms.int32(9999),
+            maxLooseLeptons_cut = cms.bool(True), #to veto second lepton, as in old ljmet, turn this on, and require only 1 loose lepton, since this is inclusive loose.
+            maxLooseLeptons     = cms.int32(1),
             minLeptons_cut      = cms.bool(True),
             minLeptons          = cms.int32(1),
             maxLeptons_cut      = cms.bool(True),
@@ -379,7 +453,7 @@ MultiLepSelector_cfg = cms.PSet(
             JERup                    = cms.bool(JERup),
             JERdown                  = cms.bool(JERdown),
             doLepJetCleaning         = cms.bool(True),
-            CleanLooseLeptons        = cms.bool(True),
+            CleanLooseLeptons        = cms.bool(False),
             LepJetDR                 = cms.double(0.4),
             LepJetDRAK8              = cms.double(0.8),
             jet_cuts                 = cms.bool(True),
@@ -426,11 +500,12 @@ MultiLepSelector_cfg = cms.PSet(
             MistagUncertDown          = cms.bool(False), # no longer needed, but can still be utilized. Keep false as default.
 
             )
+
 MultiLepCalc_cfg = cms.PSet(
 
             debug                  = cms.bool(False),
             isMc                   = cms.bool(isMC),
-            saveLooseLeps          = cms.bool(True),
+            saveLooseLeps          = cms.bool(False),
             keepFullMChistory      = cms.bool(isMC),
 
             rhoJetsNCInputTag      = cms.InputTag("fixedGridRhoFastjetCentralNeutral",""), #this is for muon
@@ -474,7 +549,7 @@ MultiLepCalc_cfg = cms.PSet(
             #Gen stuff
             saveGenHT          = cms.bool(False),
             genJetsCollection  = cms.InputTag("slimmedGenJets"),
-            OverrideLHEWeights = cms.bool(True),
+            OverrideLHEWeights = cms.bool(False),
             basePDFname        = cms.string('NNPDF31_nnlo_as_0118_nf_4'),
             newPDFname         = cms.string('NNPDF31_lo_as_0118'),
             keepPDGID          = cms.vuint32(1, 2, 3, 4, 5, 6, 21, 11, 12, 13, 14, 15, 16, 24),
@@ -495,11 +570,13 @@ MultiLepCalc_cfg = cms.PSet(
             MistagUncertDown          = cms.bool(False), # no longer needed, but can still be utilized. Keep false as default.
 
             )
+
 TpTpCalc_cfg = cms.PSet(
 
             genParticlesCollection = cms.InputTag("prunedGenParticles"),
 
             )
+
 JetSubCalc_cfg = cms.PSet(
 
             debug        = cms.bool(False),
@@ -551,11 +628,13 @@ JetSubCalc_cfg = cms.PSet(
             MistagUncertDown          = cms.bool(False), # no longer needed, but can still be utilized. Keep false as default.
 
             )
+
 TTbarMassCalc_cfg = cms.PSet(
 
         genParticles = cms.InputTag("prunedGenParticles"),
         genTtbarId = cms.InputTag("categorizeGenTtbar:genTtbarId")
         )
+
 BestCalc_cfg = cms.PSet(
 
     dnnFile = cms.FileInPath('FWLJMET/LJMet/data/BEST_mlp.json'),
@@ -570,6 +649,7 @@ BestCalc_cfg = cms.PSet(
     jetChargeKappa = cms.double(0.6),
     maxJetSize = cms.int32(4),
     )
+
 HOTTaggerCalc_cfg = cms.PSet(
 
     ak4PtCut         = cms.double(20),
@@ -583,6 +663,7 @@ HOTTaggerCalc_cfg = cms.PSet(
     saveAllTopCandidates = cms.bool(False)
 
     )
+
 process.ljmet = cms.EDAnalyzer(
         'LJMet',
 
@@ -591,13 +672,13 @@ process.ljmet = cms.EDAnalyzer(
         verbosity     = cms.int32(1),
         selector      = cms.string('MultiLepSelector'),
         include_calcs = cms.vstring(
-                        'MultiLepCalc',
-                        'TpTpCalc',
-                        'CommonCalc',
+                        # 'MultiLepCalc',
+                        # 'TpTpCalc',
+                        # 'CommonCalc',
                         'JetSubCalc',
-                        'TTbarMassCalc',
-                        'DeepAK8Calc',
-                        'HOTTaggerCalc',
+                        # 'TTbarMassCalc',
+                        # 'DeepAK8Calc',
+                        # 'HOTTaggerCalc',
         ),
         exclude_calcs = cms.vstring(
                         'TestCalc',
@@ -728,8 +809,8 @@ MultiLepSelector_cfg = cms.PSet(
             #nLeptons
             minLooseLeptons_cut = cms.bool(False), #inclusive Loose.
             minLooseLeptons     = cms.int32(0),
-            maxLooseLeptons_cut = cms.bool(False),
-            maxLooseLeptons     = cms.int32(9999),
+            maxLooseLeptons_cut = cms.bool(True), #to veto second lepton, as in old ljmet, turn this on, and require only 1 loose lepton, since this is inclusive loose.
+            maxLooseLeptons     = cms.int32(1),
             minLeptons_cut      = cms.bool(True),
             minLeptons          = cms.int32(1),
             maxLeptons_cut      = cms.bool(True),
@@ -744,7 +825,7 @@ MultiLepSelector_cfg = cms.PSet(
             JERup                    = cms.bool(JERup),
             JERdown                  = cms.bool(JERdown),
             doLepJetCleaning         = cms.bool(True),
-            CleanLooseLeptons        = cms.bool(True),
+            CleanLooseLeptons        = cms.bool(False),
             LepJetDR                 = cms.double(0.4),
             LepJetDRAK8              = cms.double(0.8),
             jet_cuts                 = cms.bool(True),
@@ -795,7 +876,7 @@ MultiLepCalc_cfg = cms.PSet(
 
             debug                  = cms.bool(False),
             isMc                   = cms.bool(isMC),
-            saveLooseLeps          = cms.bool(True),
+            saveLooseLeps          = cms.bool(False),
             keepFullMChistory      = cms.bool(isMC),
 
             rhoJetsNCInputTag      = cms.InputTag("fixedGridRhoFastjetCentralNeutral",""), #this is for muon
@@ -839,7 +920,7 @@ MultiLepCalc_cfg = cms.PSet(
             #Gen stuff
             saveGenHT          = cms.bool(False),
             genJetsCollection  = cms.InputTag("slimmedGenJets"),
-            OverrideLHEWeights = cms.bool(True),
+            OverrideLHEWeights = cms.bool(False),
             basePDFname        = cms.string('NNPDF31_nnlo_as_0118_nf_4'),
             newPDFname         = cms.string('NNPDF31_lo_as_0118'),
             keepPDGID          = cms.vuint32(1, 2, 3, 4, 5, 6, 21, 11, 12, 13, 14, 15, 16, 24),
@@ -919,13 +1000,13 @@ process.ljmet_JECup = cms.EDAnalyzer(
         verbosity     = cms.int32(1),
         selector      = cms.string('MultiLepSelector'),
         include_calcs = cms.vstring(
-                        'MultiLepCalc',
-                        'TpTpCalc',
-                        'CommonCalc',
+                        # 'MultiLepCalc',
+                        # 'TpTpCalc',
+                        # 'CommonCalc',
                         'JetSubCalc',
-                        'TTbarMassCalc',
-                        'DeepAK8Calc',
-                        'HOTTaggerCalc',
+                        # 'TTbarMassCalc',
+                        # 'DeepAK8Calc',
+                        # 'HOTTaggerCalc',
         ),
         exclude_calcs = cms.vstring(
                         'TestCalc',
@@ -1057,8 +1138,8 @@ MultiLepSelector_cfg = cms.PSet(
             #nLeptons
             minLooseLeptons_cut = cms.bool(False), #inclusive Loose.
             minLooseLeptons     = cms.int32(0),
-            maxLooseLeptons_cut = cms.bool(False),
-            maxLooseLeptons     = cms.int32(9999),
+            maxLooseLeptons_cut = cms.bool(True), #to veto second lepton, as in old ljmet, turn this on, and require only 1 loose lepton, since this is inclusive loose.
+            maxLooseLeptons     = cms.int32(1),
             minLeptons_cut      = cms.bool(True),
             minLeptons          = cms.int32(1),
             maxLeptons_cut      = cms.bool(True),
@@ -1073,7 +1154,7 @@ MultiLepSelector_cfg = cms.PSet(
             JERup                    = cms.bool(JERup),
             JERdown                  = cms.bool(JERdown),
             doLepJetCleaning         = cms.bool(True),
-            CleanLooseLeptons        = cms.bool(True),
+            CleanLooseLeptons        = cms.bool(False),
             LepJetDR                 = cms.double(0.4),
             LepJetDRAK8              = cms.double(0.8),
             jet_cuts                 = cms.bool(True),
@@ -1124,7 +1205,7 @@ MultiLepCalc_cfg = cms.PSet(
 
             debug                  = cms.bool(False),
             isMc                   = cms.bool(isMC),
-            saveLooseLeps          = cms.bool(True),
+            saveLooseLeps          = cms.bool(False),
             keepFullMChistory      = cms.bool(isMC),
 
             rhoJetsNCInputTag      = cms.InputTag("fixedGridRhoFastjetCentralNeutral",""), #this is for muon
@@ -1168,7 +1249,7 @@ MultiLepCalc_cfg = cms.PSet(
             #Gen stuff
             saveGenHT          = cms.bool(False),
             genJetsCollection  = cms.InputTag("slimmedGenJets"),
-            OverrideLHEWeights = cms.bool(True),
+            OverrideLHEWeights = cms.bool(False),
             basePDFname        = cms.string('NNPDF31_nnlo_as_0118_nf_4'),
             newPDFname         = cms.string('NNPDF31_lo_as_0118'),
             keepPDGID          = cms.vuint32(1, 2, 3, 4, 5, 6, 21, 11, 12, 13, 14, 15, 16, 24),
@@ -1248,13 +1329,13 @@ process.ljmet_JECdown = cms.EDAnalyzer(
         verbosity     = cms.int32(1),
         selector      = cms.string('MultiLepSelector'),
         include_calcs = cms.vstring(
-                        'MultiLepCalc',
-                        'TpTpCalc',
-                        'CommonCalc',
+                        # 'MultiLepCalc',
+                        # 'TpTpCalc',
+                        # 'CommonCalc',
                         'JetSubCalc',
-                        'TTbarMassCalc',
-                        'DeepAK8Calc',
-                        'HOTTaggerCalc',
+                        # 'TTbarMassCalc',
+                        # 'DeepAK8Calc',
+                        # 'HOTTaggerCalc',
         ),
         exclude_calcs = cms.vstring(
                         'TestCalc',
@@ -1328,15 +1409,16 @@ if (isTTbar):
 
 else:
     process.p = cms.Path(
-       process.fullPatMetSequenceModifiedMET *
-       process.prefiringweight *
-       process.egammaPostRecoSeq *
-       process.updatedJetsAK8PuppiSoftDropPacked *
-       process.packedJetsAK8Puppi *
-       process.QGTagger *
-       process.ecalBadCalibReducedMINIAODFilter *
-       process.ljmet *#(ntuplizer) 
-       process.ljmet_JECup *#(ntuplizer) 
+       process.filter_any_explicit *
+       # process.fullPatMetSequenceModifiedMET *
+       # process.prefiringweight *
+       # process.egammaPostRecoSeq *
+       # process.updatedJetsAK8PuppiSoftDropPacked *
+       # process.packedJetsAK8Puppi *
+       # process.QGTagger *
+       # process.ecalBadCalibReducedMINIAODFilter *
+       # process.ljmet #*#(ntuplizer) 
+       # process.ljmet_JECup *#(ntuplizer) 
        process.ljmet_JECdown #(ntuplizer) 
     )
 
