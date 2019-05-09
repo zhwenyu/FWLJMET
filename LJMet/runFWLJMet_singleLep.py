@@ -13,13 +13,7 @@ options.register('isTTbar', '', VarParsing.multiplicity.singleton, VarParsing.va
 options.isMC = True
 options.isTTbar = False
 options.inputFiles = [
-	#matched with ~jmanagan/nobackup/LJMet94X_1lep_013019_logs/nominal/TTTT_TuneCP5_PSweights_13TeV-amcatnlo-pythia8/producer_TTTT_TuneCP5_PSweights_13TeV-amcatnlo-pythia8_1.py
-	'root://cmsxrootd.fnal.gov//store/mc/RunIIFall17MiniAODv2/TTTT_TuneCP5_PSweights_13TeV-amcatnlo-pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14-v1/70000/0ED34A55-DD52-E811-91CC-E0071B73B6B0.root',
-	'root://cmsxrootd.fnal.gov//store/mc/RunIIFall17MiniAODv2/TTTT_TuneCP5_PSweights_13TeV-amcatnlo-pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14-v1/70000/E2A4455F-FA53-E811-8017-E0071B7A8560.root',
-
-    #'root://cmsxrootd.fnal.gov//store/data/Run2017B/SingleMuon/MINIAOD/31Mar2018-v1/80000/4462B46E-653C-E811-BA97-0025905A6064.root'
-    #'root://cmsxrootd.fnal.gov//store/mc/RunIIFall17MiniAODv2/TprimeTprime_M-1800_TuneCP5_13TeV-madgraph-pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14-v2/80000/12A585B9-F46B-E811-A775-FA163EFD0C51.root'
-    #'root://cmsxrootd.fnal.gov//store/mc/RunIIFall17MiniAODv2/TTToSemiLeptonic_TuneCP5_PSweights_13TeV-powheg-pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14-v1/50000/5E7E4AA9-0743-E811-999A-0CC47A7C35A8.root'
+    'root://cmsxrootd.fnal.gov//store/mc/RunIIFall17MiniAODv2/TprimeTprime_M-1400_TuneCP5_13TeV-madgraph-pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14-v2/50000/F82DC089-5591-E811-9210-6C3BE5B58198.root'
     ]
 options.maxEvents = 100
 options.parseArguments()
@@ -48,7 +42,7 @@ def customise(process):
                                           oncePerEventMode=cms.untracked.bool(True))
     #Adding Timing service:
     process.Timing=cms.Service("Timing")
-    
+
     #Add these 3 lines to put back the summary for timing information at the end of the logfile
     #(needed for TimeReport report)
     if hasattr(process,'options'):
@@ -57,7 +51,7 @@ def customise(process):
         process.options = cms.untracked.PSet(
             wantSummary = cms.untracked.bool(True)
         )
-        
+
     return(process)
 # customise(process)
 
@@ -74,14 +68,14 @@ process.source = cms.Source("PoolSource",
 )
 
 if(isMC):
-        # OUTFILENAME = 'TprimeTprime_M-1100_TuneCP5_13TeV-madgraph-pythia8'
-        OUTFILENAME = 'TTTT_TuneCP5_PSweights_13TeV-amcatnlo-pythia8'
+        OUTFILENAME = 'TprimeTprime_M-1400_TuneCP5_13TeV-madgraph-pythia8'
         if (isTTbar):
             OUTFILENAME = 'TTToSemiLeptonic_TuneCP5_PSweights_13TeV-powheg-pythia8'
         POSTFIX = 'MC'
 else:
         OUTFILENAME = 'DoubleEG_Run2017F'
         POSTFIX = 'DATA'
+POSTFIX+='_1Lep'
 ## TFileService
 process.TFileService = cms.Service("TFileService", fileName = cms.string(OUTFILENAME+'_FWLJMET_'+POSTFIX+'.root'))
 
@@ -149,9 +143,13 @@ process.load("Configuration.Geometry.GeometryRecoDB_cff")
 process.load('Configuration.StandardSequences.Services_cff')
 process.load("Configuration.StandardSequences.MagneticField_cff")
 process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
-from Configuration.AlCa.GlobalTag import GlobalTag
-process.GlobalTag = GlobalTag(process.GlobalTag, '94X_mc2017_realistic_v17', '')
-if isMC == False: process.GlobalTag = GlobalTag(process.GlobalTag, '94X_dataRun2_v11')
+from Configuration.AlCa.GlobalTag import GlobalTag # See https://twiki.cern.ch/twiki/bin/viewauth/CMS/PdmVAnalysisSummaryTable
+process.GlobalTag = GlobalTag(process.GlobalTag, '102X_upgrade2018_realistic_v18', '')
+if isMC == False:
+    if era in ['A','B','C']:
+        process.GlobalTag = GlobalTag(process.GlobalTag, '102X_dataRun2_Sep2018ABC_v2')
+    if era == 'D':
+        process.GlobalTag = GlobalTag(process.GlobalTag, '102X_dataRun2_Prompt_v13')
 print 'Using global tag', process.GlobalTag.globaltag
 
 
@@ -159,10 +157,10 @@ print 'Using global tag', process.GlobalTag.globaltag
 ################################################
 ## Produce new slimmedElectrons with V2 IDs - https://twiki.cern.ch/twiki/bin/view/CMS/EgammaMiniAODV2
 ################################################
-from RecoEgamma.EgammaTools.EgammaPostRecoTools import setupEgammaPostRecoSeq
-setupEgammaPostRecoSeq(process,
-                       runVID=True,
-                       era='2017-Nov17ReReco')
+# from RecoEgamma.EgammaTools.EgammaPostRecoTools import setupEgammaPostRecoSeq
+# setupEgammaPostRecoSeq(process,
+#                        runVID=True,
+#                        era='2017-Nov17ReReco')
 
 
 ################################################
@@ -283,12 +281,12 @@ process.updatedPatJets.userData.userInts.src += ['QGTagger:mult']
 ################################
 ## Produce L1 Prefiring probabilities - https://twiki.cern.ch/twiki/bin/viewauth/CMS/L1ECALPrefiringWeightRecipe
 ################################
-from PhysicsTools.PatUtils.l1ECALPrefiringWeightProducer_cfi import l1ECALPrefiringWeightProducer
-process.prefiringweight = l1ECALPrefiringWeightProducer.clone(
-    DataEra = cms.string("2017BtoF"),
-    UseJetEMPt = cms.bool(False),
-    PrefiringRateSystematicUncty = cms.double(0.2),
-    SkipWarnings = False)
+# from PhysicsTools.PatUtils.l1ECALPrefiringWeightProducer_cfi import l1ECALPrefiringWeightProducer
+# process.prefiringweight = l1ECALPrefiringWeightProducer.clone(
+#     DataEra = cms.string("2017BtoF"),
+#     UseJetEMPt = cms.bool(False),
+#     PrefiringRateSystematicUncty = cms.double(0.2),
+#     SkipWarnings = False)
 
 
 
@@ -371,8 +369,8 @@ MultiLepSelector_cfg = cms.PSet(
                         'HLT_IsoTkMu24',
                         'HLT_IsoMu24_2p1',
                         ),
-            trigger_path_el = cms.vstring(''), #currently set to be the same as mc in the src code
-            trigger_path_mu = cms.vstring(''), #currently set to be the same as mc in the src code
+            trigger_path_el = cms.vstring(''),
+            trigger_path_mu = cms.vstring(''),
 
             # PV cuts
             pv_cut     = cms.bool(True),
@@ -419,8 +417,8 @@ MultiLepSelector_cfg = cms.PSet(
 
             # Electon
             electron_cuts            = cms.bool(True),
-            # electronsCollection      = cms.InputTag("slimmedElectrons"), #slimmedElectrons::LJMET" #for Egamma ID V2
-            electronsCollection      = cms.InputTag("slimmedElectrons::LJMET"), #slimmedElectrons::LJMET" #for Egamma ID V2
+            electronsCollection      = cms.InputTag("slimmedElectrons"),
+            # electronsCollection      = cms.InputTag("slimmedElectrons::LJMET"), #if recreating electron collectiomn
             min_electron             = cms.int32(0), #not implemented in src code
             electron_minpt           = cms.double(25.0),
             electron_maxeta          = cms.double(2.5),
@@ -430,8 +428,8 @@ MultiLepSelector_cfg = cms.PSet(
             loose_electron_minpt     = cms.double(10.0),
             loose_electron_maxeta    = cms.double(2.5),
             UseElMVA                 = cms.bool(True),
-            # UseElIDV1                = cms.bool(True), #False means using ElIDV2
-            UseElIDV1                = cms.bool(False), #False means using ElIDV2
+            UseElIDV1                = cms.bool(True), #False means using ElIDV2
+            # UseElIDV1                = cms.bool(False), #False means using ElIDV2
 
             #nLeptons
             minLooseLeptons_cut = cms.bool(False), #inclusive Loose.
@@ -445,14 +443,14 @@ MultiLepSelector_cfg = cms.PSet(
 
             # Jets
             # jet_collection           = cms.InputTag('slimmedJets'),
-            jet_collection           = cms.InputTag('updatedPatJets::LJMET'),
+            jet_collection           = cms.InputTag('updatedPatJets::LJMET'), #if using updated jets
             AK8jet_collection        = cms.InputTag('slimmedJetsAK8'),
             JECup                    = cms.bool(JECup),
             JECdown                  = cms.bool(JECdown),
             JERup                    = cms.bool(JERup),
             JERdown                  = cms.bool(JERdown),
             doLepJetCleaning         = cms.bool(True),
-            CleanLooseLeptons        = cms.bool(False),
+            CleanLooseLeptons        = cms.bool(False), #This needs to be well thought of depending on saving loose leptons or not and make sure treatment is the same for MC/Data!!
             LepJetDR                 = cms.double(0.4),
             LepJetDRAK8              = cms.double(0.8),
             jet_cuts                 = cms.bool(True),
@@ -504,7 +502,7 @@ MultiLepCalc_cfg = cms.PSet(
 
             debug                  = cms.bool(False),
             isMc                   = cms.bool(isMC),
-            saveLooseLeps          = cms.bool(False),
+            saveLooseLeps          = cms.bool(False), 
             keepFullMChistory      = cms.bool(isMC),
 
             rhoJetsNCInputTag      = cms.InputTag("fixedGridRhoFastjetCentralNeutral",""), #this is for muon
@@ -548,7 +546,7 @@ MultiLepCalc_cfg = cms.PSet(
             #Gen stuff
             saveGenHT          = cms.bool(False),
             genJetsCollection  = cms.InputTag("slimmedGenJets"),
-            OverrideLHEWeights = cms.bool(False),
+            OverrideLHEWeights = cms.bool(False), #THIS NEEDS TO BE TRUE FOR SOME MC samples!
             basePDFname        = cms.string('NNPDF31_nnlo_as_0118_nf_4'),
             newPDFname         = cms.string('NNPDF31_lo_as_0118'),
             keepPDGID          = cms.vuint32(1, 2, 3, 4, 5, 6, 21, 11, 12, 13, 14, 15, 16, 24),
@@ -740,8 +738,8 @@ if (isTTbar):
     process.p = cms.Path(
                          process.filter_any_explicit *
                          process.fullPatMetSequenceModifiedMET *
-                         process.prefiringweight *
-                         process.egammaPostRecoSeq *
+                         #process.prefiringweight *
+                         #process.egammaPostRecoSeq *
                          process.updatedJetsAK8PuppiSoftDropPacked *
                          process.packedJetsAK8Puppi *
                          process.QGTagger *
@@ -754,8 +752,8 @@ else:
     process.p = cms.Path(
        process.filter_any_explicit *
        process.fullPatMetSequenceModifiedMET *
-       process.prefiringweight *
-       process.egammaPostRecoSeq *
+       #process.prefiringweight *
+       #process.egammaPostRecoSeq *
        process.updatedJetsAK8PuppiSoftDropPacked *
        process.packedJetsAK8Puppi *
        process.QGTagger *
@@ -764,19 +762,6 @@ else:
     )
 
 process.p.associate(patAlgosToolsTask)
-
-#from Configuration.EventContent.EventContent_cff import MINIAODSIMEventContent
-# process.out.outputCommands.append('drop *_*_*_LJMET')
-# process.out.outputCommands.append('keep *_prefiringweight*_*_LJMET')
-# process.out.outputCommands.append('keep *_slimmedElectrons_*_LJMET')
-# process.out.outputCommands.append('keep *_packedJetsAK8Puppi*_*_LJMET')
-# process.out.outputCommands.append('keep *_*_SubJets_*')
-# process.out.outputCommands.append('keep *_updatedPatJets_*_LJMET')
-# process.out.outputCommands.append('keep *_updatedPatJets*_tagInfos_LJMET')
-# # process.out.outputCommands.append('keep *_QGTagger_*_LJMET')
-# process.out.outputCommands.append('keep *_slimmedMETsModifiedMET_*_LJMET')
-# process.out.outputCommands.append('keep *_ecalBadCalibReducedMINIAODFilter_*_LJMET')
-# process.out.outputCommands.append('keep int_categorize*_*_LJMET'),
 
 
 # process.ep = cms.EndPath(process.out)
