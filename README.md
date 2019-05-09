@@ -55,7 +55,7 @@ Some info:
 - Modified MET: https://twiki.cern.ch/twiki/bin/viewauth/CMS/MissingETUncertaintyPrescription#Instructions_for_9_4_X_X_9_or_10
 - Redo MET filter : https://twiki.cern.ch/twiki/bin/viewauth/CMS/MissingETOptionalFiltersRun2#How_to_run_ecal_BadCalibReducedM
 - el ID V2 : https://twiki.cern.ch/twiki/bin/view/CMS/EgammaMiniAODV2
-- HOT tagger : https://github.com/susy2015/TopTagger/tree/master/TopTagger#instructions-for-saving-tagger-results-to-nanoaod-with-cmssw_9_4_11
+- HOT tagger : https://github.com/susy2015/TopTagger/tree/master/TopTagger#instructions-for-saving-tagger-results-to-nanoaod-with-cmssw_9_4_11 (needs updating !)
 - BoostedEventShapeTagger(BEST) :
      - https://bregnery.github.io/docs/BESTstandaloneTutorial/
      - https://github.com/justinrpilot/BESTAnalysis/tree/master
