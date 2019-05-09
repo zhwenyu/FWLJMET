@@ -27,7 +27,7 @@ install:
 	cd ${CMSSW_BASE}/src
 	cp -r ~jmanagan/nobackup/CMSSW_9_4_12/src/lwtnn .   ## use scp after a Fermilab kinit to copy onto non-LPC clusters
 	( This is not ideal, should always try to get official CMSSW / GitHub recipes whenever possible
-	--skip here to here--
+	--skip to here--
 
 	git clone -b 10_2_X_2018data git@github.com:cms-ljmet/FWLJMET.git
 
