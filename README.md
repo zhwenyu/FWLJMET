@@ -30,7 +30,7 @@ install:
 
 
 	## FWLJMET code
-	git clone git@github.com:rsyarif/FWLJMET.git
+	git clone -b 9_4_X_2017data git@github.com:rsyarif/FWLJMET.git
 
 
 	## JetSubCalc currently uses uses PUPPI mass corrections:
