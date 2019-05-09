@@ -5,47 +5,48 @@ Currently this is build using CMSSW_9_4_13
 install:
 
 	source /cvmfs/cms.cern.ch/cmsset_default.csh
-	setenv SCRAM_ARCH slc6_amd64_gcc630
-	cmsrel CMSSW_9_4_13
-	cd CMSSW_9_4_13/src/
+	setenv SCRAM_ARCH slc6_amd64_gcc700
+	cmsrel CMSSW_10_2_9
+	cd CMSSW_10_2_9/src/
 	cmsenv
 
+
 	## Modified MET
-	git cms-merge-topic cms-met:METFixEE2017_949_v2
+	git cms-merge-topic cms-met:METFixEE2017_949_v2_backport_to_102X
 
 	## Redo MET filter
 	git cms-addpkg RecoMET/METFilters
 
-	## if wanting to use el ID v2 (for 2017 data):
-	git cms-merge-topic cms-egamma:EgammaPostRecoTools
-
 	## HOT tagger part1
 	cd ${CMSSW_BASE}/src
-	git cms-merge-topic -u pastika:AddAxis1_946p1
-	git clone git@github.com:susy2015/TopTagger.git
+	git cms-merge-topic -u pastika:AddAxis1_1026
+	git clone git@github.com:git.susy2015/TopTagger
 
-	### BestCalc: copy lwtnn so that BestCalc.cc will compile. ( This is bad practice, should always try to get official CMSSW recipes whenever possible)
+	--skip from here--
+	### BestCalc: copy lwtnn so that BestCalc.cc will compile.  (currently still not working so dont use yet! May9,2019)
 	cd ${CMSSW_BASE}/src
 	cp -r ~jmanagan/nobackup/CMSSW_9_4_12/src/lwtnn .   ## use scp after a Fermilab kinit to copy onto non-LPC clusters
+	( This is not ideal, should always try to get official CMSSW / GitHub recipes whenever possible
+	--skip here to here--
 
+	git clone -b 10_2_X_2018data git@github.com:cms-ljmet/FWLJMET.git
 
-	## FWLJMET code
-	git clone -b 9_4_X_2017data git@github.com:rsyarif/FWLJMET.git
-
-
-	## JetSubCalc currently uses uses PUPPI mass corrections:
+	## JetSubCalc currently uses uses PUPPI mass corrections: (NOTE: does this need to be updated for 2018data? --May 9, 2019)
 	cd ${CMSSW_BASE}/src/FWLJMET/LJMet/data/
 	git clone https://github.com/thaarres/PuppiSoftdropMassCorr
 
 	cd -
 
-	#Compile
 	scram b
 
 	## HOT tagger part2
 	cd ${CMSSW_BASE}/src
 	mkdir -p ${CMSSW_BASE}/src/TopTagger/TopTagger/data
 	getTaggerCfg.sh -o -n -t DeepResolved_DeepCSV_GR_noDisc_Release_v1.0.0 -d $CMSSW_BASE/src/TopTagger/TopTagger/data
+
+
+
+
 
 
 Some info:
