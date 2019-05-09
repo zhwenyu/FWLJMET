@@ -1,6 +1,6 @@
 ### FWLJMET -- Full Framework LJMET (wrapper)
 
-Currently this is build using CMSSW_9_4_13
+
 
 install:
 
