@@ -20,7 +20,7 @@ install:
 	## HOT tagger part1
 	cd ${CMSSW_BASE}/src
 	git cms-merge-topic -u pastika:AddAxis1_1026
-	git clone git@github.com:git.susy2015/TopTagger
+	git clone git@github.com:susy2015/TopTagger
 
 	--skip from here--
 	### BestCalc: copy lwtnn so that BestCalc.cc will compile.  (currently still not working so dont use yet! May9,2019)
