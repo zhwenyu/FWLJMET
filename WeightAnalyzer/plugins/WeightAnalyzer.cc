@@ -1,9 +1,9 @@
 // -*- C++ -*-
 //
-// Package:    MCWeightInfo/WeightAnalyzer
+// Package:    FWLJMET/WeightAnalyzer
 // Class:      WeightAnalyzer
 //
-/**\class WeightAnalyzer WeightAnalyzer.cc MCWeightInfo/WeightAnalyzer/plugins/WeightAnalyzer.cc
+/**\class WeightAnalyzer WeightAnalyzer.cc FWLJMET/WeightAnalyzer/plugins/WeightAnalyzer.cc
 
  Description: [one line class summary]
 
@@ -19,7 +19,7 @@
 
 // system include files
 #include <memory>
-#include <iostream> 
+#include <iostream>
 
 // user include files
 #include "FWCore/Framework/interface/Frameworkfwd.h"
@@ -59,15 +59,15 @@ class WeightAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
       virtual void beginJob() override;
       virtual void analyze(const edm::Event&, const edm::EventSetup&) override;
       virtual void endJob() override;
-      
+
       std::vector<double> muRFvar;
       std::vector<double> pdfvar;
-      
+
       int posweightsum = 0;
       int negweightsum = 0;
       int totalcount = 0;
       int zeroweightsum = 0;
-      
+
       double weight = 1;
       double muRup = 1;
       double muRdn = 1;
@@ -80,7 +80,7 @@ class WeightAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
 
 
       // ----------member data ---------------------------
-      edm::EDGetTokenT<GenEventInfoProduct> GEIPtoken;  
+      edm::EDGetTokenT<GenEventInfoProduct> GEIPtoken;
       edm::EDGetTokenT<LHEEventProduct> LHEEPtoken;
 };
 
@@ -153,20 +153,20 @@ WeightAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 
 //   std::vector<double> LHEweights;
 //   std::vector<int> LHEweightids;
-// 
+//
 //   edm::Handle<LHEEventProduct> EvtHandle;
 //   if(iEvent.getByToken(LHEEPtoken,EvtHandle)){
 //     // Storing LHE weights https://twiki.cern.ch/twiki/bin/viewauth/CMS/LHEReaderCMSSW
-//     // for MC@NLO renormalization and factorization scale. 
-//     // ID numbers 1001 - 1009. (muR,muF) = 
-//     // 0 = 1001: (1,1)    3 = 1004: (2,1)    6 = 1007: (0.5,1)  
-//     // 1 = 1002: (1,2)    4 = 1005: (2,2)  	 7 = 1008: (0.5,2)  
+//     // for MC@NLO renormalization and factorization scale.
+//     // ID numbers 1001 - 1009. (muR,muF) =
+//     // 0 = 1001: (1,1)    3 = 1004: (2,1)    6 = 1007: (0.5,1)
+//     // 1 = 1002: (1,2)    4 = 1005: (2,2)  	 7 = 1008: (0.5,2)
 //     // 2 = 1003: (1,0.5)  5 = 1006: (2,0.5)	 8 = 1009: (0.5,0.5)
 //     // for PDF variations: ID numbers > 2000
-//     
+//
 //     std::string weightidstr;
 //     int weightid;
-//     if(EvtHandle->weights().size() > 0){	  
+//     if(EvtHandle->weights().size() > 0){
 //       for(unsigned int i = 0; i < EvtHandle->weights().size(); i++){
 //       	weightidstr = EvtHandle->weights()[i].id;
 //       	weightid = std::stoi(weightidstr);
@@ -223,7 +223,7 @@ WeightAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 //     muRFvar.at(5) += weight*renorm.at(3);
 //     muRFvar.at(6) += weight*renorm.at(5);
 //   }
-// 
+//
 //   pdfvar.at(0) += weight;
 //   if(pdf.size() < 100) cout << "Didn't get all the PDF weights!" << endl;
 //   else{
@@ -256,24 +256,24 @@ WeightAnalyzer::endJob()
   printf(  "----------------------------------------\n");
 
 //   double nominal = muRFvar.at(0);
-//   
+//
 //   printf("Nominal yield = %f\n",nominal);
-// 
+//
 //   std::sort(muRFvar.begin(),muRFvar.end());
 //   std::sort(pdfvar.begin(),pdfvar.end());
-// 
+//
 //   double muRFup = muRFvar.at(6);
 //   double muRFdn = muRFvar.at(0);
 //   double pdfup = pdfvar.at(83);
 //   double pdfdn = pdfvar.at(15);
-// 
+//
 //   printf("MUup yield = %f\n",muRFup);
 //   printf("MUdn yield = %f\n",muRFdn);
 //   printf("PDFup yield = %f\n",pdfup);
 //   printf("PDFdn yield = %f\n",pdfdn);
-// 
+//
 //   printf("\n --- Yield Quantiles method --- \n");
-// 
+//
 //   printf("MUup scale factor = %f\n",nominal/muRFup);
 //   printf("MUdn scale factor = %f\n",nominal/muRFdn);
 //   printf("PDFup scale factor = %f\n",nominal/pdfup);
