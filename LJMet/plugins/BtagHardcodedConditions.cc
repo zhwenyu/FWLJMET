@@ -54,7 +54,7 @@ float BtagHardcodedConditions::getDiscriminant(const std::string & op)
  | |\_.  |                                                     |    /| |
  |\|  | /|               B-JET SCALE FACTOR SECTION            |\  | |/|
  | `---' |                                                     | `---' |
- |       |                                                     |       | 
+ |       |                                                     |       |
  |       |-----------------------------------------------------|       |
  \       |                                                     |       /
   \     /                                                       \     /
@@ -101,12 +101,12 @@ double BtagHardcodedConditions::GetBtagEfficiency(double pt, double eta, std::st
      else if(pt < 1000) return 0.751513;
      else if(pt < 1200) return 0.684949;
      else               return 0.598841;
-  }			      
-  
-  
+  }
+
+
   // unknown tagger, return default
   return -100.0;
-  
+
 }
 
 double BtagHardcodedConditions::GetCtagEfficiency(double pt, double eta, std::string tagger)
@@ -195,6 +195,7 @@ double BtagHardcodedConditions::GetMistagRate(double pt, double eta, std::string
   else{
     std::cerr << "Tagger " << tagger << " not coded into MistagRate!" << std::endl;
     return 0;
+  }
 }
 
 /*.-----------------------------------------------------------------.
@@ -203,7 +204,7 @@ double BtagHardcodedConditions::GetMistagRate(double pt, double eta, std::string
  | |\_.  |                                                     |    /| |
  |\|  | /|            ALLLL BELOW IS DEAD! USING READERS       |\  | |/|
  | `---' |                                                     | `---' |
- |       |                                                     |       | 
+ |       |                                                     |       |
  |       |-----------------------------------------------------|       |
  \       |                                                     |       /
   \     /                                                       \     /
@@ -264,9 +265,9 @@ double BtagHardcodedConditions::GetBtagSF2016_comb(std::string tagger, shift Shi
 
 double BtagHardcodedConditions::GetBtagSF2016Loose(method Method, shift Shift, double pt, double eta)
 {
-    if(Method==mujets) 
+    if(Method==mujets)
 	return GetBtagSF2016Loose_mujets( Shift, pt, eta);
-    else 
+    else
 	return GetBtagSF2016Loose_comb(     Shift, pt, eta);
 }
 
@@ -274,8 +275,8 @@ double BtagHardcodedConditions::GetBtagSF2016Loose_mujets( shift Shift, double p
 {
 	//not used
     if(pt > 1000.) pt = 1000.;
-    if(fabs(eta) > 2.4 or pt<20.) return 1.0; 
-    //if(fabs(eta) > 2.4 or pt<20. or pt > 1000.) return 1.0; 
+    if(fabs(eta) > 2.4 or pt<20.) return 1.0;
+    //if(fabs(eta) > 2.4 or pt<20. or pt > 1000.) return 1.0;
     switch(Shift){
 	case uncert:
 	    if(pt<30) return 0.025442773476243019;
@@ -307,17 +308,17 @@ double BtagHardcodedConditions::GetBtagSF2016Loose_mujets( shift Shift, double p
 	    else if(pt<300) return (0.884016*((1.+(0.0331508*pt))/(1.+(0.0285096*pt))))-0.01834111288189888;
 	    else if(pt<600) return (0.884016*((1.+(0.0331508*pt))/(1.+(0.0285096*pt))))-0.018383314833045006;
 	    else  return (0.884016*((1.+(0.0331508*pt))/(1.+(0.0285096*pt))))-0.022504881024360657;
-	case central: 
+	case central:
 	default:
-	    return  0.884016*((1.+(0.0331508*pt))/(1.+(0.0285096*pt)));   
+	    return  0.884016*((1.+(0.0331508*pt))/(1.+(0.0285096*pt)));
     }//end switch on shift
 }
 
 double BtagHardcodedConditions::GetBtagSF2016Loose_comb(shift Shift, double pt, double eta)
 {
     if(pt > 1000.) pt = 1000.;
-    if(fabs(eta) > 2.4 or pt<20.) return 1.0; 
-    //if(fabs(eta) > 2.4 or pt<20. or pt > 1000.) return 1.0; 
+    if(fabs(eta) > 2.4 or pt<20.) return 1.0;
+    //if(fabs(eta) > 2.4 or pt<20. or pt > 1000.) return 1.0;
     switch(Shift){
 	case uncert:
 	    if(pt<30) return 0.025381835177540779;
@@ -351,15 +352,15 @@ double BtagHardcodedConditions::GetBtagSF2016Loose_comb(shift Shift, double pt, 
 	    else  return (0.887973*((1.+(0.0523821*pt))/(1.+(0.0460876*pt))))-0.02186630479991436;
 	case central:
 	default:
-	    return   0.887973*((1.+(0.0523821*pt))/(1.+(0.0460876*pt)));  
+	    return   0.887973*((1.+(0.0523821*pt))/(1.+(0.0460876*pt)));
     }//end switch on shift
 }
 
 double BtagHardcodedConditions::GetBtagSF2016Medium(method Method, shift Shift, double pt, double eta)
 {
-    if(Method==mujets) 
+    if(Method==mujets)
 	return GetBtagSF2016Medium_mujets( Shift, pt, eta);
-    else 
+    else
 	return GetBtagSF2016Medium_comb(     Shift, pt, eta);
 }
 
@@ -367,8 +368,8 @@ double BtagHardcodedConditions::GetBtagSF2016Medium_mujets(shift Shift, double p
 {
 	//not used
     if(pt > 1000.) pt = 1000.;
-    if(fabs(eta) > 2.4 or pt<20.) return 1.0; 
-    //if(fabs(eta) > 2.4 or pt<20. or pt > 1000.) return 1.0; 
+    if(fabs(eta) > 2.4 or pt<20.) return 1.0;
+    //if(fabs(eta) > 2.4 or pt<20. or pt > 1000.) return 1.0;
     switch(Shift){
 	case uncert:
 	    if(pt<30) return 0.040554910898208618;
@@ -409,8 +410,8 @@ double BtagHardcodedConditions::GetBtagSF2016Medium_mujets(shift Shift, double p
 double BtagHardcodedConditions::GetBtagSF2016Medium_comb(shift Shift, double pt, double eta)
 {
     if(pt > 1000.) pt = 1000.;
-    if(fabs(eta) > 2.4 or pt<20.) return 1.0; 
-    //if(fabs(eta) > 2.4 or pt<20. or pt > 1000.) return 1.0; 
+    if(fabs(eta) > 2.4 or pt<20.) return 1.0;
+    //if(fabs(eta) > 2.4 or pt<20. or pt > 1000.) return 1.0;
     switch(Shift){
 	case uncert:
 	    if(pt<30) return 0.040213499218225479;
@@ -450,9 +451,9 @@ double BtagHardcodedConditions::GetBtagSF2016Medium_comb(shift Shift, double pt,
 
 double BtagHardcodedConditions::GetBtagSF2016Tight(method Method, shift Shift, double pt, double eta)
 {
-    if(Method==mujets) 
+    if(Method==mujets)
 	return GetBtagSF2016Tight_mujets( Shift, pt, eta);
-    else 
+    else
 	return GetBtagSF2016Tight_comb(     Shift, pt, eta);
 }
 
@@ -460,8 +461,8 @@ double BtagHardcodedConditions::GetBtagSF2016Tight_mujets( shift Shift, double p
 {
 	//not used
     if(pt > 1000.) pt = 1000.;
-    if(fabs(eta) > 2.4 or pt<20.) return 1.0; 
-//    if(fabs(eta) > 2.4 or pt<20. or pt > 1000.) return 1.0; 
+    if(fabs(eta) > 2.4 or pt<20.) return 1.0;
+//    if(fabs(eta) > 2.4 or pt<20. or pt > 1000.) return 1.0;
     switch(Shift){
 	case uncert:
 	    if(pt<30) return 0.034476730972528458;
@@ -502,8 +503,8 @@ double BtagHardcodedConditions::GetBtagSF2016Tight_mujets( shift Shift, double p
 double BtagHardcodedConditions::GetBtagSF2016Tight_comb( shift Shift, double pt, double eta)
 {
     if(pt > 1000.) pt = 1000.;
-    if(fabs(eta) > 2.4 or pt<20.) return 1.0; 
-    //if(fabs(eta) > 2.4 or pt<20. or pt > 1000.) return 1.0; 
+    if(fabs(eta) > 2.4 or pt<20.) return 1.0;
+    //if(fabs(eta) > 2.4 or pt<20. or pt > 1000.) return 1.0;
     switch(Shift){
 	case uncert:
 	    if(pt<30) return 0.033732704818248749;
@@ -543,7 +544,7 @@ double BtagHardcodedConditions::GetBtagSF2016Tight_comb( shift Shift, double pt,
 
 double BtagHardcodedConditions::GetBtagSF2016Medium_subjet(shift Shift, double pt, double eta)
 {
-    if(fabs(eta) > 2.4 or pt<30.) return 1.0; 
+    if(fabs(eta) > 2.4 or pt<30.) return 1.0;
     switch(Shift){
 	case uncert:
 	    if(pt<120) return 0.03395;
@@ -560,7 +561,7 @@ double BtagHardcodedConditions::GetBtagSF2016Medium_subjet(shift Shift, double p
 	    else if(pt<180) return 0.98711;
 	    else if(pt<240) return 0.98742;
 	    else  return 0.98857;
-	case central: 
+	case central:
 	default:
 	    if(pt<120) return 0.97841;
 	    else if(pt<180) return 1.00499;
@@ -571,9 +572,9 @@ double BtagHardcodedConditions::GetBtagSF2016Medium_subjet(shift Shift, double p
 
 double BtagHardcodedConditions::GetBtagSF2016Loose_subjet(shift Shift, double pt, double eta)
 {
-    if(fabs(eta) > 2.4 or pt<30.) return 1.0; 
+    if(fabs(eta) > 2.4 or pt<30.) return 1.0;
     switch(Shift){
-	case uncert: 
+	case uncert:
 	    if(pt<120) return 0.01071;
 	    else if(pt<180) return 0.01083;
 	    else if(pt<240) return 0.01191;
@@ -588,7 +589,7 @@ double BtagHardcodedConditions::GetBtagSF2016Loose_subjet(shift Shift, double pt
 	    else if(pt<180) return 0.99137;
 	    else if(pt<240) return 0.99277;
 	    else  return 0.99825;
-	case central: 
+	case central:
 	default:
 	    if(pt<120) return 0.99839;
 	    else if(pt<180) return 1.0022;
@@ -603,7 +604,7 @@ double BtagHardcodedConditions::GetBtagSF2016Loose_subjet(shift Shift, double pt
  | |\_.  |                                                     |    /| |
  |\|  | /|      B-JET SCALE FACTOR UNCERTAINTY SECTION         |\  | |/|
  | `---' |                                                     | `---' |
- |       |                                                     |       | 
+ |       |                                                     |       |
  |       |-----------------------------------------------------|       |
  \       |                                                     |       /
   \     /                                                       \     /
@@ -613,8 +614,8 @@ double BtagHardcodedConditions::GetBtagSF2016Loose_subjet(shift Shift, double pt
 double BtagHardcodedConditions::GetBtagSFUncertUp(double pt, double eta, std::string tagger, int year)
 {
   if(year == 2016){
-    if(tagger == "CSVMsubjet" or tagger == "CSVLsubjet") return (pt>450 ? 2.0 : 1.0) * GetBtagSF2016_comb(tagger, uncert, pt, eta); 
-    else return (pt>1000 ? 2.0 : 1.0) * GetBtagSF2016_comb(tagger, uncert, pt, eta); 
+    if(tagger == "CSVMsubjet" or tagger == "CSVLsubjet") return (pt>450 ? 2.0 : 1.0) * GetBtagSF2016_comb(tagger, uncert, pt, eta);
+    else return (pt>1000 ? 2.0 : 1.0) * GetBtagSF2016_comb(tagger, uncert, pt, eta);
   }
   else if(year == 2015) return GetBtagSFUncertainty2015(pt, eta, tagger);
   else if(year == 2012) return GetBtagSFUncertainty2012(pt, eta, tagger);
@@ -625,8 +626,8 @@ double BtagHardcodedConditions::GetBtagSFUncertUp(double pt, double eta, std::st
 double BtagHardcodedConditions::GetBtagSFUncertDown(double pt, double eta, std::string tagger, int year)
 {
   if(year == 2016){
-    if(tagger == "CSVMsubjet" or tagger == "CSVLsubjet") return (pt>450 ? 2.0 : 1.0) * GetBtagSF2016_comb(tagger, uncert, pt, eta); 
-    else return (pt>1000 ? 2.0 : 1.0) * GetBtagSF2016_comb(tagger, uncert, pt, eta); 
+    if(tagger == "CSVMsubjet" or tagger == "CSVLsubjet") return (pt>450 ? 2.0 : 1.0) * GetBtagSF2016_comb(tagger, uncert, pt, eta);
+    else return (pt>1000 ? 2.0 : 1.0) * GetBtagSF2016_comb(tagger, uncert, pt, eta);
   }
   else if(year == 2015) return GetBtagSFUncertainty2015(pt, eta, tagger);
   else if(year == 2012) return GetBtagSFUncertainty2012(pt, eta, tagger);
@@ -640,7 +641,7 @@ double BtagHardcodedConditions::GetBtagSFUncertDown(double pt, double eta, std::
  | |\_.  |                                                     |    /| |
  |\|  | /|               C-JET SCALE FACTOR SECTION            |\  | |/|
  | `---' |                                                     | `---' |
- |       |                                                     |       | 
+ |       |                                                     |       |
  |       |-----------------------------------------------------|       |
  \       |                                                     |       /
   \     /                                                       \     /
@@ -660,8 +661,8 @@ double BtagHardcodedConditions::GetCtagScaleFactor(double pt, double eta, std::s
 double BtagHardcodedConditions::GetCtagSFUncertUp(double pt, double eta, std::string tagger, int year)
 {
   if(year == 2016){
-    if(tagger == "CSVMsubjet" or tagger == "CSVLsubjet") return (pt>450 ? 2.0 : 1.0) * GetCtagSF2016_comb(tagger, uncert, pt, eta); 
-    else return (pt>1000 ? 2.0 : 1.0) * GetCtagSF2016_comb(tagger, uncert, pt, eta); 
+    if(tagger == "CSVMsubjet" or tagger == "CSVLsubjet") return (pt>450 ? 2.0 : 1.0) * GetCtagSF2016_comb(tagger, uncert, pt, eta);
+    else return (pt>1000 ? 2.0 : 1.0) * GetCtagSF2016_comb(tagger, uncert, pt, eta);
   }
   else {
     std::cerr << "Year " << year << " not coded for C-tag SFs. Are you really earlier than 2016 data?" << std::endl;
@@ -672,8 +673,8 @@ double BtagHardcodedConditions::GetCtagSFUncertUp(double pt, double eta, std::st
 double BtagHardcodedConditions::GetCtagSFUncertDown(double pt, double eta, std::string tagger, int year)
 {
   if(year == 2016){
-    if(tagger == "CSVMsubjet" or tagger == "CSVLsubjet") return (pt>450 ? 2.0 : 1.0) * GetCtagSF2016_comb(tagger, uncert, pt, eta); 
-    else return (pt>1000 ? 2.0 : 1.0) * GetCtagSF2016_comb(tagger, uncert, pt, eta); 
+    if(tagger == "CSVMsubjet" or tagger == "CSVLsubjet") return (pt>450 ? 2.0 : 1.0) * GetCtagSF2016_comb(tagger, uncert, pt, eta);
+    else return (pt>1000 ? 2.0 : 1.0) * GetCtagSF2016_comb(tagger, uncert, pt, eta);
   }
   else {
     std::cerr << "Year " << year << " not coded for C-tag SFs. Are you really earlier than 2016 data?" << std::endl;
@@ -699,7 +700,7 @@ double BtagHardcodedConditions::GetCtagSF2016Loose_comb(shift Shift, double pt, 
 {
   // SFs are identical to B tag, with 2.5x uncertainties
   if(pt > 1000.) pt = 1000.;
-  if(fabs(eta) > 2.4 or pt<20.) return 1.0; 
+  if(fabs(eta) > 2.4 or pt<20.) return 1.0;
   switch(Shift){
   case uncert: return 2.5 * GetBtagSF2016Loose_comb(uncert, pt, eta);
   case up: return (GetBtagSF2016Loose_comb(central, pt, eta) + 2.5*GetBtagSF2016Loose_comb(uncert, pt, eta));
@@ -714,7 +715,7 @@ double BtagHardcodedConditions::GetCtagSF2016Medium_comb(shift Shift, double pt,
 
   // SFs are identical with 3x uncertainty as B tag
   if(pt > 1000.) pt = 1000.;
-  if(fabs(eta) > 2.4 or pt<20.) return 1.0; 
+  if(fabs(eta) > 2.4 or pt<20.) return 1.0;
   switch(Shift){
   case uncert: return 3.0 * GetBtagSF2016Medium_comb(uncert, pt, eta);
   case up: return (GetBtagSF2016Medium_comb(central, pt, eta) + 3.0*GetBtagSF2016Medium_comb(uncert, pt, eta));
@@ -727,7 +728,7 @@ double BtagHardcodedConditions::GetCtagSF2016Medium_comb(shift Shift, double pt,
 double BtagHardcodedConditions::GetCtagSF2016Medium_subjet(shift Shift, double pt, double eta)
 {
   // same with 2x uncertainty
-  if(fabs(eta) > 2.4 or pt<30.) return 1.0; 
+  if(fabs(eta) > 2.4 or pt<30.) return 1.0;
   switch(Shift){
   case uncert: return 2.0 * GetBtagSF2016Medium_subjet(uncert, pt, eta);
   case up: return (GetBtagSF2016Medium_subjet(central, pt, eta) + 2.0*GetBtagSF2016Medium_subjet(uncert, pt, eta));
@@ -740,7 +741,7 @@ double BtagHardcodedConditions::GetCtagSF2016Medium_subjet(shift Shift, double p
 double BtagHardcodedConditions::GetCtagSF2016Loose_subjet(shift Shift, double pt, double eta)
 {
   // same with 2x uncertainty
-  if(fabs(eta) > 2.4 or pt<30.) return 1.0; 
+  if(fabs(eta) > 2.4 or pt<30.) return 1.0;
   switch(Shift){
   case uncert: return 2.0 * GetBtagSF2016Loose_subjet(uncert, pt, eta);
   case up: return (GetBtagSF2016Loose_subjet(central, pt, eta) + 2.0*GetBtagSF2016Loose_subjet(uncert, pt, eta));
@@ -756,7 +757,7 @@ double BtagHardcodedConditions::GetCtagSF2016Loose_subjet(shift Shift, double pt
  | |\_.  |                                                     |    /| |
  |\|  | /|                                                     |\  | |/|
  | `---' |           Mistag Rate                               | `---' |
- |       |                                                     |       | 
+ |       |                                                     |       |
  |       |-----------------------------------------------------|       |
  \       |                                                     |       /
   \     /                                                       \     /
@@ -799,10 +800,10 @@ double BtagHardcodedConditions::GetCtagSF2016Loose_subjet(shift Shift, double pt
     else if(pt < 1200) return 0.206650;
     else return 0.243775;
   }
-  
+
     // mistag, x-pT
     // from https://twiki.cern.ch/twiki/pub/CMS/BtagPOG/MistagFuncs.C
-    
+
     if (pt>670) pt=670;
     else if (pt<20) pt=20;
     double _absEta = abs(eta);
@@ -856,7 +857,7 @@ double BtagHardcodedConditions::GetCtagSF2016Loose_subjet(shift Shift, double pt
 	else if( _absEta<2.4) return (((-0.00836219+(0.000391889*pt))+(2.78156e-07*(pt*pt)))+(-6.14017e-10*(pt*(pt*pt))))+(-1.30592e-13*(pt*(pt*(pt*pt))));
     }
     else if( tagger == "TCHPT" ) return (-0.00101+(4.70405e-05*pt))+(8.3338e-09*(pt*pt));
-    
+
     // unknown tagger, return default
     return -100.0;
 }*/
@@ -867,7 +868,7 @@ double BtagHardcodedConditions::GetCtagSF2016Loose_subjet(shift Shift, double pt
  | |\_.  |                                                     |    /| |
  |\|  | /|      UDSG SCALE FACTOR & UP/DOWNS SECTION           |\  | |/|
  | `---' |       aka Mistag Rate Scale Factors                 | `---' |
- |       |                                                     |       | 
+ |       |                                                     |       |
  |       |-----------------------------------------------------|       |
  \       |                                                     |       /
   \     /                                                       \     /
@@ -953,7 +954,7 @@ double BtagHardcodedConditions::GetLFSF2016Medium_subjet( shift Shift, double pt
 	    return  0.676736+0.00286128*pt+-4.34618e-06*pt*pt+2.44485e-09*pt*pt*pt;
 	case down:
 	    return  0.582177+0.00204348*pt+-2.94226e-06*pt*pt+1.6536e-09*pt*pt*pt;
-	case central: 
+	case central:
 	default:
 	    return  0.629961+0.00245187*pt+-3.64539e-06*pt*pt+2.04999e-09*pt*pt*pt;
     }//end switch Shift
@@ -1017,7 +1018,7 @@ double BtagHardcodedConditions::GetLFSF2016Tight( shift Shift, double pt, double
  | |\_.  |                                                     |    /| |
  |\|  | /|            OUTDATED SCALE FACTOR SECTION            |\  | |/|
  | `---' |                                                     | `---' |
- |       |                                                     |       | 
+ |       |                                                     |       |
  |       |-----------------------------------------------------|       |
  \       |                                                     |       /
   \     /                                                       \     /
@@ -1038,7 +1039,7 @@ double BtagHardcodedConditions::GetBtagScaleFactor2012(double pt, double eta, st
 {
     if (pt>800) pt=800;
     else if (pt<20) pt=20;
-    
+
     double SFb=0;
     if( tagger=="JPL")   SFb = 0.977721*((1.+(-1.02685e-06*pt))/(1.+(-2.56586e-07*pt)));
     else if( tagger=="JPM")   SFb = 0.87887*((1.+(0.0393348*pt))/(1.+(0.0354499*pt)));
@@ -1056,7 +1057,7 @@ double BtagHardcodedConditions::GetBtagScaleFactor2011(double pt, double eta, st
     // This is 2011 muon-in-jet
     if (pt>670) pt=670;
     else if (pt<30) pt=30;
-    
+
     double SFb=0;
     if( tagger=="JPL")   SFb = 0.969851*((1.+(-6.06362e-05*pt))/(1.+(-0.000156638*pt)));
     else if( tagger=="JPM")   SFb = 0.90806*((1.+(0.000236997*pt))/(1.+(5.49455e-05*pt)));
@@ -1071,13 +1072,13 @@ double BtagHardcodedConditions::GetBtagScaleFactor2011(double pt, double eta, st
 double BtagHardcodedConditions::GetMistagSF2015(double pt, double eta,
                                                 std::string tagger, std::string meanminmax)
 {
-  
+
   double _absEta = abs(eta);
   double sf = -1;
   if( tagger=="CSVL" ){
     if(_absEta < 0.3) {
       if( meanminmax == "mean" ) sf = ((1.13199+(0.00121087*pt))+(-2.1714e-06*(pt*pt)))+(1.06583e-09*(pt*(pt*pt)));
-      else if( meanminmax == "min" ) sf = ((1.09518+(0.000823444*pt))+(-1.1289e-06*(pt*pt)))+(3.82933e-10*(pt*(pt*pt))); 
+      else if( meanminmax == "min" ) sf = ((1.09518+(0.000823444*pt))+(-1.1289e-06*(pt*pt)))+(3.82933e-10*(pt*(pt*pt)));
       else if( meanminmax == "max" ) sf = ((1.1688+(0.00159691*pt))+(-3.21137e-06*(pt*pt)))+(1.74795e-09*(pt*(pt*pt)));
     }
     else if(_absEta<0.6) {
@@ -1401,23 +1402,23 @@ double BtagHardcodedConditions::GetMistagSF2011(double pt, double eta,
             else if( meanminmax == "max" ) sf = ((1.4063+(-0.000548107*pt))+(1.30047e-06*(pt*pt)))+(-1.56311e-09*(pt*(pt*pt)));
         }
     }
-    
+
     return sf;
 }
 
 double BtagHardcodedConditions::GetMistagSF2012(double pt, double eta, std::string tagger, std::string meanminmax)
 {
-    
+
     double _absEta = abs(eta);
     double sf = -1;
-    
+
     if ( (tagger[tagger.length()-1]=='T') ||
         ((tagger[tagger.length()-1]=='M') && (pt<800)) ||
         ((tagger[tagger.length()-1]=='L') && (pt<700) ) ) {
-        
+
         if (pt<20) pt=20;
         else if (pt>800) pt=800;
-        
+
         if( tagger=="CSVL"&& _absEta>=0.0 && _absEta<0.5) {
             if( meanminmax == "mean" ) sf = ((1.04901+(0.00152181*pt))+(-3.43568e-06*(pt*pt)))+(2.17219e-09*(pt*(pt*pt)));
             else if( meanminmax == "min" ) sf = ((0.973773+(0.00103049*pt))+(-2.2277e-06*(pt*pt)))+(1.37208e-09*(pt*(pt*pt)));
@@ -1458,7 +1459,7 @@ double BtagHardcodedConditions::GetMistagSF2012(double pt, double eta, std::stri
             else if( meanminmax == "min" ) sf = ((0.953587+(0.00124872*pt))+(-3.97277e-06*(pt*pt)))+(3.23466e-09*(pt*(pt*pt)));
             else if( meanminmax == "max" ) sf = ((1.08119+(0.00441909*pt))+(-1.18764e-05*(pt*pt)))+(8.71372e-09*(pt*(pt*pt)));
         }
-        
+
         else if( tagger == "JPL" && _absEta >= 0.0 && _absEta < 0.5){
             if( meanminmax == "mean" ) sf = ((1.05617+(0.000986016*pt))+(-2.05398e-06*(pt*pt)))+(1.25408e-09*(pt*(pt*pt)));
             else if( meanminmax == "min" ) sf = ((0.918762+(0.000749113*pt))+(-1.48511e-06*(pt*pt)))+(8.78559e-10*(pt*(pt*pt)));
@@ -1514,7 +1515,7 @@ double BtagHardcodedConditions::GetMistagSF2012(double pt, double eta, std::stri
             else if( meanminmax == "min" ) sf = ((0.988346+(0.000914722*pt))+(-2.37077e-06*(pt*pt)))+(1.72082e-09*(pt*(pt*pt)));
             else if( meanminmax == "max" ) sf = ((1.34691+(0.00181637*pt))+(-4.64484e-06*(pt*pt)))+(3.27122e-09*(pt*(pt*pt)));
         }
-        
+
     } else {
         if (pt>800) pt=800;
         if( tagger=="CSVM" && _absEta>=0.0 && _absEta<2.4)
@@ -1542,7 +1543,7 @@ double BtagHardcodedConditions::GetMistagSF2012(double pt, double eta, std::stri
             else if( meanminmax == "max" ) sf = ((1.13272+(0.00291881*pt))+(-7.46281e-06*(pt*pt)))+(5.24363e-09*(pt*(pt*pt)));
         }
     }
-    
+
     return sf;
 }//end GetMistagSF2012
 
@@ -1552,7 +1553,7 @@ double BtagHardcodedConditions::GetBtagSFUncertainty2011(double pt, double eta,
     if (pt<30) return 0.12;
     int bin = findBin(pt, ptRange11);
     float err = -1;
-    
+
     if( tagger=="JPL")   	   err =  SFb_JPL_error11[bin];
     else if( tagger=="JPM")  err =  SFb_JPM_error11[bin];
     else if( tagger=="JPT")  err =  SFb_JPT_error11[bin];
@@ -1560,7 +1561,7 @@ double BtagHardcodedConditions::GetBtagSFUncertainty2011(double pt, double eta,
     else if( tagger=="CSVL") err =  SFb_CSVL_error11[bin];
     else if( tagger=="CSVM") err =  SFb_CSVM_error11[bin];
     else if( tagger=="CSVT") err =  SFb_CSVT_error11[bin];
-    
+
     if (pt>670) err*=2.0;
     return err;
 }
@@ -1569,7 +1570,7 @@ double BtagHardcodedConditions::GetBtagSFUncertainty2012(double pt, double eta, 
 {
     int bin = findBin(pt, ptRange12);
     float err = -1;
-    
+
     if( tagger=="JPL")   	   err =  SFb_JPL_error12[bin];
     else if( tagger=="JPM")  err =  SFb_JPM_error12[bin];
     else if( tagger=="JPT")  err =  SFb_JPT_error12[bin];
@@ -1577,7 +1578,7 @@ double BtagHardcodedConditions::GetBtagSFUncertainty2012(double pt, double eta, 
     else if( tagger=="CSVL") err =  SFb_CSVL_error12[bin];
     else if( tagger=="CSVM") err =  SFb_CSVM_error12[bin];
     else if( tagger=="CSVT") err =  SFb_CSVT_error12[bin];
-    
+
     if ((pt>670) || (pt<20)) err*=2.0;
     return err;
 }
@@ -1588,11 +1589,11 @@ double BtagHardcodedConditions::GetBtagSFUncertainty2015(double pt, double eta,
 {
     int bin = findBin(pt, ptRange15);
     float err = -1;
-    
+
     if( tagger=="CSVL") err =  SFb_CSVL_error15[bin];
     else if( tagger=="CSVM") err =  SFb_CSVM_error15[bin];
     else if( tagger=="CSVT") err =  SFb_CSVT_error15[bin];
-    
+
     if ((pt>670) || (pt<30)) err*=2.0;
     return err;
 }
