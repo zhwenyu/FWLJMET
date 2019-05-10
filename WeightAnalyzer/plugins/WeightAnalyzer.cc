@@ -60,6 +60,12 @@ class WeightAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
       virtual void analyze(const edm::Event&, const edm::EventSetup&) override;
       virtual void endJob() override;
 
+      TH1I * h_totalEvents;
+      TH1I * h_posWeightEvents;
+      TH1I * h_negWeightEvents;
+      TH1I * h_zeroWeightEvents;
+      TH1I * h_totalWeightedEvents;
+      
       std::vector<double> muRFvar;
       std::vector<double> pdfvar;
 
@@ -111,6 +117,15 @@ WeightAnalyzer::WeightAnalyzer(const edm::ParameterSet& iConfig) {
 
   edm::InputTag LHEEPtag("externalLHEProducer");
   LHEEPtoken = consumes<LHEEventProduct>(LHEEPtag);
+
+
+  //Make histograms to save counts
+  std::cout << "[WeightAnalyzer] : Creating histograms " << std::endl;
+  h_totalEvents = fs->make<TH1I>("h_totalEvents","h_totalEvents",1,0,1);
+  h_posWeightEvents = fs->make<TH1I>("h_posWeightEvents","h_posWeightEvents",1,0,1);
+  h_negWeightEvents = fs->make<TH1I>("h_negWeightEvents","h_negWeightEvents",1,0,1);
+  h_zeroWeightEvents = fs->make<TH1I>("h_zeroWeightEvents","h_zeroWeightEvents",1,0,1);
+  h_totalWeightedEvents = fs->make<TH1I>("h_totalWeightedEvents","h_totalWeightedEvents",1,0,1);
 
 
 }
@@ -254,6 +269,14 @@ WeightAnalyzer::endJob()
   printf("Zero weight = %i\n",zeroweightsum);
   printf("Adjusted count = %i\n",posweightsum - negweightsum);
   printf(  "----------------------------------------\n");
+  
+  //Save values in histogram
+  h_totalEvents->SetBinContent(0,totalcount);
+  h_posWeightEvents->SetBinContent(0,negweightsum);
+  h_negWeightEvents->SetBinContent(0,posweightsum);
+  h_zeroWeightEvents->SetBinContent(0,zeroweightsum);
+  h_totalWeightedEvents->SetBinContent(0,posweightsum - negweightsum);
+  
 
 //   double nominal = muRFvar.at(0);
 //
