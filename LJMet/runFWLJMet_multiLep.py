@@ -13,7 +13,7 @@ options.register('isTTbar', '', VarParsing.multiplicity.singleton, VarParsing.va
 options.isMC = True
 options.isTTbar = False
 options.inputFiles = [
-    'root://cmsxrootd.fnal.gov//store/mc/RunIIFall17MiniAODv2/TprimeTprime_M-1400_TuneCP5_13TeV-madgraph-pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14-v2/50000/F82DC089-5591-E811-9210-6C3BE5B58198.root'
+    'root://cmsxrootd.fnal.gov//store/mc/RunIIAutumn18MiniAOD/TprimeTprime_M-1400_TuneCP5_PSweights_13TeV-madgraph-pythia8/MINIAODSIM/102X_upgrade2018_realistic_v15-v2/80000/FEFD008E-00DF-9A4A-B3C4-4CE60A67B5C6.root'
     ]
 options.maxEvents = 100
 options.parseArguments()
@@ -321,6 +321,8 @@ DataL2JetParAK8          = 'FWLJMET/LJMet/data/Fall17V32/Fall17_17Nov2017B_V32_D
 DataL3JetParAK8          = 'FWLJMET/LJMet/data/Fall17V32/Fall17_17Nov2017B_V32_DATA_L3Absolute_AK8PFPuppi.txt'
 DataResJetParAK8         = 'FWLJMET/LJMet/data/Fall17V32/Fall17_17Nov2017B_V32_DATA_L2L3Residual_AK8PFPuppi.txt'
 
+#El MVA ID
+UseElIDV1_ = False #False means using ElIDV2
 
 MultiLepSelector_cfg = cms.PSet(
 
@@ -421,7 +423,7 @@ MultiLepSelector_cfg = cms.PSet(
             loose_electron_minpt     = cms.double(20.0),
             loose_electron_maxeta    = cms.double(2.4),
             UseElMVA                 = cms.bool(True),
-            UseElIDV1                = cms.bool(True), #False means using ElIDV2
+            UseElIDV1                = cms.bool(UseElIDV1_), #False means using ElIDV2
             # UseElIDV1                = cms.bool(False), #False means using ElIDV2
 
             #nLeptons
@@ -503,8 +505,8 @@ MultiLepCalc_cfg = cms.PSet(
             PFparticlesCollection  = cms.InputTag("packedPFCandidates"),
 
             rhoJetsInputTag            = cms.InputTag("fixedGridRhoFastjetAll"), #this is for electron. Why is it different compared to muon?
-            UseElMVA                 = cms.bool(True),
-            UseElIDV1                = cms.bool(True), #False means using ElIDV2.
+            UseElMVA                 = cms.bool(False), #True means save MVA values, False means not saving.
+            UseElIDV1                = cms.bool(UseElIDV1_), #False means using ElIDV2.
 
             # Jet corrections needs to be passed here again if Calc uses jet correction
             doNewJEC                 = cms.bool(doNewJEC),
