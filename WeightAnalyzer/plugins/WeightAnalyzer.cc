@@ -272,8 +272,8 @@ WeightAnalyzer::endJob()
   
   //Save values in histogram
   h_totalEvents->SetBinContent(1,totalcount);
-  h_posWeightEvents->SetBinContent(1,negweightsum);
-  h_negWeightEvents->SetBinContent(1,posweightsum);
+  h_posWeightEvents->SetBinContent(1,posweightsum);
+  h_negWeightEvents->SetBinContent(1,negweightsum);
   h_zeroWeightEvents->SetBinContent(1,zeroweightsum);
   h_totalWeightedEvents->SetBinContent(1,posweightsum - negweightsum);
   
