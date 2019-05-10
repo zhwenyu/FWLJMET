@@ -262,8 +262,8 @@ LJMet::beginJob()
 void
 LJMet::endJob()
 {
-    if(debug) std::cout << " " <<std::endl;
-    if(debug) std::cout << "[FWLJMet] : " << "Selection" << std::endl;
+    std::cout << " " <<std::endl;
+    std::cout << "[FWLJMet] : " << "Selection" << std::endl;
     theSelector->print(std::cout);
 
 

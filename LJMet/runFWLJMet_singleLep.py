@@ -89,6 +89,13 @@ process.TFileService = cms.Service("TFileService", fileName = cms.string(OUTFILE
 
 
 ################################
+## MC Weights Analyzer
+################################
+process.mcweightanalyzer = cms.EDAnalyzer(
+        'WeightAnalyzer',
+)
+
+################################
 ## Trigger filter
 ################################
 import HLTrigger.HLTfilters.hltHighLevel_cfi as hlt
@@ -738,6 +745,7 @@ if (isTTbar):
         )
 
     process.p = cms.Path(
+                         process.mcweightanalyzer *
                          process.filter_any_explicit *
                          process.fullPatMetSequenceModifiedMET *
                          #process.prefiringweight *
@@ -752,6 +760,7 @@ if (isTTbar):
 
 else:
     process.p = cms.Path(
+       process.mcweightanalyzer *
        process.filter_any_explicit *
        process.fullPatMetSequenceModifiedMET *
        #process.prefiringweight *
