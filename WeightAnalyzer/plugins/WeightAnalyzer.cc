@@ -268,14 +268,14 @@ WeightAnalyzer::endJob()
   printf("Negative weight = %i\n",negweightsum);
   printf("Zero weight = %i\n",zeroweightsum);
   printf("Adjusted count = %i\n",posweightsum - negweightsum);
-  printf(  "----------------------------------------\n");
+  printf(  "------------------------------------\n");
   
   //Save values in histogram
-  h_totalEvents->SetBinContent(0,totalcount);
-  h_posWeightEvents->SetBinContent(0,negweightsum);
-  h_negWeightEvents->SetBinContent(0,posweightsum);
-  h_zeroWeightEvents->SetBinContent(0,zeroweightsum);
-  h_totalWeightedEvents->SetBinContent(0,posweightsum - negweightsum);
+  h_totalEvents->SetBinContent(1,totalcount);
+  h_posWeightEvents->SetBinContent(1,negweightsum);
+  h_negWeightEvents->SetBinContent(1,posweightsum);
+  h_zeroWeightEvents->SetBinContent(1,zeroweightsum);
+  h_totalWeightedEvents->SetBinContent(1,posweightsum - negweightsum);
   
 
 //   double nominal = muRFvar.at(0);
