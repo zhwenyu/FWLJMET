@@ -34,8 +34,17 @@
 #include "SimDataFormats/GeneratorProducts/interface/GenEventInfoProduct.h"
 #include "SimDataFormats/GeneratorProducts/interface/LHERunInfoProduct.h"
 #include "SimDataFormats/GeneratorProducts/interface/LHEEventProduct.h"
+#include "SimDataFormats/PileupSummaryInfo/interface/PileupSummaryInfo.h"
 #include "FWCore/ServiceRegistry/interface/Service.h"
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
+
+#include "LHAPDF/LHAPDF.h"
+#include "LHAPDF/GridPDF.h"
+#include "LHAPDF/Info.h"
+#include "LHAPDF/Config.h"
+#include "LHAPDF/PDFInfo.h"
+#include "LHAPDF/PDFSet.h"
+#include "LHAPDF/Factories.h"
 
 //
 // class declaration
@@ -48,46 +57,32 @@
 
 
 class WeightAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
-   public:
-      explicit WeightAnalyzer(const edm::ParameterSet&);
-      ~WeightAnalyzer();
+public:
+  explicit WeightAnalyzer(const edm::ParameterSet&);
+  ~WeightAnalyzer();
+  
+  static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
+  
+  
+private:
+  virtual void beginJob() override;
+  virtual void analyze(const edm::Event&, const edm::EventSetup&) override;
+  virtual void endJob() override;
+  
+  TH1D* weightHist;
+  TH1D* NumTrueHist;
 
-      static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
+  bool orlhew = false;
+  int adjustedcount = 0;
+  double pdfweightsum = 0;
+  std::string basePDFname = "NNPDF31_nnlo_as_0118_nf_4";
+  std::string newPDFname = "NNPDF31_nnlo_as_0118_nf_4_mc_hessian";
+  
+  // ----------member data ---------------------------
+  edm::EDGetTokenT<GenEventInfoProduct> GEIPtoken;
+  edm::EDGetTokenT<LHEEventProduct> LHEEPtoken;
+  edm::EDGetTokenT<std::vector<PileupSummaryInfo>> APItoken;
 
-
-   private:
-      virtual void beginJob() override;
-      virtual void analyze(const edm::Event&, const edm::EventSetup&) override;
-      virtual void endJob() override;
-
-      TH1I * h_totalEvents;
-      TH1I * h_posWeightEvents;
-      TH1I * h_negWeightEvents;
-      TH1I * h_zeroWeightEvents;
-      TH1I * h_totalWeightedEvents;
-      
-      std::vector<double> muRFvar;
-      std::vector<double> pdfvar;
-
-      int posweightsum = 0;
-      int negweightsum = 0;
-      int totalcount = 0;
-      int zeroweightsum = 0;
-
-      double weight = 1;
-      double muRup = 1;
-      double muRdn = 1;
-      double muFup = 1;
-      double muFdn = 1;
-      double muRFup = 1;
-      double muRFdn = 1;
-      double Pdfup = 1;
-      double Pdfdown = 1;
-
-
-      // ----------member data ---------------------------
-      edm::EDGetTokenT<GenEventInfoProduct> GEIPtoken;
-      edm::EDGetTokenT<LHEEventProduct> LHEEPtoken;
 };
 
 //
@@ -101,32 +96,27 @@ class WeightAnalyzer : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
 //
 // constructors and destructor
 //
-WeightAnalyzer::WeightAnalyzer(const edm::ParameterSet& iConfig) {
-   //now do what ever initialization is needed
-   edm::Service<TFileService> fs;
-
-//   for(int i = 0; i < 7; i++){
-//     muRFvar.push_back(0);
-//   }
-//   for(int i = 0; i < 101; i++){
-//     pdfvar.push_back(0);
-//   }
-
+WeightAnalyzer::WeightAnalyzer(const edm::ParameterSet& iConfig):
+  orlhew(iConfig.getParameter<bool>("overrideLHEweight")),
+  basePDFname(iConfig.getParameter<std::string>("basePDFname")),
+  newPDFname(iConfig.getParameter<std::string>("newPDFname"))
+{
+  //now do what ever initialization is needed
+  edm::Service<TFileService> fs;  
+  
   edm::InputTag GEIPtag("generator");
   GEIPtoken = consumes<GenEventInfoProduct>(GEIPtag);
 
   edm::InputTag LHEEPtag("externalLHEProducer");
   LHEEPtoken = consumes<LHEEventProduct>(LHEEPtag);
 
+  edm::InputTag APItag("slimmedAddPileupInfo");
+  APItoken = consumes<std::vector<PileupSummaryInfo>>(APItag);
 
   //Make histograms to save counts
   std::cout << "[WeightAnalyzer] : Creating histograms " << std::endl;
-  h_totalEvents = fs->make<TH1I>("h_totalEvents","h_totalEvents",1,0,1);
-  h_posWeightEvents = fs->make<TH1I>("h_posWeightEvents","h_posWeightEvents",1,0,1);
-  h_negWeightEvents = fs->make<TH1I>("h_negWeightEvents","h_negWeightEvents",1,0,1);
-  h_zeroWeightEvents = fs->make<TH1I>("h_zeroWeightEvents","h_zeroWeightEvents",1,0,1);
-  h_totalWeightedEvents = fs->make<TH1I>("h_totalWeightedEvents","h_totalWeightedEvents",1,0,1);
-
+  NumTrueHist = fs->make<TH1D>("NumTrueHist","N True Interactions",100,0,100); NumTrueHist->Sumw2();
+  weightHist = fs->make<TH1D>("weightHist","MC Weight",10,-5,5); weightHist->Sumw2();
 
 }
 
@@ -148,107 +138,63 @@ WeightAnalyzer::~WeightAnalyzer()
 void
 WeightAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
-   using namespace edm;
-
+  using namespace edm;
   using namespace std;
 
+  // Basic +/- event weight
   edm::Handle<GenEventInfoProduct> genEvtInfo;
-  iEvent.getByToken(GEIPtoken,genEvtInfo);
+  iEvent.getByToken(GEIPtoken, genEvtInfo);
+  
+  double weight = 1.0;
+  if(genEvtInfo->weight() < 0) weight = -1;
+  weightHist->Fill(weight); // bin at -1 filled with neg, bin at +1 filled with pos. 
 
-  weight = 1.0;
-  weight = genEvtInfo->weight()/fabs(genEvtInfo->weight());
+  adjustedcount += weight; // sum up the +/- weights
 
-  // Count
-  double countweight = genEvtInfo->weight();
-  if(countweight < 0) negweightsum++;
-  else if(countweight > 0) posweightsum++;
-  else zeroweightsum++;
+  // Pileup hist
+  edm::Handle<std::vector<PileupSummaryInfo>> PupInfo;
+  iEvent.getByToken(APItoken, PupInfo);
 
-  totalcount++;
+  int NumTrueInts = -1;
+  for(std::vector<PileupSummaryInfo>::const_iterator PVI = PupInfo->begin(); PVI != PupInfo->end(); ++PVI){
+    int BX = PVI->getBunchCrossing();
+    if(BX == 0) NumTrueInts = PVI->getTrueNumInteractions();
+  }
+  NumTrueHist->Fill(NumTrueInts,weight);
 
-//   std::vector<double> LHEweights;
-//   std::vector<int> LHEweightids;
-//
-//   edm::Handle<LHEEventProduct> EvtHandle;
-//   if(iEvent.getByToken(LHEEPtoken,EvtHandle)){
-//     // Storing LHE weights https://twiki.cern.ch/twiki/bin/viewauth/CMS/LHEReaderCMSSW
-//     // for MC@NLO renormalization and factorization scale.
-//     // ID numbers 1001 - 1009. (muR,muF) =
-//     // 0 = 1001: (1,1)    3 = 1004: (2,1)    6 = 1007: (0.5,1)
-//     // 1 = 1002: (1,2)    4 = 1005: (2,2)  	 7 = 1008: (0.5,2)
-//     // 2 = 1003: (1,0.5)  5 = 1006: (2,0.5)	 8 = 1009: (0.5,0.5)
-//     // for PDF variations: ID numbers > 2000
-//
-//     std::string weightidstr;
-//     int weightid;
-//     if(EvtHandle->weights().size() > 0){
-//       for(unsigned int i = 0; i < EvtHandle->weights().size(); i++){
-//       	weightidstr = EvtHandle->weights()[i].id;
-//       	weightid = std::stoi(weightidstr);
-//       	LHEweights.push_back(EvtHandle->weights()[i].wgt/EvtHandle->originalXWGTUP());
-//       	LHEweightids.push_back(weightid);
-//       }
-//     }
-//   }
+  // PDF adjustment for signals     
+  if (orlhew) {
+    
+    float x1 = genEvtInfo->pdf()->x.first;
+    float x2 = genEvtInfo->pdf()->x.second;
+    double Q = genEvtInfo->pdf()->scalePDF;
+    int id1 = genEvtInfo->pdf()->id.first;
+    int id2 = genEvtInfo->pdf()->id.second;
 
-  //PDF and RENORM weights
-//   std::vector<double> renorm;
-//   std::vector<double> pdf;
-//   if(isX53){
-//     for(unsigned int i = 0; i < LHEweightids.size(); i++){
-//       if(LHEweightids.at(i) > 1 && LHEweightids.at(i) < 10){
-// 	if(LHEweightids.at(i) == 6 || LHEweightids.at(i) == 8) continue;
-// 	renorm.push_back(LHEweights.at(i));
-//       }
-//       if(LHEweightids.at(i) > 111 && LHEweightids.at(i) < 212){
-// 	pdf.push_back(LHEweights.at(i));
-//       }
-//     }
-//   }
-//   else if(isWJ){
-//     for(unsigned int i = 0; i < LHEweightids.size(); i++){
-//       if(LHEweightids.at(i) > 1 && LHEweightids.at(i) < 10){
-// 	if(LHEweightids.at(i) == 6 || LHEweightids.at(i) == 8) continue;
-// 	renorm.push_back(LHEweights.at(i));
-//       }
-//       if(LHEweightids.at(i) > 10 && LHEweightids.at(i) < 111){
-// 	pdf.push_back(LHEweights.at(i));
-//       }
-//     }
-//   }
-//   else{
-//     for(unsigned int i = 0; i < LHEweightids.size(); i++){
-//       if(LHEweightids.at(i) > 1001 && LHEweightids.at(i) < 1010){
-//       	if(LHEweightids.at(i) == 1006 || LHEweightids.at(i) == 1008) continue;
-//       	renorm.push_back(LHEweights.at(i));
-//       }
-//       if(LHEweightids.at(i) > 2000 && LHEweightids.at(i) < 2101){
-//       	pdf.push_back(LHEweights.at(i));
-//       }
-//     }
-//   }
+    //Initialize PDF sets
+    LHAPDF::PDF* basepdf = LHAPDF::mkPDF(basePDFname,0);
+    const LHAPDF::GridPDF& pdf1 = * dynamic_cast<const LHAPDF::GridPDF*>(basepdf);
+    LHAPDF::PDF* newpdf = LHAPDF::mkPDF(newPDFname,0);
+    const LHAPDF::GridPDF& pdf2 = * dynamic_cast<const LHAPDF::GridPDF*>(newpdf);
+    
+    // calculate central PDFs for generator set,
+    double pdf1_gen = pdf1.xfxQ(id1, x1, Q);
+    double pdf2_gen = pdf1.xfxQ(id2, x2, Q);
+    delete basepdf;
+  
+    // calculate central PDFs for new set,
+    double pdf1_new = pdf2.xfxQ(id1, x1, Q);
+    double pdf2_new = pdf2.xfxQ(id2, x2, Q);
+    delete newpdf;
 
-//   muRFvar.at(0) += weight;
-//   if(renorm.size() < 6) cout << "Didn't get all the renorm weights!" << endl;
-//   else{
-//     muRFvar.at(1) += weight*renorm.at(2);
-//     muRFvar.at(2) += weight*renorm.at(4);
-//     muRFvar.at(3) += weight*renorm.at(0);
-//     muRFvar.at(4) += weight*renorm.at(1);
-//     muRFvar.at(5) += weight*renorm.at(3);
-//     muRFvar.at(6) += weight*renorm.at(5);
-//   }
-//
-//   pdfvar.at(0) += weight;
-//   if(pdf.size() < 100) cout << "Didn't get all the PDF weights!" << endl;
-//   else{
-//     for(int i = 0; i < 100; i++){
-//       pdfvar.at(i+1) += weight*pdf.at(i);
-//     }
-//   }
+    double newweight = (pdf1_new*pdf2_new)/(pdf1_gen*pdf2_gen); // new/old
+    newweight *= genEvtInfo->weight(); // (new/old)*old = new, for consistency with singleLepCalc
+    
+    pdfweightsum += newweight;
 
-
-
+  }else{
+    pdfweightsum += genEvtInfo->weight();
+  }
 }
 
 
@@ -263,45 +209,14 @@ void
 WeightAnalyzer::endJob()
 {
   printf("\n-------- MC Weight Analyzer --------\n");
-  printf("Total events processed = %i\n",totalcount);
-  printf("Positive weight = %i\n",posweightsum);
-  printf("Negative weight = %i\n",negweightsum);
-  printf("Zero weight = %i\n",zeroweightsum);
-  printf("Adjusted count = %i\n",posweightsum - negweightsum);
+  printf("Total events processed = %f\n",weightHist->Integral());
+  printf("Adjusted count = %i\n",adjustedcount);
+  printf("New PDF sum-of-weights = %f\n",pdfweightsum);
   printf(  "------------------------------------\n");
   
   //Save values in histogram
-  h_totalEvents->SetBinContent(1,totalcount);
-  h_posWeightEvents->SetBinContent(1,posweightsum);
-  h_negWeightEvents->SetBinContent(1,negweightsum);
-  h_zeroWeightEvents->SetBinContent(1,zeroweightsum);
-  h_totalWeightedEvents->SetBinContent(1,posweightsum - negweightsum);
-  
-
-//   double nominal = muRFvar.at(0);
-//
-//   printf("Nominal yield = %f\n",nominal);
-//
-//   std::sort(muRFvar.begin(),muRFvar.end());
-//   std::sort(pdfvar.begin(),pdfvar.end());
-//
-//   double muRFup = muRFvar.at(6);
-//   double muRFdn = muRFvar.at(0);
-//   double pdfup = pdfvar.at(83);
-//   double pdfdn = pdfvar.at(15);
-//
-//   printf("MUup yield = %f\n",muRFup);
-//   printf("MUdn yield = %f\n",muRFdn);
-//   printf("PDFup yield = %f\n",pdfup);
-//   printf("PDFdn yield = %f\n",pdfdn);
-//
-//   printf("\n --- Yield Quantiles method --- \n");
-//
-//   printf("MUup scale factor = %f\n",nominal/muRFup);
-//   printf("MUdn scale factor = %f\n",nominal/muRFdn);
-//   printf("PDFup scale factor = %f\n",nominal/pdfup);
-//   printf("PDFdn scale factor = %f\n",nominal/pdfdn);
-
+  weightHist->SetBinContent(1,adjustedcount); // bin at -5 filled with basic adjusted count
+  weightHist->SetBinContent(2,pdfweightsum); // bin at -4 filled with pdf adjusted sum
 
 }
 

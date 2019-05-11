@@ -6,32 +6,33 @@ install:
 
 	source /cvmfs/cms.cern.ch/cmsset_default.csh
 	setenv SCRAM_ARCH slc6_amd64_gcc700
-	cmsrel CMSSW_10_2_9
-	cd CMSSW_10_2_9/src/
+	cmsrel CMSSW_10_2_10
+	cd CMSSW_10_2_10/src/
 	cmsenv
 
-
-	## Modified MET
-	git cms-merge-topic cms-met:METFixEE2017_949_v2_backport_to_102X
+	## Modified MET -- Only needed in 2017, JH May 11
+	## git cms-merge-topic cms-met:METFixEE2017_949_v2_backport_to_102X
 
 	## Redo MET filter
 	git cms-addpkg RecoMET/METFilters
 
 	## HOT tagger part1
-	cd ${CMSSW_BASE}/src
 	git cms-merge-topic -u pastika:AddAxis1_1026
 	git clone git@github.com:susy2015/TopTagger
 
-	--skip from here--
-	### BestCalc: copy lwtnn so that BestCalc.cc will compile.  (currently still not working so dont use yet! May9,2019)
-	cd ${CMSSW_BASE}/src
-	cp -r ~jmanagan/nobackup/CMSSW_9_4_12/src/lwtnn .   ## use scp after a Fermilab kinit to copy onto non-LPC clusters
-	( This is not ideal, should always try to get official CMSSW / GitHub recipes whenever possible
-	--skip to here--
+	## EGamma post-reco for MVA values (NOTE: won't work in 10_2_9)
+        git cms-merge-topic cms-egamma:EgammaPostRecoTools
 
+	### -- FWLJMET/LJMet/plugins/BestCalc.cc is now functional for JH with new commit from May 11 --
+	### BestCalc: copy lwtnn so that BestCalc.cc will compile. 
+	### This is not ideal, should always try to get official CMSSW / GitHub recipes whenever possible. 
+	### JH May 11: likely json needs to get remade for this by BEST team to use "lwtnn"-owned github. Forgot about Dan Marley's linked below, will test next week.
+	cp -r ~jmanagan/nobackup/CMSSW_9_4_12/src/lwtnn .   ## use scp after a Fermilab kinit to copy onto non-LPC clusters
+	
+	## Check out FWLJMET
 	git clone -b 10_2_X_2018data git@github.com:cms-ljmet/FWLJMET.git
 
-	## JetSubCalc currently uses uses PUPPI mass corrections: (NOTE: does this need to be updated for 2018data? --May 9, 2019)
+	## JetSubCalc currently uses uses PUPPI mass corrections: (NOTE: no updates available on JetWtagging TWiki as of May 11, but this branch will always be the most updated.)
 	cd ${CMSSW_BASE}/src/FWLJMET/LJMet/data/
 	git clone https://github.com/thaarres/PuppiSoftdropMassCorr
 
@@ -40,12 +41,12 @@ install:
 	scram b
 
 	## HOT tagger part2
-	cd ${CMSSW_BASE}/src
 	mkdir -p ${CMSSW_BASE}/src/TopTagger/TopTagger/data
 	getTaggerCfg.sh -o -n -t DeepResolved_DeepCSV_GR_noDisc_Release_v1.0.0 -d $CMSSW_BASE/src/TopTagger/TopTagger/data
 
-
-
+	## Tprime/Bprime signal pdf change environment variable -- choose bash or csh version
+	setenv LHAPDF_DATA_PATH "/cvmfs/cms.cern.ch/lhapdf/pdfsets/current/":${LHAPDF_DATA_PATH}  ## csh
+	export LHAPDF_DATA_PATH="/cvmfs/cms.cern.ch/lhapdf/pdfsets/current/":${LHAPDF_DATA_PATH}  ## bash
 
 
 
@@ -65,3 +66,4 @@ Some info:
 run LJMet:
 
     cmsRun LJMet/runFWLJMet_multiLep.py (or runFWLJMet_singleLep.py)
+
