@@ -1,0 +1,13 @@
+__init__.py
+*.pyc
+.*.swp
+.#*
+#*#
+*~
+build
+*.d
+*.so
+*.o
+*.pcm
+*.tar
+*.root
