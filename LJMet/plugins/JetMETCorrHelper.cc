@@ -81,10 +81,10 @@ void JetMETCorrHelper::Initialize(const edm::ParameterSet& iConfig){
     else if ( !isMc ) {
       // Create the JetCorrectorParameter objects, the order does not matter.
 
+      mEraReplaceStr["A"] = "A_V";
       mEraReplaceStr["B"] = "B_V";
       mEraReplaceStr["C"] = "C_V";
-      mEraReplaceStr["DE"] = "DE_V";
-      mEraReplaceStr["F"] = "F_V";
+      mEraReplaceStr["D"] = "D_V";
 
       for (std::map<std::string,std::string>::iterator it=mEraReplaceStr.begin();it!=mEraReplaceStr.end();it++){
 
@@ -92,15 +92,15 @@ void JetMETCorrHelper::Initialize(const edm::ParameterSet& iConfig){
           std::string replaceStr = it->second;
 
           //Fetch the text files
-          mEraJetParStr[era]["DataL1JetParByIOV"]  = std::regex_replace(mJetParStr["DataL1JetPar"],std::regex("B_V"), replaceStr);
-          mEraJetParStr[era]["DataL2JetParByIOV"]  = std::regex_replace(mJetParStr["DataL2JetPar"],std::regex("B_V"), replaceStr);
-          mEraJetParStr[era]["DataL3JetParByIOV"]  = std::regex_replace(mJetParStr["DataL3JetPar"],std::regex("B_V"), replaceStr);
-          mEraJetParStr[era]["DataResJetParByIOV"]  = std::regex_replace(mJetParStr["DataResJetPar"],std::regex("B_V"), replaceStr);
+          mEraJetParStr[era]["DataL1JetParByIOV"]  = std::regex_replace(mJetParStr["DataL1JetPar"],std::regex("A_V"), replaceStr);
+          mEraJetParStr[era]["DataL2JetParByIOV"]  = std::regex_replace(mJetParStr["DataL2JetPar"],std::regex("A_V"), replaceStr);
+          mEraJetParStr[era]["DataL3JetParByIOV"]  = std::regex_replace(mJetParStr["DataL3JetPar"],std::regex("A_V"), replaceStr);
+          mEraJetParStr[era]["DataResJetParByIOV"]  = std::regex_replace(mJetParStr["DataResJetPar"],std::regex("A_V"), replaceStr);
 
-          mEraJetParStr[era]["DataL1JetParAK8ByIOV"]  = std::regex_replace(mJetParStr["DataL1JetParAK8"],std::regex("B_V"), replaceStr);
-          mEraJetParStr[era]["DataL2JetParAK8ByIOV"]  = std::regex_replace(mJetParStr["DataL2JetParAK8"],std::regex("B_V"), replaceStr);
-          mEraJetParStr[era]["DataL3JetParAK8ByIOV"]  = std::regex_replace(mJetParStr["DataL3JetParAK8"],std::regex("B_V"), replaceStr);
-          mEraJetParStr[era]["DataResJetParAK8ByIOV"]  = std::regex_replace(mJetParStr["DataResJetParAK8"],std::regex("B_V"), replaceStr);
+          mEraJetParStr[era]["DataL1JetParAK8ByIOV"]  = std::regex_replace(mJetParStr["DataL1JetParAK8"],std::regex("A_V"), replaceStr);
+          mEraJetParStr[era]["DataL2JetParAK8ByIOV"]  = std::regex_replace(mJetParStr["DataL2JetParAK8"],std::regex("A_V"), replaceStr);
+          mEraJetParStr[era]["DataL3JetParAK8ByIOV"]  = std::regex_replace(mJetParStr["DataL3JetParAK8"],std::regex("A_V"), replaceStr);
+          mEraJetParStr[era]["DataResJetParAK8ByIOV"]  = std::regex_replace(mJetParStr["DataResJetParAK8"],std::regex("A_V"), replaceStr);
 
           if(debug) std::cout << mLegend << "Using JEC files DataL1JetParByIOV : era "+era+": " <<  mEraJetParStr[era]["DataL1JetParByIOV"] << std::endl;
           if(debug) std::cout << mLegend << "Using JEC files DataL2JetParByIOV : era "+era+": " <<  mEraJetParStr[era]["DataL2JetParByIOV"] << std::endl;
@@ -159,28 +159,28 @@ void JetMETCorrHelper::SetFacJetCorr(edm::EventBase const & event)
 
 
   int iRun   = event.id().run();
+  // run # get in https://cms-service-dqm.web.cern.ch/cms-service-dqm/CAF/certification/Collisions18/13TeV/Era/Prompt/
 
-
-  if(iRun <= 299330){
+  if(iRun <= 316995){
+  	if(debug) std::cout << "\t\t\t using JEC for era A "<< std::endl;
+  	JetCorrector = mEraFacJetCorr["A"];
+  	JetCorrectorAK8 = mEraFacJetCorrAK8["A"];
+  }
+  else if(iRun <= 319312){
   	if(debug) std::cout << "\t\t\t using JEC for era B "<< std::endl;
   	JetCorrector = mEraFacJetCorr["B"];
   	JetCorrectorAK8 = mEraFacJetCorrAK8["B"];
   }
-  else if(iRun <= 302029){
+  else if(iRun <= 320393){
   	if(debug) std::cout << "\t\t\t using JEC for era C "<< std::endl;
   	JetCorrector = mEraFacJetCorr["C"];
   	JetCorrectorAK8 = mEraFacJetCorrAK8["C"];
   }
-  else if(iRun <= 304827){
-  	if(debug) std::cout << "\t\t\t using JEC for era DE "<< std::endl;
-  	JetCorrector = mEraFacJetCorr["DE"];
-  	JetCorrectorAK8 = mEraFacJetCorrAK8["DE"];
-  	}
-  else{
-  	if(debug) std::cout << "\t\t\t using JEC for era F "<< std::endl;
-  	JetCorrector = mEraFacJetCorr["F"];
-  	JetCorrectorAK8 = mEraFacJetCorrAK8["F"];
-  }
+  else if(iRun <= 325273){
+  	if(debug) std::cout << "\t\t\t using JEC for era D "<< std::endl;
+  	JetCorrector = mEraFacJetCorr["D"];
+  	JetCorrectorAK8 = mEraFacJetCorrAK8["D"];
+    }
 
 }
 
