@@ -1,9 +1,42 @@
 #include "FWLJMET/LJMet/interface/LjmetFactory.h"
 
+#include "FWLJMET/LJMet/interface/MultiLepEventSelector.h"
+
+#include "FWLJMET/LJMet/interface/CommonCalc.h"
+#include "FWLJMET/LJMet/interface/MultiLepCalc.h"
+#include "FWLJMET/LJMet/interface/JetSubCalc.h"
+#include "FWLJMET/LJMet/interface/TpTpCalc.h"
+#include "FWLJMET/LJMet/interface/TTbarMassCalc.h"
+#include "FWLJMET/LJMet/interface/DeepAK8Calc.h"
+#include "FWLJMET/LJMet/interface/HOTTaggerCalc.h"
+#include "FWLJMET/LJMet/interface/BestCalc.h"
+
+#include "FWLJMET/LJMet/interface/DummyCalc.h"
+#include "FWLJMET/LJMet/interface/DummyEventSelector.h"
+#include "FWLJMET/LJMet/interface/TestCalc.h"
+#include "FWLJMET/LJMet/interface/TestEventSelector.h"
+
 
 LjmetFactory::LjmetFactory(): theSelector(0)
 {
     mLegend = "[LjmetFactory]: ";
+
+    this->Register(new MultiLepEventSelector(), "MultiLepSelector");
+
+    this->Register(new CommonCalc(), "CommonCalc");
+    this->Register(new MultiLepCalc(), "MultiLepCalc");
+    this->Register(new JetSubCalc(), "JetSubCalc");
+    this->Register(new TpTpCalc(), "TpTpCalc");
+    this->Register(new TTbarMassCalc(), "TTbarMassCalc");
+    this->Register(new DeepAK8Calc(), "DeepAK8Calc");
+    this->Register(new HOTTaggerCalc(), "HOTTaggerCalc");
+    this->Register(new BestCalc(), "BestCalc");
+
+    this->Register(new DummyCalc(), "DummyCalc");
+    this->Register(new DummyEventSelector(), "DummySelector");
+    this->Register(new TestCalc(), "TestCalc");
+    this->Register(new TestEventSelector(), "TestSelector");
+
 }
 
 LjmetFactory::~LjmetFactory()
