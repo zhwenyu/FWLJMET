@@ -122,7 +122,9 @@ LJMet::LJMet(const edm::ParameterSet& iConfig)
    edm::Service<TFileService> fs; //for purpose of creating / saving to root file
 
    // output tree
-   std::cout << "[FWLJMet] : " << "Creating output tree : "<< ttree_name << std::endl;
+   std::cout << "\n========================================="<< std::endl;
+   std::cout << "[FWLJMet] : " << "Creating output tree : "  << ttree_name << std::endl;
+   std::cout <<   "========================================="<< std::endl;
    std::string const _treename = ttree_name;
    _tree = fs->make<TTree>(_treename.c_str(), _treename.c_str(), 64000000);
 
