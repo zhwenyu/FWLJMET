@@ -1,7 +1,5 @@
 #include "FWLJMET/LJMet/interface/LjmetFactory.h"
 
-// Ensure a single instance
-LjmetFactory * LjmetFactory::instance = 0;
 
 LjmetFactory::LjmetFactory(): theSelector(0)
 {
