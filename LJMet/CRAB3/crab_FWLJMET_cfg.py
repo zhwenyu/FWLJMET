@@ -20,7 +20,7 @@ config.section_("JobType")
 config.JobType.pluginName = 'Analysis'
 if(isVLQsignal):config.JobType.scriptExe = 'crab_script.sh'
 config.JobType.psetName = '../runFWLJMet_singleLep.py'
-config.JobType.pyCfgParams = ['isMC=True','isTTbar=False','maxEvents=100']
+config.JobType.pyCfgParams = ['isMC=True','isTTbar=False','maxEvents=-1']
 config.JobType.maxMemoryMB = 2500 #MB
 config.JobType.maxJobRuntimeMin = 2750 #minutes
 config.JobType.numCores = 4 #use wisely if turned on.
