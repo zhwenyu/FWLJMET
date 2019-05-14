@@ -131,7 +131,7 @@ LJMet::LJMet(const edm::ParameterSet& iConfig)
    ec.SetTree(_tree);
 
    // The factory for event selector and calculator plugins
-   factory = LjmetFactory::GetInstance();
+   factory = new LjmetFactory;
 
    // choose event selector
    std::cout << "[FWLJMet] : " << "instantiating the event selector : "<< ttree_name << std::endl;
