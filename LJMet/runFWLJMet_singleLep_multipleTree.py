@@ -28,6 +28,8 @@ options.parseArguments()
 isMC= options.isMC
 isTTbar = options.isTTbar
 
+#Check arguments
+print options
 
 ## LJMET
 process = cms.Process("LJMET")
