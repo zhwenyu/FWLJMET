@@ -10,8 +10,10 @@ from FWCore.ParameterSet.VarParsing import VarParsing
 options = VarParsing('analysis')
 options.register('isMC', '', VarParsing.multiplicity.singleton, VarParsing.varType.bool, 'Is MC')
 options.register('isTTbar', '', VarParsing.multiplicity.singleton, VarParsing.varType.bool, 'Is TTbar')
+options.register('isSignal', '', VarParsing.multiplicity.singleton, VarParsing.varType.bool, 'Is Signal')
 options.isMC = True
 options.isTTbar = False
+options.isSignal = True
 options.inputFiles = [
     'root://cmsxrootd.fnal.gov//store/mc/RunIIAutumn18MiniAOD/TprimeTprime_M-1400_TuneCP5_PSweights_13TeV-madgraph-pythia8/MINIAODSIM/102X_upgrade2018_realistic_v15-v2/80000/FEFD008E-00DF-9A4A-B3C4-4CE60A67B5C6.root'
     ]
@@ -20,7 +22,10 @@ options.parseArguments()
 
 isMC= options.isMC
 isTTbar = options.isTTbar
+isSignal = options.isSignal
 
+#Check arguments
+print options
 
 ## LJMET
 process = cms.Process("LJMET")
@@ -92,8 +97,11 @@ process.TFileService = cms.Service("TFileService", fileName = cms.string(OUTFILE
 ## MC Weights Analyzer
 ################################
 process.mcweightanalyzer = cms.EDAnalyzer(
-        'WeightAnalyzer',
-)
+    "WeightAnalyzer",
+    overrideLHEweight = cms.bool(isSignal),
+    basePDFname = cms.string("NNPDF31_nnlo_as_0118_nf_4"),
+    newPDFname = cms.string("NNPDF31_nnlo_as_0118_nf_4_mc_hessian"),
+    )
 
 ################################
 ## Trigger filter
@@ -161,24 +169,23 @@ print 'Using global tag', process.GlobalTag.globaltag
 ################################################
 ## Produce new slimmedElectrons with V2 IDs - https://twiki.cern.ch/twiki/bin/view/CMS/EgammaMiniAODV2
 ################################################
-# from RecoEgamma.EgammaTools.EgammaPostRecoTools import setupEgammaPostRecoSeq
-# setupEgammaPostRecoSeq(process,
-#                        runVID=True,
-#                        era='2017-Nov17ReReco')
+from RecoEgamma.EgammaTools.EgammaPostRecoTools import setupEgammaPostRecoSeq
+setupEgammaPostRecoSeq(process,
+                       era='2018-Prompt')
 
 
 ################################################
 ## Produce modified MET with the ECAL noise fix
 ################################################
-from PhysicsTools.PatUtils.tools.runMETCorrectionsAndUncertainties import runMetCorAndUncFromMiniAOD
+# from PhysicsTools.PatUtils.tools.runMETCorrectionsAndUncertainties import runMetCorAndUncFromMiniAOD
 
-runMetCorAndUncFromMiniAOD(
-    process,
-    isData = not isMC,
-    fixEE2017 = True,
-    fixEE2017Params = {'userawPt': True, 'ptThreshold':50.0, 'minEtaThreshold':2.65, 'maxEtaThreshold': 3.139},
-    postfix = "ModifiedMET"
-    )
+# runMetCorAndUncFromMiniAOD(
+#     process,
+#     isData = not isMC,
+#     fixEE2017 = True,
+#     fixEE2017Params = {'userawPt': True, 'ptThreshold':50.0, 'minEtaThreshold':2.65, 'maxEtaThreshold': 3.139},
+#     postfix = "ModifiedMET"
+#     )
 
 ################################
 ## Rerun the ecalBadCalibFilter
@@ -309,24 +316,24 @@ JECdown                  = False
 JERup                    = False
 JERdown                  = False
 doAllJetSyst             = False #this determines whether to save JER/JER up/down in one job. Default is currently false. Mar 19,2019.
-JEC_txtfile              = 'FWLJMET/LJMet/data/Fall17V32/Fall17_17Nov2017_V32_MC_Uncertainty_AK4PFchs.txt'
-JERSF_txtfile            = 'FWLJMET/LJMet/data/Fall17V3/Fall17_V3_MC_SF_AK4PFchs.txt'
-JER_txtfile              = 'FWLJMET/LJMet/data/Fall17V3/Fall17_V3_MC_PtResolution_AK4PFchs.txt'
-JERAK8_txtfile           = 'FWLJMET/LJMet/data/Fall17V3/Fall17_V3_MC_PtResolution_AK8PFPuppi.txt'
-MCL1JetPar               = 'FWLJMET/LJMet/data/Fall17V32/Fall17_17Nov2017_V32_MC_L1FastJet_AK4PFchs.txt'
-MCL2JetPar               = 'FWLJMET/LJMet/data/Fall17V32/Fall17_17Nov2017_V32_MC_L2Relative_AK4PFchs.txt'
-MCL3JetPar               = 'FWLJMET/LJMet/data/Fall17V32/Fall17_17Nov2017_V32_MC_L3Absolute_AK4PFchs.txt'
-MCL1JetParAK8            = 'FWLJMET/LJMet/data/Fall17V32/Fall17_17Nov2017_V32_MC_L1FastJet_AK8PFPuppi.txt'
-MCL2JetParAK8            = 'FWLJMET/LJMet/data/Fall17V32/Fall17_17Nov2017_V32_MC_L2Relative_AK8PFPuppi.txt'
-MCL3JetParAK8            = 'FWLJMET/LJMet/data/Fall17V32/Fall17_17Nov2017_V32_MC_L3Absolute_AK8PFPuppi.txt'
-DataL1JetPar             = 'FWLJMET/LJMet/data/Fall17V32/Fall17_17Nov2017B_V32_DATA_L1FastJet_AK4PFchs.txt'
-DataL2JetPar             = 'FWLJMET/LJMet/data/Fall17V32/Fall17_17Nov2017B_V32_DATA_L2Relative_AK4PFchs.txt'
-DataL3JetPar             = 'FWLJMET/LJMet/data/Fall17V32/Fall17_17Nov2017B_V32_DATA_L3Absolute_AK4PFchs.txt'
-DataResJetPar            = 'FWLJMET/LJMet/data/Fall17V32/Fall17_17Nov2017B_V32_DATA_L2L3Residual_AK4PFchs.txt'
-DataL1JetParAK8          = 'FWLJMET/LJMet/data/Fall17V32/Fall17_17Nov2017B_V32_DATA_L1FastJet_AK8PFPuppi.txt'
-DataL2JetParAK8          = 'FWLJMET/LJMet/data/Fall17V32/Fall17_17Nov2017B_V32_DATA_L2Relative_AK8PFPuppi.txt'
-DataL3JetParAK8          = 'FWLJMET/LJMet/data/Fall17V32/Fall17_17Nov2017B_V32_DATA_L3Absolute_AK8PFPuppi.txt'
-DataResJetParAK8         = 'FWLJMET/LJMet/data/Fall17V32/Fall17_17Nov2017B_V32_DATA_L2L3Residual_AK8PFPuppi.txt'
+JEC_txtfile              = 'FWLJMET/LJMet/data/Autumn18V8/Autumn18_V8_MC_Uncertainty_AK4PFchs.txt' #exact same values in Autumn18_V8_MC_Uncertainty_AK8PFPuppi.txt
+JERSF_txtfile            = 'FWLJMET/LJMet/data/Autumn18V1/Autumn18_V1_MC_SF_AK4PFchs.txt' #exact same values in Autumn18_V1_MC_SF_AK8PFPuppi.txt
+JER_txtfile              = 'FWLJMET/LJMet/data/Autumn18V1/Autumn18_V1_MC_PtResolution_AK4PFchs.txt'
+JERAK8_txtfile           = 'FWLJMET/LJMet/data/Autumn18V1/Autumn18_V1_MC_PtResolution_AK8PFPuppi.txt'
+MCL1JetPar               = 'FWLJMET/LJMet/data/Autumn18V8/Autumn18_V8_MC_L1FastJet_AK4PFchs.txt'
+MCL2JetPar               = 'FWLJMET/LJMet/data/Autumn18V8/Autumn18_V8_MC_L2Relative_AK4PFchs.txt'
+MCL3JetPar               = 'FWLJMET/LJMet/data/Autumn18V8/Autumn18_V8_MC_L3Absolute_AK4PFchs.txt'
+MCL1JetParAK8            = 'FWLJMET/LJMet/data/Autumn18V8/Autumn18_V8_MC_L1FastJet_AK8PFPuppi.txt'
+MCL2JetParAK8            = 'FWLJMET/LJMet/data/Autumn18V8/Autumn18_V8_MC_L2Relative_AK8PFPuppi.txt'
+MCL3JetParAK8            = 'FWLJMET/LJMet/data/Autumn18V8/Autumn18_V8_MC_L3Absolute_AK8PFPuppi.txt'
+DataL1JetPar             = 'FWLJMET/LJMet/data/Autumn18V8/Autumn18_RunA_V8_DATA_L1FastJet_AK4PFchs.txt'
+DataL2JetPar             = 'FWLJMET/LJMet/data/Autumn18V8/Autumn18_RunA_V8_DATA_L2Relative_AK4PFchs.txt'
+DataL3JetPar             = 'FWLJMET/LJMet/data/Autumn18V8/Autumn18_RunA_V8_DATA_L3Absolute_AK4PFchs.txt'
+DataResJetPar            = 'FWLJMET/LJMet/data/Autumn18V8/Autumn18_RunA_V8_DATA_L2L3Residual_AK4PFchs.txt'
+DataL1JetParAK8          = 'FWLJMET/LJMet/data/Autumn18V8/Autumn18_RunA_V8_DATA_L1FastJet_AK8PFPuppi.txt'
+DataL2JetParAK8          = 'FWLJMET/LJMet/data/Autumn18V8/Autumn18_RunA_V8_DATA_L2Relative_AK8PFPuppi.txt'
+DataL3JetParAK8          = 'FWLJMET/LJMet/data/Autumn18V8/Autumn18_RunA_V8_DATA_L3Absolute_AK8PFPuppi.txt'
+DataResJetParAK8         = 'FWLJMET/LJMet/data/Autumn18V8/Autumn18_RunA_V8_DATA_L2L3Residual_AK8PFPuppi.txt'
 
 #El MVA ID
 UseElIDV1_ = False #False means using ElIDV2
@@ -419,8 +426,8 @@ MultiLepSelector_cfg = cms.PSet(
 
             # Electon
             electron_cuts            = cms.bool(True),
-            electronsCollection      = cms.InputTag("slimmedElectrons"),
-            # electronsCollection      = cms.InputTag("slimmedElectrons::LJMET"), #if recreating electron collectiomn
+            #electronsCollection      = cms.InputTag("slimmedElectrons"),
+            electronsCollection      = cms.InputTag("slimmedElectrons::LJMET"), #if recreating electron collectiomn
             min_electron             = cms.int32(0), #not implemented in src code
             electron_minpt           = cms.double(20.0),
             electron_maxeta          = cms.double(2.4),
@@ -489,7 +496,7 @@ MultiLepSelector_cfg = cms.PSet(
             #Btag
             btag_cuts                = cms.bool(False), #not implemented
             btagOP                   = cms.string('MEDIUM'),
-            bdisc_min                = cms.double(0.4941), # THIS HAS TO MATCH btagOP !
+            bdisc_min                = cms.double(0.4184), # THIS HAS TO MATCH btagOP !
             applyBtagSF              = cms.bool(True), #This is implemented by BTagSFUtil.cc
             DeepCSVfile              = cms.FileInPath('FWLJMET/LJMet/data/DeepCSV_102XSF_V1.csv'),
             DeepCSVSubjetfile        = cms.FileInPath('FWLJMET/LJMet/data/subjet_DeepCSV_94XSF_V3_B_F.csv'),
@@ -548,9 +555,9 @@ MultiLepCalc_cfg = cms.PSet(
             #Gen stuff
             saveGenHT          = cms.bool(False),
             genJetsCollection  = cms.InputTag("slimmedGenJets"),
-            OverrideLHEWeights = cms.bool(False), #THIS NEEDS TO BE TRUE FOR SOME MC samples!
+            OverrideLHEWeights = cms.bool(isSignal), #TRUE FOR SIGNALS, False otherwise
             basePDFname        = cms.string('NNPDF31_nnlo_as_0118_nf_4'),
-            newPDFname         = cms.string('NNPDF31_lo_as_0118'),
+            newPDFname         = cms.string('NNPDF31_nnlo_as_0118_nf_4_mc_hessian'),
             keepPDGID          = cms.vuint32(1, 2, 3, 4, 5, 6, 21, 11, 12, 13, 14, 15, 16, 24),
             keepMomPDGID       = cms.vuint32(6, 24),
             keepPDGIDForce     = cms.vuint32(6,6),
@@ -559,7 +566,7 @@ MultiLepCalc_cfg = cms.PSet(
 
             #Btagging - Btag info needs to be passed here again if Calc uses Btagging.
             btagOP                   = cms.string('MEDIUM'),
-            bdisc_min                = cms.double(0.4941), # THIS HAS TO MATCH btagOP !
+            bdisc_min                = cms.double(0.4184), # THIS HAS TO MATCH btagOP !
             applyBtagSF              = cms.bool(True), #This is implemented by BTagSFUtil.cc
             DeepCSVfile              = cms.FileInPath('FWLJMET/LJMet/data/DeepCSV_102XSF_V1.csv'),
             DeepCSVSubjetfile        = cms.FileInPath('FWLJMET/LJMet/data/subjet_DeepCSV_94XSF_V3_B_F.csv'),
@@ -617,7 +624,7 @@ JetSubCalc_cfg = cms.PSet(
 
             #Btagging - Btag info needs to be passed here again if Calc uses Btagging.
             btagOP                   = cms.string('MEDIUM'),
-            bdisc_min                = cms.double(0.4941), # THIS HAS TO MATCH btagOP !
+            bdisc_min                = cms.double(0.4184), # THIS HAS TO MATCH btagOP !
             applyBtagSF              = cms.bool(True), #This is implemented by BTagSFUtil.cc
             DeepCSVfile              = cms.FileInPath('FWLJMET/LJMet/data/DeepCSV_102XSF_V1.csv'),
             DeepCSVSubjetfile        = cms.FileInPath('FWLJMET/LJMet/data/subjet_DeepCSV_94XSF_V3_B_F.csv'),
@@ -667,7 +674,8 @@ process.ljmet = cms.EDAnalyzer(
         'LJMet',
 
         debug         = cms.bool(False),
-        verbosity     = cms.int32(1),
+        ttree_name    = cms.string('ljmet'),
+        verbosity     = cms.int32(0),
         selector      = cms.string('MultiLepSelector'),
         include_calcs = cms.vstring(
                         'MultiLepCalc',
@@ -740,9 +748,9 @@ if (isTTbar):
     process.p = cms.Path(
                          process.mcweightanalyzer *
                          process.filter_any_explicit *
-                         process.fullPatMetSequenceModifiedMET *
+                         #process.fullPatMetSequenceModifiedMET *
                          #process.prefiringweight *
-                         #process.egammaPostRecoSeq *
+                         process.egammaPostRecoSeq *
                          process.updatedJetsAK8PuppiSoftDropPacked *
                          process.packedJetsAK8Puppi *
                          process.QGTagger *
@@ -755,9 +763,9 @@ else:
     process.p = cms.Path(
        process.mcweightanalyzer *
        process.filter_any_explicit *
-       process.fullPatMetSequenceModifiedMET *
+       #process.fullPatMetSequenceModifiedMET *
        #process.prefiringweight *
-       #process.egammaPostRecoSeq *
+       process.egammaPostRecoSeq *
        process.updatedJetsAK8PuppiSoftDropPacked *
        process.packedJetsAK8Puppi *
        process.QGTagger *

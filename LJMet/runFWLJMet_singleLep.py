@@ -24,6 +24,9 @@ isMC= options.isMC
 isTTbar = options.isTTbar
 isSignal = options.isSignal
 
+#Check arguments
+print options
+
 ## LJMET
 process = cms.Process("LJMET")
 
@@ -678,7 +681,8 @@ process.ljmet = cms.EDAnalyzer(
         'LJMet',
 
         debug         = cms.bool(False),
-        verbosity     = cms.int32(1),
+        ttree_name    = cms.string('ljmet'),
+        verbosity     = cms.int32(0),
         selector      = cms.string('MultiLepSelector'),
         include_calcs = cms.vstring(
                         'MultiLepCalc',
