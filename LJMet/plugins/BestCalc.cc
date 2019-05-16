@@ -20,7 +20,7 @@ int BestCalc::BeginJob(edm::ConsumesCollector && iC){
     std::ifstream input_cfg( m_dnnFile );                     // original: "data/BEST_mlp.json"
     // lwt::JSONConfig cfg = lwt::parse_json( input_cfg );
     cfg = lwt::parse_json( input_cfg );
-    m_lwtnn = new lwt::LightweightNeuralNetwork(cfg.inputs, cfg.layers, cfg.outputs);
+    m_lwtnn = std::unique_ptr<lwt::LightweightNeuralNetwork>(new lwt::LightweightNeuralNetwork(cfg.inputs, cfg.layers, cfg.outputs));
 
     std::cout << "END of BestCalc constructor" << std::endl;
 
@@ -1091,6 +1091,6 @@ unsigned int BestCalc::getParticleID(){
 
 int BestCalc::EndJob()
 {
-  delete m_lwtnn;
+  //delete m_lwtnn;
   return 0;
 }
