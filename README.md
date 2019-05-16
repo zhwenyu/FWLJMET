@@ -24,11 +24,11 @@ install:
         git cms-merge-topic cms-egamma:EgammaPostRecoTools
 
 	### -- FWLJMET/LJMet/plugins/BestCalc.cc is now functional for JH with new commit from May 11 --
-	### BestCalc: copy lwtnn so that BestCalc.cc will compile. 
-	### This is not ideal, should always try to get official CMSSW / GitHub recipes whenever possible. 
+	### BestCalc: copy lwtnn so that BestCalc.cc will compile.
+	### This is not ideal, should always try to get official CMSSW / GitHub recipes whenever possible.
 	### JH May 11: likely json needs to get remade for this by BEST team to use "lwtnn"-owned github. Forgot about Dan Marley's linked below, will test next week.
 	cp -r ~jmanagan/nobackup/CMSSW_9_4_12/src/lwtnn .   ## use scp after a Fermilab kinit to copy onto non-LPC clusters
-	
+
 	## Check out FWLJMET
 	git clone -b 10_2_X_2018data git@github.com:cms-ljmet/FWLJMET.git
 
