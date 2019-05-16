@@ -72,7 +72,7 @@ class BestCalc : public BaseCalc {
     //
     //
 
-    
+
 public:
     BestCalc(){};
     virtual ~BestCalc() { }
@@ -80,7 +80,7 @@ public:
     virtual int ProduceEvent(edm::EventBase const & event, BaseEventSelector * selector) { return 0; }
     virtual int AnalyzeEvent(edm::Event const & event, BaseEventSelector * selector);
     virtual int EndJob();
-    
+
     std::map<std::string,double> execute( const pat::Jet& jet );
 
     void getJetValues( const pat::Jet& jet );
@@ -101,10 +101,10 @@ public:
 
     std::string mName;
     std::string mLegend;
-    
+
  private:
     // lwtnn
-    lwt::LightweightNeuralNetwork* m_lwtnn;
+    std::unique_ptr<lwt::LightweightNeuralNetwork> m_lwtnn;
     std::map<std::string,double> m_BESTvars;
     std::map<std::string,double> m_NNresults;
 
@@ -141,11 +141,11 @@ public:
       {"jetChargeKappa",      "0.6"},
       {"maxJetSize",          "4"},
       {"numSubjetsMin",       "2"},
-      {"numDaughtersMin",     "2"} 
+      {"numDaughtersMin",     "2"}
     };
-    
+
     lwt::JSONConfig cfg;
-    
+
 
 };
 

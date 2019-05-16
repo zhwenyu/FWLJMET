@@ -16,14 +16,14 @@ int BestCalc::BeginJob(edm::ConsumesCollector && iC){
     m_maxJetSize = mPset.getParameter<int>("maxJetSize");
     m_dnnFile = mPset.getParameter<edm::FileInPath>("dnnFile").fullPath();
 
-    std::cout << "["+GetName()+"]: using json file: " << m_dnnFile << std::endl;     
+    std::cout << "["+GetName()+"]: using json file: " << m_dnnFile << std::endl;
     std::ifstream input_cfg( m_dnnFile );                     // original: "data/BEST_mlp.json"
     // lwt::JSONConfig cfg = lwt::parse_json( input_cfg );
     cfg = lwt::parse_json( input_cfg );
-    m_lwtnn = new lwt::LightweightNeuralNetwork(cfg.inputs, cfg.layers, cfg.outputs);
-    
+    m_lwtnn = std::unique_ptr<lwt::LightweightNeuralNetwork>(new lwt::LightweightNeuralNetwork(cfg.inputs, cfg.layers, cfg.outputs));
+
     std::cout << "END of BestCalc constructor" << std::endl;
-    
+
     return 0;
 
 }
@@ -31,7 +31,7 @@ int BestCalc::BeginJob(edm::ConsumesCollector && iC){
 
 int BestCalc::AnalyzeEvent(edm::Event const & event, BaseEventSelector * selector){
 
-  //Get all AK8 jets (not just for W and Top)                                                                                                                                                             
+  //Get all AK8 jets (not just for W and Top)
   //edm::InputTag AK8JetColl = edm::InputTag("slimmedJetsAK8");
   //edm::Handle<std::vector<pat::Jet> > AK8Jets;
   //event.getByLabel(AK8JetColl, AK8Jets);
@@ -39,7 +39,7 @@ int BestCalc::AnalyzeEvent(edm::Event const & event, BaseEventSelector * selecto
   std::vector<pat::Jet> const & vSelCorrJets_AK8 = selector->GetSelCorrJetsAK8();
 
   //Four std::vector
-                                  
+
   std::vector <double> AK8JetPt;
   std::vector <double> AK8JetEta;
   std::vector <double> AK8JetPhi;
@@ -68,7 +68,7 @@ int BestCalc::AnalyzeEvent(edm::Event const & event, BaseEventSelector * selecto
   std::vector <double> m12_jet;
   std::vector <double> m23_jet;
   std::vector <double> m13_jet;
-  
+
   std::vector <double> m1234top;
   std::vector <double> m12top;
   std::vector <double> m23top;
@@ -142,13 +142,13 @@ int BestCalc::AnalyzeEvent(edm::Event const & event, BaseEventSelector * selecto
 
   std::vector <double> AK8JetCSV;
 
-  //   std::vector <double> AK8JetRCN;                                                                                                                                                                    
+  //   std::vector <double> AK8JetRCN;
   //for (std::vector<pat::Jet>::const_iterator ijet = AK8Jets->begin(); ijet != AK8Jets->end(); ijet++){
   for (std::vector<pat::Jet>::const_iterator ii = vSelCorrJets_AK8.begin(); ii != vSelCorrJets_AK8.end(); ii++){
 
-    if(ii->pt() < 170) continue; // not all info there for lower pt                                                                                                                                     
+    if(ii->pt() < 170) continue; // not all info there for lower pt
     //pat::Jet corrak8 = 	selector->correctJetReturnPatJet(*ijet, event, true);
-    //Four std::vector                                                                                                                                                                                  
+    //Four std::vector
     AK8JetPt     . push_back(ii->pt());
     AK8JetEta    . push_back(ii->eta());
     AK8JetPhi    . push_back(ii->phi());
@@ -368,16 +368,16 @@ int BestCalc::AnalyzeEvent(edm::Event const & event, BaseEventSelector * selecto
     dnn_B.push_back(myMap["dnn_b"]);
 
     dnn_largest.push_back(largest);
-    
+
   }
 
-  //Four std::vector                                                                                                                                                                                      
+  //Four std::vector
   SetValue("AK8JetPt"     , AK8JetPt);
   SetValue("AK8JetEta"    , AK8JetEta);
   SetValue("AK8JetPhi"    , AK8JetPhi);
   SetValue("AK8JetEnergy" , AK8JetEnergy);
   SetValue("AK8JetCSV"    , AK8JetCSV);
-  
+
   SetValue("dnn_QCD", dnn_QCD);
   SetValue("dnn_Top",dnn_Top);
   SetValue("dnn_Higgs",dnn_Higgs);
@@ -1091,6 +1091,6 @@ unsigned int BestCalc::getParticleID(){
 
 int BestCalc::EndJob()
 {
-  delete m_lwtnn;
+  //delete m_lwtnn;
   return 0;
 }
