@@ -48,7 +48,7 @@ def customise(process):
                                           oncePerEventMode=cms.untracked.bool(True))
     #Adding Timing service:
     process.Timing=cms.Service("Timing")
-    
+
     #Add these 3 lines to put back the summary for timing information at the end of the logfile
     #(needed for TimeReport report)
     if hasattr(process,'options'):
@@ -57,7 +57,7 @@ def customise(process):
         process.options = cms.untracked.PSet(
             wantSummary = cms.untracked.bool(True)
         )
-        
+
     return(process)
 # customise(process)
 
@@ -667,6 +667,7 @@ process.ljmet = cms.EDAnalyzer(
         'LJMet',
 
         debug         = cms.bool(False),
+        ttree_name    = cms.string('ljmet'),
         verbosity     = cms.int32(1),
         selector      = cms.string('MultiLepSelector'),
         include_calcs = cms.vstring(
