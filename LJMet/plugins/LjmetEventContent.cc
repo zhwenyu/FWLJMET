@@ -171,6 +171,9 @@ void LjmetEventContent::FillHist(std::string modname, std::string histname, doub
 void LjmetEventContent::Fill()
 {
     if (mFirstEntry) {
+        std::cout << "\n========================================="<< std::endl;
+        std::cout << "[FWLJMet] : " << "Branch Info : " << std::endl;
+        std::cout <<   "========================================="<< std::endl;
         createBranches();
         mFirstEntry = false;
     }

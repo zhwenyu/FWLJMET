@@ -89,6 +89,7 @@ class LJMet : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
       std::string selection;
       std::vector<std::string> vExcl;
       std::vector<std::string> vIncl;
+      std::string ttree_name;
 
 };
 
@@ -113,6 +114,7 @@ LJMet::LJMet(const edm::ParameterSet& iConfig)
    selection  = iConfig.getParameter<std::string>("selector");
    vExcl      = iConfig.getParameter<std::vector<std::string>>("exclude_calcs");
    vIncl      = iConfig.getParameter<std::vector<std::string>>("include_calcs");
+   ttree_name = iConfig.getParameter<std::string>("ttree_name");
 
 
    usesResource("TFileService"); // came originally with EDAnalyzer
@@ -120,8 +122,10 @@ LJMet::LJMet(const edm::ParameterSet& iConfig)
    edm::Service<TFileService> fs; //for purpose of creating / saving to root file
 
    // output tree
-   std::cout << "[FWLJMet] : " << "Creating output tree" << std::endl;
-   std::string const _treename = "ljmet";
+   std::cout << "\n========================================="<< std::endl;
+   std::cout << "[FWLJMet] : " << "Creating output tree : "  << ttree_name << std::endl;
+   std::cout <<   "========================================="<< std::endl;
+   std::string const _treename = ttree_name;
    _tree = fs->make<TTree>(_treename.c_str(), _treename.c_str(), 64000000);
 
    // internal LJMet event content
@@ -129,10 +133,10 @@ LJMet::LJMet(const edm::ParameterSet& iConfig)
    ec.SetTree(_tree);
 
    // The factory for event selector and calculator plugins
-   factory = LjmetFactory::GetInstance();
+   factory = new LjmetFactory;
 
    // choose event selector
-   std::cout << "[FWLJMet] : " << "instantiating the event selector" << std::endl;
+   std::cout << "[FWLJMet] : " << "instantiating the event selector : "<< ttree_name << std::endl;
    theSelector = factory->GetEventSelector(selection);
 
    // sanity check histograms from the selector
@@ -262,8 +266,7 @@ LJMet::beginJob()
 void
 LJMet::endJob()
 {
-    if(debug) std::cout << " " <<std::endl;
-    if(debug) std::cout << "[FWLJMet] : " << "Selection" << std::endl;
+    std::cout << "\n[FWLJMet] : " << "Selection (" << ttree_name << ")" << std::endl;
     theSelector->print(std::cout);
 
 

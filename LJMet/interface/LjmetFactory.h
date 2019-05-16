@@ -16,10 +16,10 @@
 class LjmetFactory {
 public:
     virtual ~LjmetFactory();
-    static LjmetFactory * GetInstance() {
-        if (!instance) instance = new LjmetFactory();
-        return instance;
-    }
+
+    LjmetFactory();
+    LjmetFactory(const LjmetFactory &); // stop default
+
     int Register(BaseCalc * calc, std::string name);
     int Register(BaseEventSelector * calc, std::string name);
     
@@ -45,14 +45,11 @@ public:
     void RunEndEvent(edm::EventBase const & event, LjmetEventContent & ec);
     
 private:
-    LjmetFactory();
-    LjmetFactory(const LjmetFactory &); // stop default
     std::string mLegend;
     std::map<std::string, BaseCalc * > mpCalculators;
     std::map<std::string, BaseEventSelector * > mpSelectors;
     BaseEventSelector * theSelector;
     std::vector<std::string> mvExcludedCalcs;
-    static LjmetFactory * instance;
 };
 
 #endif
