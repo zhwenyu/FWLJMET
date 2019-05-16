@@ -444,9 +444,10 @@ MultiLepSelector_cfg = cms.PSet(
             maxLeptons          = cms.int32(1),
 
             # Jets
-            # jet_collection           = cms.InputTag('slimmedJets'),
+            # jet_collection           = cms.InputTag('slimmedJets'), #original collection
             jet_collection           = cms.InputTag('updatedPatJets::LJMET'),
-            AK8jet_collection        = cms.InputTag('slimmedJetsAK8'),
+            # AK8jet_collection        = cms.InputTag('slimmedJetsAK8'), #original collection
+            AK8jet_collection        = cms.InputTag('packedJetsAK8Puppi'),
             JECup                    = cms.bool(JECup),
             JECdown                  = cms.bool(JECdown),
             JERup                    = cms.bool(JERup),

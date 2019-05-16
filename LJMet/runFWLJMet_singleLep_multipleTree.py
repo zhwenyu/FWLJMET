@@ -8,8 +8,8 @@ relBase = os.environ['CMSSW_BASE']
 ## PARSE ARGUMENTS
 from FWCore.ParameterSet.VarParsing import VarParsing
 options = VarParsing('analysis')
-options.register('isMC', '', VarParsing.multiplicity.singleton, VarParsing.varType.bool, 'Is MC') 
-options.register('isTTbar', '', VarParsing.multiplicity.singleton, VarParsing.varType.bool, 'Is TTbar') 
+options.register('isMC', '', VarParsing.multiplicity.singleton, VarParsing.varType.bool, 'Is MC')
+options.register('isTTbar', '', VarParsing.multiplicity.singleton, VarParsing.varType.bool, 'Is TTbar')
 options.isMC = True
 options.isTTbar = False
 options.inputFiles = [
@@ -51,7 +51,7 @@ def customise(process):
                                           oncePerEventMode=cms.untracked.bool(True))
     #Adding Timing service:
     process.Timing=cms.Service("Timing")
-    
+
     #Add these 3 lines to put back the summary for timing information at the end of the logfile
     #(needed for TimeReport report)
     if hasattr(process,'options'):
@@ -60,7 +60,7 @@ def customise(process):
         process.options = cms.untracked.PSet(
             wantSummary = cms.untracked.bool(True)
         )
-        
+
     return(process)
 #customise(process)
 
@@ -447,9 +447,10 @@ MultiLepSelector_cfg = cms.PSet(
             maxLeptons          = cms.int32(1),
 
             # Jets
-            # jet_collection           = cms.InputTag('slimmedJets'),
+            # jet_collection           = cms.InputTag('slimmedJets'), # original collection
             jet_collection           = cms.InputTag('updatedPatJets::LJMET'),
-            AK8jet_collection        = cms.InputTag('slimmedJetsAK8'),
+            # AK8jet_collection        = cms.InputTag('slimmedJetsAK8'), # original collection
+            AK8jet_collection        = cms.InputTag('packedJetsAK8Puppi'),
             JECup                    = cms.bool(JECup),
             JECdown                  = cms.bool(JECdown),
             JERup                    = cms.bool(JERup),
@@ -881,7 +882,7 @@ process.ljmet_JERdown = cms.EDAnalyzer(
 
 # Configure a path and endpath to run the producer and output modules
 
-# ----------------------- GenHFHadronMatcher -----------------                                                
+# ----------------------- GenHFHadronMatcher -----------------
 if (isTTbar):
     process.load("PhysicsTools.JetMCAlgos.GenHFHadronMatcher_cff")
 
@@ -907,24 +908,24 @@ if (isTTbar):
     process.categorizeGenTtbar.genJets = cms.InputTag("slimmedGenJets")
 
     process.ttbarcat = cms.Sequence(
-        process.selectedHadronsAndPartons * process.genJetFlavourInfos * process.matchGenBHadron 
-        * process.matchGenCHadron* ## gen HF flavour matching            
-        process.categorizeGenTtbar  ## return already a categorization id for tt                  
+        process.selectedHadronsAndPartons * process.genJetFlavourInfos * process.matchGenBHadron
+        * process.matchGenCHadron* ## gen HF flavour matching
+        process.categorizeGenTtbar  ## return already a categorization id for tt
         )
 
-    process.p = cms.Path(process.fullPatMetSequenceModifiedMET * 
-                         process.prefiringweight * 
-                         process.egammaPostRecoSeq * 
-                         process.updatedJetsAK8PuppiSoftDropPacked * 
+    process.p = cms.Path(process.fullPatMetSequenceModifiedMET *
+                         process.prefiringweight *
+                         process.egammaPostRecoSeq *
+                         process.updatedJetsAK8PuppiSoftDropPacked *
                          process.packedJetsAK8Puppi *
                          process.QGTagger *
                          process.ecalBadCalibReducedMINIAODFilter *
                          process.ttbarcat *
-                         process.ljmet *#(ntuplizer) 
-                         process.ljmet_JECup *#(ntuplizer) 
-                         process.ljmet_JECdown * #(ntuplizer) 
-                         process.ljmet_JERup *#(ntuplizer) 
-                         process.ljmet_JERdown #(ntuplizer) 
+                         process.ljmet *#(ntuplizer)
+                         process.ljmet_JECup *#(ntuplizer)
+                         process.ljmet_JECdown * #(ntuplizer)
+                         process.ljmet_JERup *#(ntuplizer)
+                         process.ljmet_JERdown #(ntuplizer)
                          )
 
 else:
@@ -937,11 +938,11 @@ else:
        process.packedJetsAK8Puppi *
        process.QGTagger *
        process.ecalBadCalibReducedMINIAODFilter *
-       process.ljmet *#(ntuplizer) 
-       process.ljmet_JECup *#(ntuplizer) 
-       process.ljmet_JECdown *#(ntuplizer) 
-       process.ljmet_JERup *#(ntuplizer) 
-       process.ljmet_JERdown #(ntuplizer) 
+       process.ljmet *#(ntuplizer)
+       process.ljmet_JECup *#(ntuplizer)
+       process.ljmet_JECdown *#(ntuplizer)
+       process.ljmet_JERup *#(ntuplizer)
+       process.ljmet_JERdown #(ntuplizer)
     )
 
 process.p.associate(patAlgosToolsTask)
