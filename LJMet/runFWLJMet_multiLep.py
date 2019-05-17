@@ -13,7 +13,7 @@ options.register('isTTbar', '', VarParsing.multiplicity.singleton, VarParsing.va
 options.register('isSignal', '', VarParsing.multiplicity.singleton, VarParsing.varType.bool, 'Is Signal')
 options.isMC = True
 options.isTTbar = False
-options.isSignal = True
+options.isSignal = False
 options.inputFiles = [
     'root://cmsxrootd.fnal.gov//store/mc/RunIIAutumn18MiniAOD/TprimeTprime_M-1400_TuneCP5_PSweights_13TeV-madgraph-pythia8/MINIAODSIM/102X_upgrade2018_realistic_v15-v2/80000/FEFD008E-00DF-9A4A-B3C4-4CE60A67B5C6.root'
     ]
@@ -23,6 +23,8 @@ options.parseArguments()
 isMC= options.isMC
 isTTbar = options.isTTbar
 isSignal = options.isSignal
+
+if 'Tprime' in options.inputFiles[0] or 'Bprime' in options.inputFiles[0] :  isSignal=True
 
 #Check arguments
 print options
