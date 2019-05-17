@@ -11,13 +11,17 @@ options = VarParsing('analysis')
 options.register('isMC', '', VarParsing.multiplicity.singleton, VarParsing.varType.bool, 'Is MC')
 options.register('isTTbar', '', VarParsing.multiplicity.singleton, VarParsing.varType.bool, 'Is TTbar')
 options.register('isSignal', '', VarParsing.multiplicity.singleton, VarParsing.varType.bool, 'Is Signal')
-options.isMC = True
+options.isMC = False
 options.isTTbar = False
-options.isSignal = True
+options.isSignal = False
 options.inputFiles = [
-    'root://cmsxrootd.fnal.gov//store/mc/RunIIAutumn18MiniAOD/TprimeTprime_M-1400_TuneCP5_PSweights_13TeV-madgraph-pythia8/MINIAODSIM/102X_upgrade2018_realistic_v15-v2/80000/FEFD008E-00DF-9A4A-B3C4-4CE60A67B5C6.root'
+    #'root://cmsxrootd.fnal.gov//store/mc/RunIIAutumn18MiniAOD/TprimeTprime_M-1400_TuneCP5_PSweights_13TeV-madgraph-pythia8/MINIAODSIM/102X_upgrade2018_realistic_v15-v2/80000/FEFD008E-00DF-9A4A-B3C4-4CE60A67B5C6.root'
+    'root://cmsxrootd.fnal.gov//store/data/Run2018B/SingleMuon/MINIAOD/17Sep2018-v1/270000/9654C1C8-3075-4B48-A1B3-3D97DEFC2B06.root',
+    'root://cmsxrootd.fnal.gov//store/data/Run2018B/SingleMuon/MINIAOD/17Sep2018-v1/270000/66892497-F81B-C84C-AE9D-16EBC653A4A5.root',
+    'root://cmsxrootd.fnal.gov//store/data/Run2018B/SingleMuon/MINIAOD/17Sep2018-v1/270000/BE03DBD8-999F-EA45-A11C-D3104B4E9D91.root',
+    'root://cmsxrootd.fnal.gov//store/data/Run2018B/SingleMuon/MINIAOD/17Sep2018-v1/270000/FAC085DA-3EB6-FF48-BF15-21D257260848.root',
     ]
-options.maxEvents = 100
+options.maxEvents = 10
 options.parseArguments()
 
 isMC= options.isMC
@@ -161,12 +165,10 @@ process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
 from Configuration.AlCa.GlobalTag import GlobalTag # See https://twiki.cern.ch/twiki/bin/viewauth/CMS/PdmVAnalysisSummaryTable
 process.GlobalTag = GlobalTag(process.GlobalTag, '102X_upgrade2018_realistic_v18', '')
 if isMC == False:
-    if era in ['A','B','C']:
-        process.GlobalTag = GlobalTag(process.GlobalTag, '102X_dataRun2_Sep2018ABC_v2')
-    if era == 'D':
-        process.GlobalTag = GlobalTag(process.GlobalTag, '102X_dataRun2_Prompt_v13')
+    if 'Run2018D' in options.inputFiles[0]: process.GlobalTag = GlobalTag(process.GlobalTag, '102X_dataRun2_Prompt_v13')
+    else: process.GlobalTag = GlobalTag(process.GlobalTag, '102X_dataRun2_Sep2018ABC_v2')
+        
 print 'Using global tag', process.GlobalTag.globaltag
-
 
 
 ################################################
@@ -513,6 +515,43 @@ MultiLepSelector_cfg = cms.PSet(
             MistagUncertDown          = cms.bool(False), # no longer needed, but can still be utilized. Keep false as default.
 
             )
+if not isMC:
+    MultiLepSelector_cfg.mctrigger_path_el = cms.vstring('')
+    MultiLepSelector_cfg.mctrigger_path_mu = cms.vstring('')
+    MultiLepSelector_cfg.trigger_path_el = cms.vstring(
+        #'digitisation_step',
+        'HLT_Ele35_WPTight_Gsf',
+        'HLT_Ele38_WPTight_Gsf',
+        'HLT_Ele40_WPTight_Gsf',
+        'HLT_Ele28_eta2p1_WPTight_Gsf_HT150',
+        'HLT_Ele15_IsoVVVL_PFHT450_PFMET50',
+        'HLT_Ele15_IsoVVVL_PFHT450',
+        'HLT_Ele50_IsoVVVL_PFHT450',
+        'HLT_Ele15_IsoVVVL_PFHT600',
+        'HLT_Ele50_CaloIdVT_GsfTrkIdT_PFJet165',
+        'HLT_Ele115_CaloIdVT_GsfTrkIdT'
+        
+        'HLT_Ele32_WPTight_Gsf',
+        'HLT_Ele32_WPTight_Gsf_L1DoubleEG',
+        'HLT_Ele30_eta2p1_WPTight_Gsf_CentralPFJet35_EleCleaned',
+        )
+    MultiLepSelector_cfg.trigger_path_mu = cms.vstring(
+        #'digitisation_step',
+        'HLT_IsoMu24',
+        'HLT_IsoMu24_eta2p1',
+        'HLT_IsoMu27',
+        'HLT_IsoMu30',
+        'HLT_Mu50',
+        'HLT_TkMu50',
+        'HLT_Mu55',
+        'HLT_Mu15_IsoVVVL_PFHT450_PFMET50',
+        'HLT_Mu15_IsoVVVL_PFHT450',
+        'HLT_Mu50_IsoVVVL_PFHT450',
+        'HLT_Mu15_IsoVVVL_PFHT600',
+        
+        'HLT_IsoTkMu24',
+        'HLT_IsoMu24_2p1',
+        )
 
 MultiLepCalc_cfg = cms.PSet(
 
@@ -766,19 +805,31 @@ if (isTTbar):
                          process.ljmet #(ntuplizer)
                          )
 
+elif(isMC):
+    process.p = cms.Path(
+        process.mcweightanalyzer *
+        process.filter_any_explicit *
+        #process.fullPatMetSequenceModifiedMET *
+        #process.prefiringweight *
+        process.egammaPostRecoSeq *
+        process.updatedJetsAK8PuppiSoftDropPacked *
+        process.packedJetsAK8Puppi *
+        process.QGTagger *
+        process.ecalBadCalibReducedMINIAODFilter *
+        process.ljmet #(ntuplizer)
+        )
 else:
     process.p = cms.Path(
-       process.mcweightanalyzer *
-       process.filter_any_explicit *
-       #process.fullPatMetSequenceModifiedMET *
-       #process.prefiringweight *
-       process.egammaPostRecoSeq *
-       process.updatedJetsAK8PuppiSoftDropPacked *
-       process.packedJetsAK8Puppi *
-       process.QGTagger *
-       process.ecalBadCalibReducedMINIAODFilter *
-       process.ljmet #(ntuplizer)
-    )
+        process.filter_any_explicit *
+        #process.fullPatMetSequenceModifiedMET *
+        #process.prefiringweight *
+        process.egammaPostRecoSeq *
+        process.updatedJetsAK8PuppiSoftDropPacked *
+        process.packedJetsAK8Puppi *
+        process.QGTagger *
+        process.ecalBadCalibReducedMINIAODFilter *
+        process.ljmet #(ntuplizer)
+        )
 
 process.p.associate(patAlgosToolsTask)
 

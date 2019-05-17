@@ -11,19 +11,24 @@ options = VarParsing('analysis')
 options.register('isMC', '', VarParsing.multiplicity.singleton, VarParsing.varType.bool, 'Is MC')
 options.register('isTTbar', '', VarParsing.multiplicity.singleton, VarParsing.varType.bool, 'Is TTbar')
 options.register('isSignal', '', VarParsing.multiplicity.singleton, VarParsing.varType.bool, 'Is Signal')
-options.isMC = True
+options.isMC = False
 options.isTTbar = False
-options.isSignal = True
+options.isSignal = False
 options.inputFiles = [
     #matched with ~jmanagan/nobackup/LJMet94X_1lep_013019_logs/nominal/TTTT_TuneCP5_PSweights_13TeV-amcatnlo-pythia8/producer_TTTT_TuneCP5_PSweights_13TeV-amcatnlo-pythia8_1.py
     #'root://cmsxrootd.fnal.gov//store/mc/RunIIFall17MiniAODv2/TTTT_TuneCP5_PSweights_13TeV-amcatnlo-pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14-v1/70000/0ED34A55-DD52-E811-91CC-E0071B73B6B0.root',
     #'root://cmsxrootd.fnal.gov//store/mc/RunIIFall17MiniAODv2/TTTT_TuneCP5_PSweights_13TeV-amcatnlo-pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14-v1/70000/E2A4455F-FA53-E811-8017-E0071B7A8560.root',
-    'root://cmsxrootd.fnal.gov//store/mc/RunIIFall17MiniAODv2/TprimeTprime_M-1400_TuneCP5_13TeV-madgraph-pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14-v2/30000/626C8F3E-4962-E811-8F8A-008CFAE4504C.root',
+    #'root://cmsxrootd.fnal.gov//store/mc/RunIIFall17MiniAODv2/TprimeTprime_M-1400_TuneCP5_13TeV-madgraph-pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14-v2/30000/626C8F3E-4962-E811-8F8A-008CFAE4504C.root',
     #'root://cmsxrootd.fnal.gov//store/data/Run2017B/SingleMuon/MINIAOD/31Mar2018-v1/80000/4462B46E-653C-E811-BA97-0025905A6064.root'
+    'root://cmsxrootd.fnal.gov//store/data/Run2017F/SingleMuon/MINIAOD/31Mar2018-v1/80000/7C4AE2F9-5937-E811-88AE-0CC47AD98F64.root',
+    'root://cmsxrootd.fnal.gov//store/data/Run2017F/SingleMuon/MINIAOD/31Mar2018-v1/80000/3AD84900-5A37-E811-8F2E-0CC47A13D052.root',
+    'root://cmsxrootd.fnal.gov//store/data/Run2017F/SingleMuon/MINIAOD/31Mar2018-v1/80000/725AAEFA-5937-E811-8151-0CC47AD98D6C.root',
+    'root://cmsxrootd.fnal.gov//store/data/Run2017F/SingleMuon/MINIAOD/31Mar2018-v1/80000/189064FA-5937-E811-BC7D-0CC47AD99050.root',
+
     #'root://cmsxrootd.fnal.gov//store/mc/RunIIFall17MiniAODv2/TprimeTprime_M-1800_TuneCP5_13TeV-madgraph-pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14-v2/80000/12A585B9-F46B-E811-A775-FA163EFD0C51.root'
     #'root://cmsxrootd.fnal.gov//store/mc/RunIIFall17MiniAODv2/TTToSemiLeptonic_TuneCP5_PSweights_13TeV-powheg-pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14-v1/50000/5E7E4AA9-0743-E811-999A-0CC47A7C35A8.root'
     ]
-options.maxEvents = 100
+options.maxEvents = 200
 options.parseArguments()
 
 isMC= options.isMC
@@ -331,7 +336,7 @@ MCL3JetPar               = 'FWLJMET/LJMet/data/Fall17V32/Fall17_17Nov2017_V32_MC
 MCL1JetParAK8            = 'FWLJMET/LJMet/data/Fall17V32/Fall17_17Nov2017_V32_MC_L1FastJet_AK8PFPuppi.txt'
 MCL2JetParAK8            = 'FWLJMET/LJMet/data/Fall17V32/Fall17_17Nov2017_V32_MC_L2Relative_AK8PFPuppi.txt'
 MCL3JetParAK8            = 'FWLJMET/LJMet/data/Fall17V32/Fall17_17Nov2017_V32_MC_L3Absolute_AK8PFPuppi.txt'
-DataL1JetPar             = 'FWLJMET/LJMet/data/Fall17V32/Fall17_17Nov2017B_V32_DATA_L1FastJet_AK4PFchs.txt'
+DataL1JetPar             = 'FWLJMET/LJMet/data/Fall17V32/Fall17_17Nov2017B_V32_DATA_L1FastJet_AK4PFchs.txt' 
 DataL2JetPar             = 'FWLJMET/LJMet/data/Fall17V32/Fall17_17Nov2017B_V32_DATA_L2Relative_AK4PFchs.txt'
 DataL3JetPar             = 'FWLJMET/LJMet/data/Fall17V32/Fall17_17Nov2017B_V32_DATA_L3Absolute_AK4PFchs.txt'
 DataResJetPar            = 'FWLJMET/LJMet/data/Fall17V32/Fall17_17Nov2017B_V32_DATA_L2L3Residual_AK4PFchs.txt'
@@ -515,6 +520,43 @@ MultiLepSelector_cfg = cms.PSet(
             MistagUncertDown          = cms.bool(False), # no longer needed, but can still be utilized. Keep false as default.
 
             )
+if not isMC:
+    MultiLepSelector_cfg.mctrigger_path_el = cms.vstring('')
+    MultiLepSelector_cfg.mctrigger_path_mu = cms.vstring('')
+    MultiLepSelector_cfg.trigger_path_el = cms.vstring(
+        #'digitisation_step',
+        'HLT_Ele35_WPTight_Gsf',
+        'HLT_Ele38_WPTight_Gsf',
+        'HLT_Ele40_WPTight_Gsf',
+        'HLT_Ele28_eta2p1_WPTight_Gsf_HT150',
+        'HLT_Ele15_IsoVVVL_PFHT450_PFMET50',
+        'HLT_Ele15_IsoVVVL_PFHT450',
+        'HLT_Ele50_IsoVVVL_PFHT450',
+        'HLT_Ele15_IsoVVVL_PFHT600',
+        'HLT_Ele50_CaloIdVT_GsfTrkIdT_PFJet165',
+        'HLT_Ele115_CaloIdVT_GsfTrkIdT'
+        
+        'HLT_Ele32_WPTight_Gsf',
+        'HLT_Ele32_WPTight_Gsf_L1DoubleEG',
+        'HLT_Ele30_eta2p1_WPTight_Gsf_CentralPFJet35_EleCleaned',
+        )
+    MultiLepSelector_cfg.trigger_path_mu = cms.vstring(
+        #'digitisation_step',
+        'HLT_IsoMu24',
+        'HLT_IsoMu24_eta2p1',
+        'HLT_IsoMu27',
+        'HLT_IsoMu30',
+        'HLT_Mu50',
+        'HLT_TkMu50',
+        'HLT_Mu55',
+        'HLT_Mu15_IsoVVVL_PFHT450_PFMET50',
+        'HLT_Mu15_IsoVVVL_PFHT450',
+        'HLT_Mu50_IsoVVVL_PFHT450',
+        'HLT_Mu15_IsoVVVL_PFHT600',
+        
+        'HLT_IsoTkMu24',
+        'HLT_IsoMu24_2p1',
+        )
 
 MultiLepCalc_cfg = cms.PSet(
 
@@ -683,7 +725,8 @@ process.ljmet = cms.EDAnalyzer(
         'LJMet',
 
         debug         = cms.bool(False),
-        verbosity     = cms.int32(1),
+        ttree_name    = cms.string('ljmet'),
+        verbosity     = cms.int32(0),
         selector      = cms.string('MultiLepSelector'),
         include_calcs = cms.vstring(
                         'MultiLepCalc',
@@ -725,7 +768,7 @@ process.ljmet = cms.EDAnalyzer(
 # ----------------------- GenHFHadronMatcher -----------------
 if (isTTbar):
     process.load("PhysicsTools.JetMCAlgos.GenHFHadronMatcher_cff")
-
+    
     from PhysicsTools.JetMCAlgos.HadronAndPartonSelector_cfi import selectedHadronsAndPartons
     process.selectedHadronsAndPartons = selectedHadronsAndPartons.clone(
         particles = cms.InputTag("prunedGenParticles")
@@ -765,21 +808,32 @@ if (isTTbar):
                          process.ecalBadCalibReducedMINIAODFilter *
                          process.ttbarcat *
                          process.ljmet #(ntuplizer)
-                         )
-
+                         )  
+elif(isMC):
+    process.p = cms.Path(
+        process.mcweightanalyzer *
+        process.filter_any_explicit *
+        process.fullPatMetSequenceModifiedMET *
+        process.prefiringweight *
+        process.egammaPostRecoSeq *
+        process.updatedJetsAK8PuppiSoftDropPacked *
+        process.packedJetsAK8Puppi *
+        process.QGTagger *
+        process.ecalBadCalibReducedMINIAODFilter *
+        process.ljmet #(ntuplizer)
+        )
 else:
     process.p = cms.Path(
-       process.mcweightanalyzer *
-       process.filter_any_explicit *
-       process.fullPatMetSequenceModifiedMET *
-       process.prefiringweight *
-       process.egammaPostRecoSeq *
-       process.updatedJetsAK8PuppiSoftDropPacked *
-       process.packedJetsAK8Puppi *
-       process.QGTagger *
-       process.ecalBadCalibReducedMINIAODFilter *
-       process.ljmet #(ntuplizer)
-    )
+        process.filter_any_explicit *
+        process.fullPatMetSequenceModifiedMET *
+        process.prefiringweight *
+        process.egammaPostRecoSeq *
+        process.updatedJetsAK8PuppiSoftDropPacked *
+        process.packedJetsAK8Puppi *
+        process.QGTagger *
+        process.ecalBadCalibReducedMINIAODFilter *
+        process.ljmet #(ntuplizer)
+        )
 
 process.p.associate(patAlgosToolsTask)
 
