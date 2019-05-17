@@ -74,13 +74,10 @@ process.source = cms.Source("PoolSource",
     )
 )
 
+OUTFILENAME = "cmsRun" #This could be better !
 if(isMC):
-        OUTFILENAME = 'TprimeTprime_M-1400_TuneCP5_13TeV-madgraph-pythia8'
-        if (isTTbar):
-            OUTFILENAME = 'TTToSemiLeptonic_TuneCP5_PSweights_13TeV-powheg-pythia8'
         POSTFIX = 'MC'
 else:
-        OUTFILENAME = 'DoubleEG_Run2017F'
         POSTFIX = 'DATA'
 POSTFIX+='_3Lep'
 ## TFileService
