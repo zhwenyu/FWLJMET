@@ -5,10 +5,10 @@ import datetime
 cTime=datetime.datetime.now()
 date_str='%i_%i_%i'%(cTime.year,cTime.month,cTime.day)
 
-inputDataset = '/TprimeTprime_M-1400_TuneCP5_PSweights_13TeV-madgraph-pythia8/RunIIAutumn18MiniAOD-102X_upgrade2018_realistic_v15-v2/MINIAODSIM'
-requestName = 'FWLJMET_1Lep_'+date_str+'_rizki'
-outputFolder = 'FWLJMET_crab_test'
-isMC = True
+inputDataset = INPUT
+requestName = REQNAME
+outputFolder = OUTFOLDER
+isMC = ISMC
 isVLQsignal = False
 if 'Tprime' in inputDataset or 'Bprime' in inputDataset: isVLQsignal=True
 
