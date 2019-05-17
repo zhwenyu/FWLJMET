@@ -38,17 +38,17 @@ public:
         return op[op.length()-1];
     }
     
-    double GetBtagEfficiency(double pt, double eta, std::string tagger="CSVM");
+    double GetBtagEfficiency(double pt, double eta, std::string tagger="CSVM", int year = 2018);
     double GetBtagScaleFactor(double pt, double eta, std::string tagger="CSVM", int year = 2016);
     double GetBtagSFUncertUp(double pt, double eta, std::string tagger="CSVM", int year = 2016);
     double GetBtagSFUncertDown(double pt, double eta, std::string tagger="CSVM", int year = 2016);
 
-    double GetCtagEfficiency(double pt, double eta, std::string tagger="CSVM");
+    double GetCtagEfficiency(double pt, double eta, std::string tagger="CSVM", int year = 2018);
     double GetCtagScaleFactor(double pt, double eta, std::string tagger="CSVM", int year = 2016);
     double GetCtagSFUncertUp(double pt, double eta, std::string tagger="CSVM", int year = 2016);
     double GetCtagSFUncertDown(double pt, double eta, std::string tagger="CSVM", int year = 2016);
     
-    double GetMistagRate(double pt, double eta, std::string tagger="CSVM");
+    double GetMistagRate(double pt, double eta, std::string tagger="CSVM", int year = 2018);
     double GetMistagScaleFactor(double pt, double eta, std::string tagger="CSVM", int year = 2016);
     double GetMistagSFUncertUp(double pt, double eta, std::string tagger="CSVM", int year = 2016);
     double GetMistagSFUncertDown(double pt, double eta, std::string tagger="CSVM", int year = 2016);

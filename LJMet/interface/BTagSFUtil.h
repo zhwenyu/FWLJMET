@@ -83,6 +83,7 @@ private:
     std::string DeepCSVfile;
     std::string DeepCSVSubjetfile;
     std::string btagOP;
+    int         year;
     double      applyBtagSF;
     bool        BTagUncertUp;
     bool        BTagUncertDown;
