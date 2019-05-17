@@ -2,8 +2,8 @@
 
 Class Usage:
 
-This class should only be used for upgrading and downgrading 
-if a single operating point is used in an analysis. 
+This class should only be used for upgrading and downgrading
+if a single operating point is used in an analysis.
 
 bool isBTagged = b-tag flag for jet
 int pdgIdPart = parton id
@@ -15,7 +15,7 @@ float Bmistag_eff = mistag efficiency in data
 Author: Michael Segala
 Contact: michael.segala@gmail.com
 Updated: Ulrich Heintz 12/23/2011
-Updated: Gena Kukartsev 10/30/2012 
+Updated: Gena Kukartsev 10/30/2012
 
 v 1.2
 
@@ -44,7 +44,7 @@ BTagSFUtil::~BTagSFUtil() {
 
 void BTagSFUtil::Initialize(const edm::ParameterSet& iConfig){
 
-	
+
     //BTAG parameter initialization
     std::cout << mLegend << "Initializing BTagSFUtil object." << std::endl;
 
@@ -91,18 +91,18 @@ void BTagSFUtil::SetSeed( int seed ) {
 
 
 
-void BTagSFUtil::modifyBTagsWithSF(bool& isBTagged, 
+void BTagSFUtil::modifyBTagsWithSF(bool& isBTagged,
                                    int pdgIdPart,
-                                   float Btag_SF, 
+                                   float Btag_SF,
                                    float Btag_eff,
-                                   float Bmistag_SF, 
+                                   float Bmistag_SF,
                                    float Bmistag_eff)
 {
 
   bool newBTag = isBTagged;
 
   // b quarks and c quarks:
-  if( abs( pdgIdPart ) == 5 ||  abs( pdgIdPart ) == 4) { 
+  if( abs( pdgIdPart ) == 5 ||  abs( pdgIdPart ) == 4) {
 
     // Commented out Feb 2017 -- adding exact charm effs/SFs to HardcodedConditions and passing in "Btag" arguments
     //double bctag_eff = Btag_eff;
@@ -113,23 +113,23 @@ void BTagSFUtil::modifyBTagsWithSF(bool& isBTagged,
   } else { // need 0's with hadronFlavor
 
     newBTag = applySF(isBTagged, Bmistag_SF, Bmistag_eff);
-    
+
   }
 
   isBTagged = newBTag;
-  
+
 }
 
 
 bool BTagSFUtil::applySF(bool& isBTagged, float Btag_SF, float Btag_eff){
-  
+
   bool newBTag = isBTagged;
 
-  if (Btag_SF == 1) return newBTag; //no correction needed 
+  if (Btag_SF == 1) return newBTag; //no correction needed
 
   //throw die
-  float coin = rand_.Uniform(1.);    
-  
+  float coin = rand_.Uniform(1.);
+
   if(Btag_SF > 1){  // use this if SF>1
 
     if( !isBTagged ) {
@@ -142,7 +142,7 @@ bool BTagSFUtil::applySF(bool& isBTagged, float Btag_SF, float Btag_eff){
     }
 
   }else{  // use this if SF<1
-      
+
     //downgrade tagged to untagged
     if( isBTagged && coin > Btag_SF ) {newBTag = false;}
 
@@ -186,7 +186,7 @@ bool BTagSFUtil::isJetTagged(const pat::Jet & jet,
 		  _heavySf = reader.eval_auto_bounds("central",BTagEntry::FLAV_C,fabs(lvjet.Eta()),lvjet.Pt());
 		  if (shiftflag == 1 ||  BTagUncertUp ) _heavySf = reader.eval_auto_bounds("up",BTagEntry::FLAV_C,fabs(lvjet.Eta()),lvjet.Pt());
 		  else if (shiftflag == 2 ||  BTagUncertDown ) _heavySf = reader.eval_auto_bounds("down",BTagEntry::FLAV_C,fabs(lvjet.Eta()),lvjet.Pt());
-		  _heavyEff = mBtagCond.GetBtagEfficiency(lvjet.Et(), fabs(lvjet.Eta()), "DeepCSV"+btagOP);
+		  _heavyEff = mBtagCond.GetCtagEfficiency(lvjet.Et(), fabs(lvjet.Eta()), "DeepCSV"+btagOP);
 		}
 
 		_lightSf = reader.eval_auto_bounds("central",BTagEntry::FLAV_UDSG,fabs(lvjet.Eta()),lvjet.Pt());
@@ -206,7 +206,7 @@ bool BTagSFUtil::isJetTagged(const pat::Jet & jet,
       	  _heavySf = readerSJ.eval_auto_bounds("central",BTagEntry::FLAV_C,fabs(lvjet.Eta()),lvjet.Pt());
       	  if (shiftflag == 1 ||  BTagUncertUp ) _heavySf = readerSJ.eval_auto_bounds("up",BTagEntry::FLAV_C,fabs(lvjet.Eta()),lvjet.Pt());
       	  else if (shiftflag == 2 ||  BTagUncertDown ) _heavySf = readerSJ.eval_auto_bounds("down",BTagEntry::FLAV_C,fabs(lvjet.Eta()),lvjet.Pt());
-      	  _heavyEff = mBtagCond.GetBtagEfficiency(lvjet.Et(), fabs(lvjet.Eta()), "SJDeepCSV"+btagOP);
+      	  _heavyEff = mBtagCond.GetCtagEfficiency(lvjet.Et(), fabs(lvjet.Eta()), "SJDeepCSV"+btagOP);
       	}
 
       	_lightSf = readerSJ.eval_auto_bounds("central",BTagEntry::FLAV_UDSG,fabs(lvjet.Eta()),lvjet.Pt());
@@ -219,7 +219,7 @@ bool BTagSFUtil::isJetTagged(const pat::Jet & jet,
 
       //modifyBTagsWithSF modifies _isTagged ! need to Check ! -- Mar 19, 2019
       modifyBTagsWithSF(_isTagged, _jetFlavor, _heavySf, _heavyEff, _lightSf, _lightEff);
-      
+
     } // end of btag scale factor corrections
 
     return _isTagged;
