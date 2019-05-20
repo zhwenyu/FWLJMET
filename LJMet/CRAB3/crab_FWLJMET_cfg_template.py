@@ -8,11 +8,11 @@ date_str='%i_%i_%i'%(cTime.year,cTime.month,cTime.day)
 ####################
 ### SET YOUR STRINGS 
 ####################
-cmsRun_config  = '../runFWLJMet_multiLep_multipleTree.py'
+cmsRun_config  = 'CMSRUNCONFIG'
 inputDataset   = 'INPUT'
 requestName    = 'REQNAME'
 outputFolder   = 'OUTFOLDER'
-Json_for_data  = "https://cms-service-dqm.web.cern.ch/cms-service-dqm/CAF/certification/Collisions18/13TeV/PromptReco/Cert_314472-325175_13TeV_PromptReco_Collisions18_JSON.txt" #https://twiki.cern.ch/twiki/bin/view/CMS/PdmV2018Analysis#DATA
+Json_for_data  = 'JSONFORDATA'
 isMC           = ISMC
 isVLQsignal    = ISVLQSIGNAL
 isTTbar        = ISTTBAR
