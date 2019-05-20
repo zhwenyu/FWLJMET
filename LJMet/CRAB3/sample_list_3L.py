@@ -3,22 +3,17 @@ import os,sys
 ####INCOMPLETE !! -- May 17, 2019
 
 signaldict = {}
-signaldict['TpTp1800'] = '/TprimeTprime_M-1800_TuneCP5_13TeV-madgraph-pythia8/RunIIFall17MiniAODv2-PU2017_12Apr2018_94X_mc2017_realistic_v14-v2/MINIAODSIM'
+for mass in [str( x *100) for x in xrange(1,19)]:
+	if mass=='1500':
+		signaldict['TpTp'+mass] = '/TprimeTprime_M-'+mass+'_TuneCP5_PSweights_13TeV-madgraph-pythia8/RunIIAutumn18MiniAOD-102X_upgrade2018_realistic_v15-v1/MINIAODSIM'
+	else:
+		signaldict['TpTp'+mass] = '/TprimeTprime_M-'+mass+'_TuneCP5_PSweights_13TeV-madgraph-pythia8/RunIIAutumn18MiniAOD-102X_upgrade2018_realistic_v15-v2/MINIAODSIM'
 
-samplelist = [
-
-	# TT
-   '/TprimeTprime_M-1800_TuneCP5_13TeV-madgraph-pythia8/RunIIFall17MiniAODv2-PU2017_12Apr2018_94X_mc2017_realistic_v14-v2/MINIAODSIM',
-   '/TprimeTprime_M-1700_TuneCP5_13TeV-madgraph-pythia8/RunIIFall17MiniAODv2-PU2017_12Apr2018_94X_mc2017_realistic_v14-v2/MINIAODSIM',
-   '/TprimeTprime_M-1600_TuneCP5_13TeV-madgraph-pythia8/RunIIFall17MiniAODv2-PU2017_12Apr2018_94X_mc2017_realistic_v14-v2/MINIAODSIM',
-   '/TprimeTprime_M-1500_TuneCP5_13TeV-madgraph-pythia8/RunIIFall17MiniAODv2-PU2017_12Apr2018_94X_mc2017_realistic_v14-v2/MINIAODSIM',
-   '/TprimeTprime_M-1400_TuneCP5_13TeV-madgraph-pythia8/RunIIFall17MiniAODv2-PU2017_12Apr2018_94X_mc2017_realistic_v14-v2/MINIAODSIM',
-   '/TprimeTprime_M-1300_TuneCP5_13TeV-madgraph-pythia8/RunIIFall17MiniAODv2-PU2017_12Apr2018_94X_mc2017_realistic_v14-v2/MINIAODSIM',
-   '/TprimeTprime_M-1200_TuneCP5_13TeV-madgraph-pythia8/RunIIFall17MiniAODv2-PU2017_12Apr2018_94X_mc2017_realistic_v14-v2/MINIAODSIM',
-   '/TprimeTprime_M-1100_TuneCP5_13TeV-madgraph-pythia8/RunIIFall17MiniAODv2-PU2017_12Apr2018_94X_mc2017_realistic_v14-v2/MINIAODSIM',
-   '/TprimeTprime_M-1000_TuneCP5_13TeV-madgraph-pythia8/RunIIFall17MiniAODv2-PU2017_12Apr2018_94X_mc2017_realistic_v14-v3/MINIAODSIM',
-
-]
+for mass in [str( x* 100) for x in xrange(1,19)]:
+	if mass=='1500':
+		signaldict['BpBp'+mass] = '/BprimeBprime_M-'+mass+'_TuneCP5_PSweights_13TeV-madgraph-pythia8/RunIIAutumn18MiniAOD-102X_upgrade2018_realistic_v15-v3/MINIAODSIM'
+	else:
+		signaldict['BpBp'+mass] = '/BprimeBprime_M-'+mass+'_TuneCP5_PSweights_13TeV-madgraph-pythia8/RunIIAutumn18MiniAOD-102X_upgrade2018_realistic_v15-v2/MINIAODSIM'
 
 bkgdict = {}
 
@@ -55,32 +50,21 @@ bkglist = [
     ]
 
 
-datalist2018 = {}
+datadict2018 = {}
 
-datalist2018['EGammaRun2018A']  = '/EGamma/Run2018A-22Jun2018-v1/MINIAOD',
-datalist2018['DoubleMuonRun2018A']  = '/DoubleMuon/Run2018A-17Sep2018-v2/MINIAOD'
-datalist2018['MuonEGRun2018A']  = '/MuonEG/Run2018A-PromptReco-v3/MINIAOD'
+datadict2018['EGammaRun2018A']  = '/EGamma/Run2018A-17Sep2018-v2/MINIAOD'
+datadict2018['EGammaRun2018B']  = '/EGamma/Run2018B-17Sep2018-v1/MINIAOD'
+datadict2018['EGammaRun2018C']  = '/EGamma/Run2018C-17Sep2018-v1/MINIAOD'
+datadict2018['EGammaRun2018D']  = '/EGamma/Run2018D-PromptReco-v2/MINIAOD'
 
-datalistRunA = [
-'/EGamma/Run2018A-22Jun2018-v1/MINIAOD',
-'/DoubleMuon/Run2018A-17Sep2018-v2/MINIAOD',
-'/MuonEG/Run2018A-PromptReco-v3/MINIAOD'
-]
-datalistRunB = [
-'/EGamma/Run2018B-17Sep2018-v1/MINIAOD',
-'/EGamma/Run2018B-26Sep2018-v1/MINIAOD',
-'/DoubleMuon/Run2018B-17Sep2018-v1/MINIAOD',
-'/MuonEG/Run2018B-PromptReco-v1/MINIAOD', #chose this because it had more files
-]
-datalistRunC = [
-'/EGamma/Run2018C-17Sep2018-v1/MINIAOD',
-'/DoubleMuon/Run2018C-17Sep2018-v1/MINIAOD',
-'/MuonEG/Run2018C-PromptReco-v3/MINIAOD',
-]
-datalistRunD = [
-'/EGamma/Run2018D-PromptReco-v2/MINIAOD',
-'/DoubleMuon/Run2018D-PromptReco-v2/MINIAOD',
-'/MuonEG/Run2018D-PromptReco-v2/MINIAOD',
-]
+datadict2018['DoubleMuonRun2018A']  = '/DoubleMuon/Run2018A-17Sep2018-v2/MINIAOD'
+datadict2018['DoubleMuonRun2018B']  = '/DoubleMuon/Run2018B-17Sep2018-v1/MINIAOD'
+datadict2018['DoubleMuonRun2018C']  = '/DoubleMuon/Run2018C-17Sep2018-v1/MINIAOD'
+datadict2018['DoubleMuonRun2018D']  = '/DoubleMuon/Run2018D-PromptReco-v2/MINIAOD'
+
+datadict2018['MuonEGRun2018A']  = '/MuonEG/Run2018A-17Sep2018-v1/MINIAOD'
+datadict2018['MuonEGRun2018B']  = '/MuonEG/Run2018B-17Sep2018-v1/MINIAOD'
+datadict2018['MuonEGRun2018C']  = '/MuonEG/Run2018C-17Sep2018-v1/MINIAOD'
+datadict2018['MuonEGRun2018D']  = '/MuonEG/Run2018D-PromptReco-v2/MINIAOD'
 
 
