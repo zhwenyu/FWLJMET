@@ -6,12 +6,13 @@ cTime=datetime.datetime.now()
 date_str='%i_%i_%i'%(cTime.year,cTime.month,cTime.day)
 
 ####################
-### SET YOUR STRINGS 
+### SET YOUR STRINGS
 ####################
 cmsRun_config  = 'CMSRUNCONFIG'
 inputDataset   = 'INPUT'
 requestName    = 'REQNAME'
 outputFolder   = 'OUTFOLDER'
+logFolder      = 'LOGFOLDER'
 Json_for_data  = 'JSONFORDATA'
 isMC           = ISMC
 isVLQsignal    = ISVLQSIGNAL
@@ -22,7 +23,7 @@ isTTbar        = ISTTBAR
 ##############
 config.section_("General")
 config.General.requestName = requestName
-config.General.workArea = 'crabSubmitLogs/'
+config.General.workArea = 'crabSubmitLogs/'+logFolder+'/'
 config.General.transferLogs = True
 config.General.transferOutputs = True
 
@@ -35,7 +36,7 @@ config.JobType.pluginName = 'Analysis'
 config.JobType.psetName = cmsRun_config
 
 #for VLQ signal this will run using crab_script.sh which will reset the env var in order to access LHApdf outside of CMSSW
-if(isVLQsignal): 
+if(isVLQsignal):
 	config.JobType.scriptExe = 'crab_script.sh'
 
 #cmsRun params

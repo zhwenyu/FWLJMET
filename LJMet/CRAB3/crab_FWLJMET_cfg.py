@@ -5,22 +5,15 @@ import datetime
 cTime=datetime.datetime.now()
 date_str='%i_%i_%i'%(cTime.year,cTime.month,cTime.day)
 
-#import os
-#userName = os.environ['USER']
+import os
+userName = os.environ['USER']
 
-#inputDataset = '/TTJets_SingleLeptFromT_TuneCP5_13TeV-madgraphMLM-pythia8/RunIIAutumn18MiniAOD-102X_upgrade2018_realistic_v15-v1/MINIAODSIM'
-#isVLQsignal = False
-#requestName = 'FWLJMET_1Lep_'+date_str+'_'+userName
-#outputFolder = 'FWLJMET_crab_test'
-#isMC = True
-#isVLQsignal = False
-#if 'Tprime' in inputDataset or 'Bprime' in inputDataset: isVLQsignal=True
 ####################
 ### SET YOUR STRINGS
 ####################
 cmsRun_config  = '../runFWLJMet_multiLep_multipleTree.py'
 inputDataset   = '/TprimeTprime_M-1400_TuneCP5_PSweights_13TeV-madgraph-pythia8/RunIIAutumn18MiniAOD-102X_upgrade2018_realistic_v15-v2/MINIAODSIM'
-requestName    = 'FWLJMET_3Lep_'+date_str+'_rizki'
+requestName    = 'FWLJMET_1Lep_'+date_str+'_'+userName
 outputFolder   = 'FWLJMET_crab_test'
 Json_for_data  = "https://cms-service-dqm.web.cern.ch/cms-service-dqm/CAF/certification/Collisions18/13TeV/PromptReco/Cert_314472-325175_13TeV_PromptReco_Collisions18_JSON.txt" #https://twiki.cern.ch/twiki/bin/view/CMS/PdmV2018Analysis#DATA
 isMC           = True
