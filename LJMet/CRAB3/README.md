@@ -1,3 +1,5 @@
+source /cvmfs/cms.cern.ch/crab3/crab.sh
+
 ### Submitting a crab job
 
 Always good to do a dryrun first:
