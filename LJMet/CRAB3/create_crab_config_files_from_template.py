@@ -1,8 +1,11 @@
-import sample_list_3L as sample
 import os, sys
 import datetime
 cTime=datetime.datetime.now()
 date_str='%i_%i_%i'%(cTime.year,cTime.month,cTime.day)
+
+#Sample list file
+import sample_list_3L as sample
+
 
 ####################
 ### SET YOUR STRINGS 
@@ -55,7 +58,7 @@ if __name__=='__main__':
 
 	#### Bkg MC - ttbar
 # 	create_crab_config_files_from_template(
-# 		sample.bkg_ttbar_dict,
+# 		sample.ttbarbkgdict,
 # 		ISMC='True',
 # 		ISVLQSIGNAL='False',
 # 		ISTTBAR='True',
