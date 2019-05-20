@@ -5,9 +5,13 @@ import datetime
 cTime=datetime.datetime.now()
 date_str='%i_%i_%i'%(cTime.year,cTime.month,cTime.day)
 
-inputDataset = '/TprimeTprime_M-1400_TuneCP5_PSweights_13TeV-madgraph-pythia8/RunIIAutumn18MiniAOD-102X_upgrade2018_realistic_v15-v2/MINIAODSIM'
-isVLQsignal = True
-requestName = 'FWLJMET_1Lep_'+date_str+'_rizki'
+import os
+userName = os.environ['USER']
+
+#inputDataset = '/TprimeTprime_M-1400_TuneCP5_PSweights_13TeV-madgraph-pythia8/RunIIAutumn18MiniAOD-102X_upgrade2018_realistic_v15-v2/MINIAODSIM'
+inputDataset = '/TTJets_SingleLeptFromT_TuneCP5_13TeV-madgraphMLM-pythia8/RunIIAutumn18MiniAOD-102X_upgrade2018_realistic_v15-v1/MINIAODSIM'
+isVLQsignal = False
+requestName = 'FWLJMET_1Lep_'+date_str+'_'+userName
 outputFolder = 'FWLJMET_crab_test'
 
 config.section_("General")
@@ -20,7 +24,7 @@ config.section_("JobType")
 config.JobType.pluginName = 'Analysis'
 if(isVLQsignal):config.JobType.scriptExe = 'crab_script.sh'
 config.JobType.psetName = '../runFWLJMet_singleLep.py'
-config.JobType.pyCfgParams = ['isMC=True','isTTbar=False','maxEvents=-1']
+config.JobType.pyCfgParams = ['isMC=True','isTTbar=True','maxEvents=-1']
 config.JobType.maxMemoryMB = 2500 #MB
 config.JobType.maxJobRuntimeMin = 2750 #minutes
 config.JobType.numCores = 4 #use wisely if turned on.
@@ -31,6 +35,7 @@ config.Data.allowNonValidInputDataset = True
 # config.Data.splitting = 'Automatic'
 config.Data.splitting = 'FileBased'
 config.Data.unitsPerJob = 1
+config.Data.totalUnits = 1
 config.Data.inputDBS = 'global'
 config.Data.ignoreLocality = False
 config.Data.publication = False
