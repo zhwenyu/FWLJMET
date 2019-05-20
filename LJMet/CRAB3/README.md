@@ -6,9 +6,9 @@ Always good to do a dryrun first:
 
 ### Submitting multiple crab jobs: modify files accordingly and run below
 
-    python create_crab_config_files_from_template.py
+       python create_crab_config_files_from_template.py
 
-    pythion submit_multiple_crab_jobs,py
+       python submit_multiple_crab_jobs,py
 
 
 Note:
