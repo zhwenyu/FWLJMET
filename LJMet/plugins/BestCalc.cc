@@ -1,158 +1,5 @@
-/*
+#include "FWLJMET/LJMet/interface/BestCalc.h"
 
-Created:        28 November 2017
-Last Updated:    4 December 2017
-Justin Pilot
-UC Davis
-Dan Marley
-daniel.edison.marley@cernSPAMNOT.ch
-Texas A&M University
------
-BoostedEventShapeTagger
-Development of standalone BEST package for analyzers.
-Based on the framework created by Justin:
-  https://github.com/justinrpilot/BESTAnalysis
-Requires MiniAOD inputs to access proper set of information
-*/
-
-
-#include <iostream>
-#include <algorithm>
-#include <vector>
-
-#include "FWLJMET/LJMet/interface/BaseCalc.h"
-#include "FWLJMET/LJMet/interface/LjmetEventContent.h"
-#include "FWLJMET/LJMet/interface/LjmetFactory.h"
-#include "FWCore/ParameterSet/interface/ProcessDesc.h"
-#include "FWCore/PythonParameterSet/interface/PythonProcessDesc.h"
-//#include "FWLJMET/LJMet/interface/VVString.h"
-
-#include <fstream>
-
-// FASTJET
-#include <fastjet/JetDefinition.hh>
-#include <fastjet/PseudoJet.hh>
-#include <fastjet/tools/Filter.hh>
-#include <fastjet/ClusterSequence.hh>
-#include <fastjet/GhostedAreaSpec.hh>
-#include <fastjet/ClusterSequenceArea.hh>
-
-// CMS
-#include "DataFormats/PatCandidates/interface/PackedCandidate.h"
-#include "DataFormats/PatCandidates/interface/Jet.h"
-#include "DataFormats/Math/interface/deltaR.h"
-#include "DataFormats/Math/interface/LorentzVector.h"
-#include "DataFormats/PatCandidates/interface/PackedGenParticle.h"
-#include "PhysicsTools/CandUtils/interface/EventShapeVariables.h"
-#include "PhysicsTools/CandUtils/interface/Thrust.h"
-
-// ROOT
-#include "TLorentzRotation.h"
-#include "TLorentzVector.h"
-#include "TFile.h"
-
-// lwtnn
-#include "lwtnn/lwtnn/interface/LightweightNeuralNetwork.hh"
-#include "lwtnn/lwtnn/interface/parse_json.hh"
-
-
-#include "FWCore/ParameterSet/interface/FileInPath.h"
-
-
-using namespace std;
-
-class LjmetFactory;
-
-class BestCalc : public BaseCalc {
-    //
-    // Best class for all calculators
-    //
-    //
-
-
-public:
-    BestCalc();
-    virtual ~BestCalc() { }
-    virtual int BeginJob(edm::ConsumesCollector && iC);
-    virtual int ProduceEvent(edm::EventBase const & event, BaseEventSelector * selector) { return 0; }
-    virtual int AnalyzeEvent(edm::Event const & event, BaseEventSelector * selector);
-    virtual int EndJob();
-
-    std::map<std::string,double> execute( const pat::Jet& jet );
-
-    void getJetValues( const pat::Jet& jet );
-
-    void pboost( TVector3 pbeam, TVector3 plab, TLorentzVector &pboo );
-
-    void FWMoments( std::vector<TLorentzVector> particles, double (&outputs)[5] );
-
-    float LegP(float x, int order);
-
-    unsigned int getParticleID();
-
-    void setConfigurations(const std::vector<std::string>& configurations);
-
-    void read_file( const std::string &file_name, std::vector<std::string> &values, const std::string &comment="#" );
-
-    bool str2bool( const std::string value );
-
-    std::string mName;
-    std::string mLegend;
-
- private:
-    // lwtnn
-    lwt::LightweightNeuralNetwork* m_lwtnn;
-    std::map<std::string,double> m_BESTvars;
-    std::map<std::string,double> m_NNresults;
-
-    std::string m_dnnFile;
-
-    std::map<std::string,std::string> m_configurations; // map of configurations
-
-    // kinematics
-    float m_jetSoftDropMassMin; // [GeV] Jet soft drop mass minimum
-    float m_jetPtMin;           // [GeV] Jet pT minimum
-    unsigned int m_numSubjetsMin;    // minimum number of subjets
-    unsigned int m_numDaughtersMin;  // minimum number of daughters
-
-    // boosting to rest frames
-    float m_radiusSmall;        // re-clustering jets
-    float m_radiusLarge;        // re-clustering jets
-    float m_reclusterJetPtMin;  // [GeV] re-clustering jet pT minimum
-
-    float m_jetChargeKappa;     // weight for jet charge pT
-    size_t m_maxJetSize;        // number of jets in re-clustering
-
-    float m_Wmass = 80.4;       // W mass [GeV]
-    float m_Zmass = 91.2;       // Z mass
-    float m_Hmass = 125.;       // Higgs mass
-    float m_Tmass = 172.5;      // Top mass
-
-    std::map<std::string,std::string> m_defaultConfigs = {
-      {"dnnFile",             "BESTAnalysis/BoostedEventShapeTagger/data/BEST_mlp.json"},
-      {"radiusSmall",         "0.4"},
-      {"radiusLarge",         "0.8"},
-      {"reclusterJetPtMin",   "30.0"},
-      {"jetSoftDropMassMin",  "40.0"},
-      {"jetPtMin",            "500.0"},
-      {"jetChargeKappa",      "0.6"},
-      {"maxJetSize",          "4"},
-      {"numSubjetsMin",       "2"},
-      {"numDaughtersMin",     "2"}
-    };
-
-    lwt::JSONConfig cfg;
-
-
-};
-
-
-static int reg = LjmetFactory::GetInstance()->Register(new BestCalc(), "BestCalc");
-
-
-BestCalc::BestCalc(){
-
-}
 
 int BestCalc::BeginJob(edm::ConsumesCollector && iC){
 
@@ -173,7 +20,7 @@ int BestCalc::BeginJob(edm::ConsumesCollector && iC){
     std::ifstream input_cfg( m_dnnFile );                     // original: "data/BEST_mlp.json"
     // lwt::JSONConfig cfg = lwt::parse_json( input_cfg );
     cfg = lwt::parse_json( input_cfg );
-    m_lwtnn = new lwt::LightweightNeuralNetwork(cfg.inputs, cfg.layers, cfg.outputs);
+    m_lwtnn = std::unique_ptr<lwt::LightweightNeuralNetwork>(new lwt::LightweightNeuralNetwork(cfg.inputs, cfg.layers, cfg.outputs));
 
     std::cout << "END of BestCalc constructor" << std::endl;
 
@@ -205,95 +52,95 @@ int BestCalc::AnalyzeEvent(edm::Event const & event, BaseEventSelector * selecto
   std::vector <double> dnn_W;
   std::vector <double> dnn_B;
 
-  std::vector <double> bDisc;
-  std::vector <double> bDisc1;
-  std::vector <double> bDisc2;
+  // std::vector <double> bDisc;
+  // std::vector <double> bDisc1;
+  // std::vector <double> bDisc2;
 
-  std::vector <double> et;
-  std::vector <double> eta;
-  std::vector <double> mass;
-  std::vector <double> SDmass;
-  std::vector <double> tau32;
-  std::vector <double> tau21;
-  std::vector <double> q;
+  // std::vector <double> et;
+  // std::vector <double> eta;
+  // std::vector <double> mass;
+  // std::vector <double> SDmass;
+  // std::vector <double> tau32;
+  // std::vector <double> tau21;
+  // std::vector <double> q;
 
-  std::vector <double> m1234_jet;
-  std::vector <double> m12_jet;
-  std::vector <double> m23_jet;
-  std::vector <double> m13_jet;
+  // std::vector <double> m1234_jet;
+  // std::vector <double> m12_jet;
+  // std::vector <double> m23_jet;
+  // std::vector <double> m13_jet;
 
-  std::vector <double> m1234top;
-  std::vector <double> m12top;
-  std::vector <double> m23top;
-  std::vector <double> m13top;
+  // std::vector <double> m1234top;
+  // std::vector <double> m12top;
+  // std::vector <double> m23top;
+  // std::vector <double> m13top;
 
-  std::vector <double> m1234W;
-  std::vector <double> m12W;
-  std::vector <double> m23W;
-  std::vector <double> m13W;
+  // std::vector <double> m1234W;
+  // std::vector <double> m12W;
+  // std::vector <double> m23W;
+  // std::vector <double> m13W;
 
-  std::vector <double> m1234Z;
-  std::vector <double> m12Z;
-  std::vector <double> m23Z;
-  std::vector <double> m13Z;
+  // std::vector <double> m1234Z;
+  // std::vector <double> m12Z;
+  // std::vector <double> m23Z;
+  // std::vector <double> m13Z;
 
-  std::vector <double> m1234H;
-  std::vector <double> m12H;
-  std::vector <double> m23H;
-  std::vector <double> m13H;
+  // std::vector <double> m1234H;
+  // std::vector <double> m12H;
+  // std::vector <double> m23H;
+  // std::vector <double> m13H;
 
-  std::vector <double> pzOverp_top;
-  std::vector <double> pzOverp_W;
-  std::vector <double> pzOverp_Z;
-  std::vector <double> pzOverp_H;
-  std::vector <double> pzOverp_jet;
+  // std::vector <double> pzOverp_top;
+  // std::vector <double> pzOverp_W;
+  // std::vector <double> pzOverp_Z;
+  // std::vector <double> pzOverp_H;
+  // std::vector <double> pzOverp_jet;
 
-  std::vector <double> Njets_top;
-  std::vector <double> Njets_W;
-  std::vector <double> Njets_Z;
-  std::vector <double> Njets_H;
-  std::vector <double> Njets_jet;
-  std::vector <double> Njets_orig;
+  // std::vector <double> Njets_top;
+  // std::vector <double> Njets_W;
+  // std::vector <double> Njets_Z;
+  // std::vector <double> Njets_H;
+  // std::vector <double> Njets_jet;
+  // std::vector <double> Njets_orig;
 
-  std::vector <double> FWmoment1top;
-  std::vector <double> FWmoment2top;
-  std::vector <double> FWmoment3top;
-  std::vector <double> FWmoment4top;
-  std::vector <double> isotropytop;
-  std::vector <double> sphericitytop;
-  std::vector <double> aplanaritytop;
-  std::vector <double> thrusttop;
+  // std::vector <double> FWmoment1top;
+  // std::vector <double> FWmoment2top;
+  // std::vector <double> FWmoment3top;
+  // std::vector <double> FWmoment4top;
+  // std::vector <double> isotropytop;
+  // std::vector <double> sphericitytop;
+  // std::vector <double> aplanaritytop;
+  // std::vector <double> thrusttop;
 
-  std::vector <double> FWmoment1W;
-  std::vector <double> FWmoment2W;
-  std::vector <double> FWmoment3W;
-  std::vector <double> FWmoment4W;
-  std::vector <double> isotropyW;
-  std::vector <double> sphericityW;
-  std::vector <double> aplanarityW;
-  std::vector <double> thrustW;
+  // std::vector <double> FWmoment1W;
+  // std::vector <double> FWmoment2W;
+  // std::vector <double> FWmoment3W;
+  // std::vector <double> FWmoment4W;
+  // std::vector <double> isotropyW;
+  // std::vector <double> sphericityW;
+  // std::vector <double> aplanarityW;
+  // std::vector <double> thrustW;
 
-  std::vector <double> FWmoment1Z;
-  std::vector <double> FWmoment2Z;
-  std::vector <double> FWmoment3Z;
-  std::vector <double> FWmoment4Z;
-  std::vector <double> isotropyZ;
-  std::vector <double> sphericityZ;
-  std::vector <double> aplanarityZ;
-  std::vector <double> thrustZ;
+  // std::vector <double> FWmoment1Z;
+  // std::vector <double> FWmoment2Z;
+  // std::vector <double> FWmoment3Z;
+  // std::vector <double> FWmoment4Z;
+  // std::vector <double> isotropyZ;
+  // std::vector <double> sphericityZ;
+  // std::vector <double> aplanarityZ;
+  // std::vector <double> thrustZ;
 
-  std::vector <double> FWmoment1H;
-  std::vector <double> FWmoment2H;
-  std::vector <double> FWmoment3H;
-  std::vector <double> FWmoment4H;
-  std::vector <double> isotropyH;
-  std::vector <double> sphericityH;
-  std::vector <double> aplanarityH;
-  std::vector <double> thrustH;
+  // std::vector <double> FWmoment1H;
+  // std::vector <double> FWmoment2H;
+  // std::vector <double> FWmoment3H;
+  // std::vector <double> FWmoment4H;
+  // std::vector <double> isotropyH;
+  // std::vector <double> sphericityH;
+  // std::vector <double> aplanarityH;
+  // std::vector <double> thrustH;
 
   std::vector <int>    dnn_largest;
 
-  std::vector <double> AK8JetCSV;
+  // std::vector <double> AK8JetCSV;
 
   //   std::vector <double> AK8JetRCN;
   //for (std::vector<pat::Jet>::const_iterator ijet = AK8Jets->begin(); ijet != AK8Jets->end(); ijet++){
@@ -307,7 +154,7 @@ int BestCalc::AnalyzeEvent(edm::Event const & event, BaseEventSelector * selecto
     AK8JetPhi    . push_back(ii->phi());
     AK8JetEnergy . push_back(ii->energy());
 
-    AK8JetCSV    . push_back(ii->bDiscriminator( "pfCombinedInclusiveSecondaryVertexV2BJetTags" ));
+    // AK8JetCSV    . push_back(ii->bDiscriminator( "pfCombinedInclusiveSecondaryVertexV2BJetTags" ));
     //     AK8JetRCN    . push_back((corrak8.chargedEmEnergy()+corrak8.chargedHadronEnergy()) / (corrak8.neutralEmEnergy()+corrak8.neutralHadronEnergy()));
 
     std::map<std::string,double> myMap;
@@ -427,91 +274,91 @@ int BestCalc::AnalyzeEvent(edm::Event const & event, BaseEventSelector * selecto
 	largest = 10;
     }
 
-    bDisc.push_back(varMap["bDisc"]);
-    bDisc1.push_back(varMap["bDisc1"]);
-    bDisc2.push_back(varMap["bDisc2"]);
+    // bDisc.push_back(varMap["bDisc"]);
+    // bDisc1.push_back(varMap["bDisc1"]);
+    // bDisc2.push_back(varMap["bDisc2"]);
 
-    et.push_back(varMap["et"]);
-    eta.push_back(varMap["eta"]);
-    mass.push_back(varMap["mass"]);
-    SDmass.push_back(varMap["SDmass"]);
-    tau32.push_back(varMap["tau32"]);
-    tau21.push_back(varMap["tau21"]);
-    q.push_back(varMap["q"]);
+    // et.push_back(varMap["et"]);
+    // eta.push_back(varMap["eta"]);
+    // mass.push_back(varMap["mass"]);
+    // SDmass.push_back(varMap["SDmass"]);
+    // tau32.push_back(varMap["tau32"]);
+    // tau21.push_back(varMap["tau21"]);
+    // q.push_back(varMap["q"]);
 
-    m1234_jet.push_back(varMap["m1234_jet"]);
-    m12_jet.push_back(varMap["m12_jet"]);
-    m23_jet.push_back(varMap["m23_jet"]);
-    m13_jet.push_back(varMap["m13_jet"]);
+    // m1234_jet.push_back(varMap["m1234_jet"]);
+    // m12_jet.push_back(varMap["m12_jet"]);
+    // m23_jet.push_back(varMap["m23_jet"]);
+    // m13_jet.push_back(varMap["m13_jet"]);
 
-    m1234top.push_back(varMap["m1234top"]);
-    m12top.push_back(varMap["m12top"]);
-    m23top.push_back(varMap["m23top"]);
-    m13top.push_back(varMap["m13top"]);
+    // m1234top.push_back(varMap["m1234top"]);
+    // m12top.push_back(varMap["m12top"]);
+    // m23top.push_back(varMap["m23top"]);
+    // m13top.push_back(varMap["m13top"]);
 
-    m1234W.push_back(varMap["m1234W"]);
-    m12W.push_back(varMap["m12W"]);
-    m23W.push_back(varMap["m23W"]);
-    m13W.push_back(varMap["m13W"]);
+    // m1234W.push_back(varMap["m1234W"]);
+    // m12W.push_back(varMap["m12W"]);
+    // m23W.push_back(varMap["m23W"]);
+    // m13W.push_back(varMap["m13W"]);
 
-    m1234Z.push_back(varMap["m1234Z"]);
-    m12Z.push_back(varMap["m12Z"]);
-    m23Z.push_back(varMap["m23Z"]);
-    m13Z.push_back(varMap["m13Z"]);
+    // m1234Z.push_back(varMap["m1234Z"]);
+    // m12Z.push_back(varMap["m12Z"]);
+    // m23Z.push_back(varMap["m23Z"]);
+    // m13Z.push_back(varMap["m13Z"]);
 
-    m1234H.push_back(varMap["m1234H"]);
-    m12H.push_back(varMap["m12H"]);
-    m23H.push_back(varMap["m23H"]);
-    m13H.push_back(varMap["m13H"]);
+    // m1234H.push_back(varMap["m1234H"]);
+    // m12H.push_back(varMap["m12H"]);
+    // m23H.push_back(varMap["m23H"]);
+    // m13H.push_back(varMap["m13H"]);
 
-    pzOverp_top.push_back(varMap["pzOverp_top"]);
-    pzOverp_W.push_back(varMap["pzOverp_W"]);
-    pzOverp_Z.push_back(varMap["pzOverp_Z"]);
-    pzOverp_H.push_back(varMap["pzOverp_H"]);
-    pzOverp_jet.push_back(varMap["pzOverp_jet"]);
+    // pzOverp_top.push_back(varMap["pzOverp_top"]);
+    // pzOverp_W.push_back(varMap["pzOverp_W"]);
+    // pzOverp_Z.push_back(varMap["pzOverp_Z"]);
+    // pzOverp_H.push_back(varMap["pzOverp_H"]);
+    // pzOverp_jet.push_back(varMap["pzOverp_jet"]);
 
-    Njets_top.push_back(varMap["Njets_top"]);
-    Njets_W.push_back(varMap["Njets_W"]);
-    Njets_Z.push_back(varMap["Njets_Z"]);
-    Njets_H.push_back(varMap["Njets_H"]);
-    Njets_jet.push_back(varMap["Njets_jet"]);
-    Njets_orig.push_back(varMap["Njets_orig"]);
+    // Njets_top.push_back(varMap["Njets_top"]);
+    // Njets_W.push_back(varMap["Njets_W"]);
+    // Njets_Z.push_back(varMap["Njets_Z"]);
+    // Njets_H.push_back(varMap["Njets_H"]);
+    // Njets_jet.push_back(varMap["Njets_jet"]);
+    // Njets_orig.push_back(varMap["Njets_orig"]);
 
-    FWmoment1top.push_back(varMap["FWmoment1top"]);
-    FWmoment2top.push_back(varMap["FWmoment2top"]);
-    FWmoment3top.push_back(varMap["FWmoment3top"]);
-    FWmoment4top.push_back(varMap["FWmoment4top"]);
-    isotropytop.push_back(varMap["isotropytop"]);
-    sphericitytop.push_back(varMap["sphericitytop"]);
-    aplanaritytop.push_back(varMap["aplanaritytop"]);
-    thrusttop.push_back(varMap["thrusttop"]);
+    // FWmoment1top.push_back(varMap["FWmoment1top"]);
+    // FWmoment2top.push_back(varMap["FWmoment2top"]);
+    // FWmoment3top.push_back(varMap["FWmoment3top"]);
+    // FWmoment4top.push_back(varMap["FWmoment4top"]);
+    // isotropytop.push_back(varMap["isotropytop"]);
+    // sphericitytop.push_back(varMap["sphericitytop"]);
+    // aplanaritytop.push_back(varMap["aplanaritytop"]);
+    // thrusttop.push_back(varMap["thrusttop"]);
 
-    FWmoment1W.push_back(varMap["FWmoment1W"]);
-    FWmoment2W.push_back(varMap["FWmoment2W"]);
-    FWmoment3W.push_back(varMap["FWmoment3W"]);
-    FWmoment4W.push_back(varMap["FWmoment4W"]);
-    isotropyW.push_back(varMap["isotropyW"]);
-    sphericityW.push_back(varMap["sphericityW"]);
-    aplanarityW.push_back(varMap["aplanarityW"]);
-    thrustW.push_back(varMap["thrustW"]);
+    // FWmoment1W.push_back(varMap["FWmoment1W"]);
+    // FWmoment2W.push_back(varMap["FWmoment2W"]);
+    // FWmoment3W.push_back(varMap["FWmoment3W"]);
+    // FWmoment4W.push_back(varMap["FWmoment4W"]);
+    // isotropyW.push_back(varMap["isotropyW"]);
+    // sphericityW.push_back(varMap["sphericityW"]);
+    // aplanarityW.push_back(varMap["aplanarityW"]);
+    // thrustW.push_back(varMap["thrustW"]);
 
-    FWmoment1Z.push_back(varMap["FWmoment1Z"]);
-    FWmoment2Z.push_back(varMap["FWmoment2Z"]);
-    FWmoment3Z.push_back(varMap["FWmoment3Z"]);
-    FWmoment4Z.push_back(varMap["FWmoment4Z"]);
-    isotropyZ.push_back(varMap["isotropyZ"]);
-    sphericityZ.push_back(varMap["sphericityZ"]);
-    aplanarityZ.push_back(varMap["aplanarityZ"]);
-    thrustZ.push_back(varMap["thrustZ"]);
+    // FWmoment1Z.push_back(varMap["FWmoment1Z"]);
+    // FWmoment2Z.push_back(varMap["FWmoment2Z"]);
+    // FWmoment3Z.push_back(varMap["FWmoment3Z"]);
+    // FWmoment4Z.push_back(varMap["FWmoment4Z"]);
+    // isotropyZ.push_back(varMap["isotropyZ"]);
+    // sphericityZ.push_back(varMap["sphericityZ"]);
+    // aplanarityZ.push_back(varMap["aplanarityZ"]);
+    // thrustZ.push_back(varMap["thrustZ"]);
 
-    FWmoment1H.push_back(varMap["FWmoment1H"]);
-    FWmoment2H.push_back(varMap["FWmoment2H"]);
-    FWmoment3H.push_back(varMap["FWmoment3H"]);
-    FWmoment4H.push_back(varMap["FWmoment4H"]);
-    isotropyH.push_back(varMap["isotropyH"]);
-    sphericityH.push_back(varMap["sphericityH"]);
-    aplanarityH.push_back(varMap["aplanarityH"]);
-    thrustH.push_back(varMap["thrustH"]);
+    // FWmoment1H.push_back(varMap["FWmoment1H"]);
+    // FWmoment2H.push_back(varMap["FWmoment2H"]);
+    // FWmoment3H.push_back(varMap["FWmoment3H"]);
+    // FWmoment4H.push_back(varMap["FWmoment4H"]);
+    // isotropyH.push_back(varMap["isotropyH"]);
+    // sphericityH.push_back(varMap["sphericityH"]);
+    // aplanarityH.push_back(varMap["aplanarityH"]);
+    // thrustH.push_back(varMap["thrustH"]);
 
     dnn_QCD.push_back(myMap["dnn_qcd"]);
     dnn_Top.push_back(myMap["dnn_top"]);
@@ -529,7 +376,7 @@ int BestCalc::AnalyzeEvent(edm::Event const & event, BaseEventSelector * selecto
   SetValue("AK8JetEta"    , AK8JetEta);
   SetValue("AK8JetPhi"    , AK8JetPhi);
   SetValue("AK8JetEnergy" , AK8JetEnergy);
-  SetValue("AK8JetCSV"    , AK8JetCSV);
+  // SetValue("AK8JetCSV"    , AK8JetCSV);
 
   SetValue("dnn_QCD", dnn_QCD);
   SetValue("dnn_Top",dnn_Top);
@@ -540,91 +387,91 @@ int BestCalc::AnalyzeEvent(edm::Event const & event, BaseEventSelector * selecto
 
   SetValue("dnn_largest",dnn_largest);
 
-  SetValue("bDisc",bDisc);
-  SetValue("bDisc1",bDisc1);
-  SetValue("bDisc2",bDisc2);
+  // SetValue("bDisc",bDisc);
+  // SetValue("bDisc1",bDisc1);
+  // SetValue("bDisc2",bDisc2);
 
-  SetValue("et",et);
-  SetValue("eta",eta);
-  SetValue("mass",mass);
-  SetValue("SDmass",SDmass);
-  SetValue("tau32",tau32);
-  SetValue("tau21",tau21);
-  SetValue("q",q);
+  // SetValue("et",et);
+  // SetValue("eta",eta);
+  // SetValue("mass",mass);
+  // SetValue("SDmass",SDmass);
+  // SetValue("tau32",tau32);
+  // SetValue("tau21",tau21);
+  // SetValue("q",q);
 
-  SetValue("m1234_jet",m1234_jet);
-  SetValue("m12_jet",m12_jet);
-  SetValue("m23_jet",m23_jet);
-  SetValue("m13_jet",m13_jet);
+  // SetValue("m1234_jet",m1234_jet);
+  // SetValue("m12_jet",m12_jet);
+  // SetValue("m23_jet",m23_jet);
+  // SetValue("m13_jet",m13_jet);
 
-  SetValue("m1234top",m1234top);
-  SetValue("m12top",m12top);
-  SetValue("m23top",m23top);
-  SetValue("m13top",m13top);
+  // SetValue("m1234top",m1234top);
+  // SetValue("m12top",m12top);
+  // SetValue("m23top",m23top);
+  // SetValue("m13top",m13top);
 
-  SetValue("m1234W",m1234W);
-  SetValue("m12W",m12W);
-  SetValue("m23W",m23W);
-  SetValue("m13W",m13W);
+  // SetValue("m1234W",m1234W);
+  // SetValue("m12W",m12W);
+  // SetValue("m23W",m23W);
+  // SetValue("m13W",m13W);
 
-  SetValue("m1234Z",m1234Z);
-  SetValue("m12Z",m12Z);
-  SetValue("m23Z",m23Z);
-  SetValue("m13Z",m13Z);
+  // SetValue("m1234Z",m1234Z);
+  // SetValue("m12Z",m12Z);
+  // SetValue("m23Z",m23Z);
+  // SetValue("m13Z",m13Z);
 
-  SetValue("m1234H",m1234H);
-  SetValue("m12H",m12H);
-  SetValue("m23H",m23H);
-  SetValue("m13H",m13H);
+  // SetValue("m1234H",m1234H);
+  // SetValue("m12H",m12H);
+  // SetValue("m23H",m23H);
+  // SetValue("m13H",m13H);
 
-  SetValue("pzOverp_top",pzOverp_top);
-  SetValue("pzOverp_W",pzOverp_W);
-  SetValue("pzOverp_Z",pzOverp_Z);
-  SetValue("pzOverp_H",pzOverp_H);
-  SetValue("pzOverp_jet",pzOverp_jet);
+  // SetValue("pzOverp_top",pzOverp_top);
+  // SetValue("pzOverp_W",pzOverp_W);
+  // SetValue("pzOverp_Z",pzOverp_Z);
+  // SetValue("pzOverp_H",pzOverp_H);
+  // SetValue("pzOverp_jet",pzOverp_jet);
 
-  SetValue("Njets_top",Njets_top);
-  SetValue("Njets_W",Njets_W);
-  SetValue("Njets_Z",Njets_Z);
-  SetValue("Njets_H",Njets_H);
-  SetValue("Njets_jet",Njets_jet);
-  SetValue("Njets_orig",Njets_orig);
+  // SetValue("Njets_top",Njets_top);
+  // SetValue("Njets_W",Njets_W);
+  // SetValue("Njets_Z",Njets_Z);
+  // SetValue("Njets_H",Njets_H);
+  // SetValue("Njets_jet",Njets_jet);
+  // SetValue("Njets_orig",Njets_orig);
 
-  SetValue("FWmoment1top",FWmoment1top);
-  SetValue("FWmoment2top",FWmoment2top);
-  SetValue("FWmoment3top",FWmoment3top);
-  SetValue("FWmoment4top",FWmoment4top);
-  SetValue("isotropytop",isotropytop);
-  SetValue("sphericitytop",sphericitytop);
-  SetValue("aplanaritytop",aplanaritytop);
-  SetValue("thrusttop",thrusttop);
+  // SetValue("FWmoment1top",FWmoment1top);
+  // SetValue("FWmoment2top",FWmoment2top);
+  // SetValue("FWmoment3top",FWmoment3top);
+  // SetValue("FWmoment4top",FWmoment4top);
+  // SetValue("isotropytop",isotropytop);
+  // SetValue("sphericitytop",sphericitytop);
+  // SetValue("aplanaritytop",aplanaritytop);
+  // SetValue("thrusttop",thrusttop);
 
-  SetValue("FWmoment1W",FWmoment1W);
-  SetValue("FWmoment2W",FWmoment2W);
-  SetValue("FWmoment3W",FWmoment3W);
-  SetValue("FWmoment4W",FWmoment4W);
-  SetValue("isotropyW",isotropyW);
-  SetValue("sphericityW",sphericityW);
-  SetValue("aplanarityW",aplanarityW);
-  SetValue("thrustW",thrustW);
+  // SetValue("FWmoment1W",FWmoment1W);
+  // SetValue("FWmoment2W",FWmoment2W);
+  // SetValue("FWmoment3W",FWmoment3W);
+  // SetValue("FWmoment4W",FWmoment4W);
+  // SetValue("isotropyW",isotropyW);
+  // SetValue("sphericityW",sphericityW);
+  // SetValue("aplanarityW",aplanarityW);
+  // SetValue("thrustW",thrustW);
 
-  SetValue("FWmoment1Z",FWmoment1Z);
-  SetValue("FWmoment2Z",FWmoment2Z);
-  SetValue("FWmoment3Z",FWmoment3Z);
-  SetValue("FWmoment4Z",FWmoment4Z);
-  SetValue("isotropyZ",isotropyZ);
-  SetValue("sphericityZ",sphericityZ);
-  SetValue("aplanarityZ",aplanarityZ);
-  SetValue("thrustZ",thrustZ);
+  // SetValue("FWmoment1Z",FWmoment1Z);
+  // SetValue("FWmoment2Z",FWmoment2Z);
+  // SetValue("FWmoment3Z",FWmoment3Z);
+  // SetValue("FWmoment4Z",FWmoment4Z);
+  // SetValue("isotropyZ",isotropyZ);
+  // SetValue("sphericityZ",sphericityZ);
+  // SetValue("aplanarityZ",aplanarityZ);
+  // SetValue("thrustZ",thrustZ);
 
-  SetValue("FWmoment1H",FWmoment1H);
-  SetValue("FWmoment2H",FWmoment2H);
-  SetValue("FWmoment3H",FWmoment3H);
-  SetValue("FWmoment4H",FWmoment4H);
-  SetValue("isotropyH",isotropyH);
-  SetValue("sphericityH",sphericityH);
-  SetValue("aplanarityH",aplanarityH);
-  SetValue("thrustH",thrustH);
+  // SetValue("FWmoment1H",FWmoment1H);
+  // SetValue("FWmoment2H",FWmoment2H);
+  // SetValue("FWmoment3H",FWmoment3H);
+  // SetValue("FWmoment4H",FWmoment4H);
+  // SetValue("isotropyH",isotropyH);
+  // SetValue("sphericityH",sphericityH);
+  // SetValue("aplanarityH",aplanarityH);
+  // SetValue("thrustH",thrustH);
 
   return 0;
 
@@ -1244,6 +1091,6 @@ unsigned int BestCalc::getParticleID(){
 
 int BestCalc::EndJob()
 {
-  delete m_lwtnn;
+  //delete m_lwtnn;
   return 0;
 }

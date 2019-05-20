@@ -89,6 +89,7 @@ class LJMet : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
       std::string selection;
       std::vector<std::string> vExcl;
       std::vector<std::string> vIncl;
+      std::string ttree_name;
 
 };
 
@@ -113,6 +114,7 @@ LJMet::LJMet(const edm::ParameterSet& iConfig)
    selection  = iConfig.getParameter<std::string>("selector");
    vExcl      = iConfig.getParameter<std::vector<std::string>>("exclude_calcs");
    vIncl      = iConfig.getParameter<std::vector<std::string>>("include_calcs");
+   ttree_name = iConfig.getParameter<std::string>("ttree_name");
 
 
    usesResource("TFileService"); // came originally with EDAnalyzer
@@ -120,8 +122,10 @@ LJMet::LJMet(const edm::ParameterSet& iConfig)
    edm::Service<TFileService> fs; //for purpose of creating / saving to root file
 
    // output tree
-   std::cout << "[FWLJMet] : " << "Creating output tree" << std::endl;
-   std::string const _treename = "ljmet";
+   std::cout << "\n========================================="<< std::endl;
+   std::cout << "[FWLJMet] : " << "Creating output tree : "  << ttree_name << std::endl;
+   std::cout <<   "========================================="<< std::endl;
+   std::string const _treename = ttree_name;
    _tree = fs->make<TTree>(_treename.c_str(), _treename.c_str(), 64000000);
 
    // internal LJMet event content
@@ -129,10 +133,10 @@ LJMet::LJMet(const edm::ParameterSet& iConfig)
    ec.SetTree(_tree);
 
    // The factory for event selector and calculator plugins
-   factory = LjmetFactory::GetInstance();
+   factory = new LjmetFactory;
 
    // choose event selector
-   std::cout << "[FWLJMet] : " << "instantiating the event selector" << std::endl;
+   std::cout << "[FWLJMet] : " << "instantiating the event selector : "<< ttree_name << std::endl;
    theSelector = factory->GetEventSelector(selection);
 
    // sanity check histograms from the selector
@@ -140,10 +144,10 @@ LJMet::LJMet(const edm::ParameterSet& iConfig)
    theSelector->Init();
 
    //Object to pass to eventSelector and Calculators access data - https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideEDMGetDataFromEvent#Consumes_and_Helpers
-   edm::ConsumesCollector && cC = consumesCollector(); 
+   edm::ConsumesCollector && cC = consumesCollector();
 
    theSelector->BeginJob(iConfig, (edm::ConsumesCollector &&)cC);
-   
+
    //print out included Calculators
    for (std::vector<std::string>::const_iterator it = vIncl.begin(); it != vIncl.end(); ++it){
       std::cout << "[FWLJMet] : " << "including " << *it <<std::endl;
@@ -156,14 +160,14 @@ LJMet::LJMet(const edm::ParameterSet& iConfig)
    factory->BeginJobAllCalc((edm::ConsumesCollector &&)cC, vIncl);
 
    // set excluded calculators
-   factory->SetExcludedCalcs(vExcl); 
-   
+   factory->SetExcludedCalcs(vExcl);
+
    // create histograms
    std::map<std::string,std::map<std::string,LjmetEventContent::HistMetadata> > & mh = ec.GetHistMap();
    std::map<std::string,std::map<std::string,LjmetEventContent::HistMetadata> >::iterator iMod;
    std::map<std::string,LjmetEventContent::HistMetadata>::iterator iHist;
    for (iMod=mh.begin();iMod!=mh.end();++iMod){
-        
+
         TFileDirectory _dir = fs->mkdir( iMod->first.c_str() );
         for (iHist=iMod->second.begin();iHist!=iMod->second.end();++iHist){
             std::cout << "[FWLJMet] : "
@@ -173,8 +177,8 @@ LJMet::LJMet(const edm::ParameterSet& iConfig)
                                                    iHist->second.GetName().c_str(),
                                                    iHist->second.GetNBins(),
                                                    iHist->second.GetXMin(),
-                                                   iHist->second.GetXMax() 
-                                                   ) 
+                                                   iHist->second.GetXMax()
+                                                   )
                                   );
         }
     }
@@ -214,7 +218,7 @@ LJMet::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 
 
 	// run producers
-	factory->RunAllProducers(iEvent, theSelector, vIncl); 
+	factory->RunAllProducers(iEvent, theSelector, vIncl);
 
 	// event selection
 	pat::strbitset ret = theSelector->getBitTemplate();
@@ -262,8 +266,7 @@ LJMet::beginJob()
 void
 LJMet::endJob()
 {
-    std::cout << " " <<std::endl;
-    std::cout << "[FWLJMet] : " << "Selection" << std::endl;
+    std::cout << "\n[FWLJMet] : " << "Selection (" << ttree_name << ")" << std::endl;
     theSelector->print(std::cout);
 
 
