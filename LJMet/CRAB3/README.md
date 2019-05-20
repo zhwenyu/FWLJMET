@@ -1,4 +1,4 @@
-source /cvmfs/cms.cern.ch/crab3/crab.sh
+       source /cvmfs/cms.cern.ch/crab3/crab.sh
 
 ### Submitting a crab job
 
