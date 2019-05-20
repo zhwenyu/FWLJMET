@@ -706,8 +706,8 @@ process.ljmet = cms.EDAnalyzer(
         JetSubCalc    = cms.PSet(JetSubCalc_cfg),
         TTbarMassCalc = cms.PSet(TTbarMassCalc_cfg),
         DeepAK8Calc    = cms.PSet(), #current ljmet wants all calc to send a PSet, event if its empty.
-        BestCalc      = cms.PSet(BestCalc_cfg),
         HOTTaggerCalc = cms.PSet(HOTTaggerCalc_cfg)
+        BestCalc      = cms.PSet(BestCalc_cfg),
 
 )
 

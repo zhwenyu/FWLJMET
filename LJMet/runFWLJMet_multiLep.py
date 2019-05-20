@@ -218,72 +218,72 @@ process.ecalBadCalibReducedMINIAODFilter = cms.EDFilter(
 ################################
 ## Produce DeepAK8 jet tags
 ################################
-from PhysicsTools.PatAlgos.tools.jetTools import updateJetCollection
-from RecoBTag.MXNet.pfDeepBoostedJet_cff import *
-
-updateJetCollection(
-   process,
-   jetSource = cms.InputTag('slimmedJetsAK8'),
-   pvSource = cms.InputTag('offlineSlimmedPrimaryVertices'),
-   svSource = cms.InputTag('slimmedSecondaryVertices'),
-   rParam = 0.8,
-   jetCorrections = ('AK8PFPuppi', cms.vstring(['L2Relative', 'L3Absolute']), 'None'),
-   btagDiscriminators = ['pfCombinedInclusiveSecondaryVertexV2BJetTags',
-                         'pfDeepBoostedJetTags:probTbcq', 'pfDeepBoostedJetTags:probTbqq',
-                         'pfDeepBoostedJetTags:probWcq', 'pfDeepBoostedJetTags:probWqq',
-                         'pfDeepBoostedJetTags:probZbb', 'pfDeepBoostedJetTags:probZcc', 'pfDeepBoostedJetTags:probZqq',
-                         'pfDeepBoostedJetTags:probHbb', 'pfDeepBoostedJetTags:probHcc', 'pfDeepBoostedJetTags:probHqqqq',
-                         'pfDeepBoostedJetTags:probQCDbb', 'pfDeepBoostedJetTags:probQCDcc',
-                         'pfDeepBoostedJetTags:probQCDb', 'pfDeepBoostedJetTags:probQCDc',
-                         'pfDeepBoostedJetTags:probQCDothers',
-                         'pfDeepBoostedDiscriminatorsJetTags:TvsQCD', 'pfDeepBoostedDiscriminatorsJetTags:WvsQCD',
-                         'pfDeepBoostedDiscriminatorsJetTags:ZvsQCD', 'pfDeepBoostedDiscriminatorsJetTags:ZbbvsQCD',
-                         'pfDeepBoostedDiscriminatorsJetTags:HbbvsQCD', 'pfDeepBoostedDiscriminatorsJetTags:H4qvsQCD',
-                         'pfMassDecorrelatedDeepBoostedJetTags:probTbcq', 'pfMassDecorrelatedDeepBoostedJetTags:probTbqq',
-                         'pfMassDecorrelatedDeepBoostedJetTags:probWcq', 'pfMassDecorrelatedDeepBoostedJetTags:probWqq',
-                         'pfMassDecorrelatedDeepBoostedJetTags:probZbb', 'pfMassDecorrelatedDeepBoostedJetTags:probZcc', 'pfMassDecorrelatedDeepBoostedJetTags:probZqq',
-                         'pfMassDecorrelatedDeepBoostedJetTags:probHbb', 'pfMassDecorrelatedDeepBoostedJetTags:probHcc', 'pfMassDecorrelatedDeepBoostedJetTags:probHqqqq',
-                         'pfMassDecorrelatedDeepBoostedJetTags:probQCDbb', 'pfMassDecorrelatedDeepBoostedJetTags:probQCDcc',
-                         'pfMassDecorrelatedDeepBoostedJetTags:probQCDb', 'pfMassDecorrelatedDeepBoostedJetTags:probQCDc',
-                         'pfMassDecorrelatedDeepBoostedJetTags:probQCDothers',
-                         'pfMassDecorrelatedDeepBoostedDiscriminatorsJetTags:TvsQCD', 'pfMassDecorrelatedDeepBoostedDiscriminatorsJetTags:WvsQCD',
-                         'pfMassDecorrelatedDeepBoostedDiscriminatorsJetTags:ZHbbvsQCD', 'pfMassDecorrelatedDeepBoostedDiscriminatorsJetTags:ZHccvsQCD',
-                         'pfMassDecorrelatedDeepBoostedDiscriminatorsJetTags:bbvsLight', 'pfMassDecorrelatedDeepBoostedDiscriminatorsJetTags:ccvsLight'],
-   postfix = 'AK8Puppi',
-   printWarning = False
-   )
+# from PhysicsTools.PatAlgos.tools.jetTools import updateJetCollection
+# from RecoBTag.MXNet.pfDeepBoostedJet_cff import *
+# 
+# updateJetCollection(
+#    process,
+#    jetSource = cms.InputTag('slimmedJetsAK8'),
+#    pvSource = cms.InputTag('offlineSlimmedPrimaryVertices'),
+#    svSource = cms.InputTag('slimmedSecondaryVertices'),
+#    rParam = 0.8,
+#    jetCorrections = ('AK8PFPuppi', cms.vstring(['L2Relative', 'L3Absolute']), 'None'),
+#    btagDiscriminators = ['pfCombinedInclusiveSecondaryVertexV2BJetTags',
+#                          'pfDeepBoostedJetTags:probTbcq', 'pfDeepBoostedJetTags:probTbqq',
+#                          'pfDeepBoostedJetTags:probWcq', 'pfDeepBoostedJetTags:probWqq',
+#                          'pfDeepBoostedJetTags:probZbb', 'pfDeepBoostedJetTags:probZcc', 'pfDeepBoostedJetTags:probZqq',
+#                          'pfDeepBoostedJetTags:probHbb', 'pfDeepBoostedJetTags:probHcc', 'pfDeepBoostedJetTags:probHqqqq',
+#                          'pfDeepBoostedJetTags:probQCDbb', 'pfDeepBoostedJetTags:probQCDcc',
+#                          'pfDeepBoostedJetTags:probQCDb', 'pfDeepBoostedJetTags:probQCDc',
+#                          'pfDeepBoostedJetTags:probQCDothers',
+#                          'pfDeepBoostedDiscriminatorsJetTags:TvsQCD', 'pfDeepBoostedDiscriminatorsJetTags:WvsQCD',
+#                          'pfDeepBoostedDiscriminatorsJetTags:ZvsQCD', 'pfDeepBoostedDiscriminatorsJetTags:ZbbvsQCD',
+#                          'pfDeepBoostedDiscriminatorsJetTags:HbbvsQCD', 'pfDeepBoostedDiscriminatorsJetTags:H4qvsQCD',
+#                          'pfMassDecorrelatedDeepBoostedJetTags:probTbcq', 'pfMassDecorrelatedDeepBoostedJetTags:probTbqq',
+#                          'pfMassDecorrelatedDeepBoostedJetTags:probWcq', 'pfMassDecorrelatedDeepBoostedJetTags:probWqq',
+#                          'pfMassDecorrelatedDeepBoostedJetTags:probZbb', 'pfMassDecorrelatedDeepBoostedJetTags:probZcc', 'pfMassDecorrelatedDeepBoostedJetTags:probZqq',
+#                          'pfMassDecorrelatedDeepBoostedJetTags:probHbb', 'pfMassDecorrelatedDeepBoostedJetTags:probHcc', 'pfMassDecorrelatedDeepBoostedJetTags:probHqqqq',
+#                          'pfMassDecorrelatedDeepBoostedJetTags:probQCDbb', 'pfMassDecorrelatedDeepBoostedJetTags:probQCDcc',
+#                          'pfMassDecorrelatedDeepBoostedJetTags:probQCDb', 'pfMassDecorrelatedDeepBoostedJetTags:probQCDc',
+#                          'pfMassDecorrelatedDeepBoostedJetTags:probQCDothers',
+#                          'pfMassDecorrelatedDeepBoostedDiscriminatorsJetTags:TvsQCD', 'pfMassDecorrelatedDeepBoostedDiscriminatorsJetTags:WvsQCD',
+#                          'pfMassDecorrelatedDeepBoostedDiscriminatorsJetTags:ZHbbvsQCD', 'pfMassDecorrelatedDeepBoostedDiscriminatorsJetTags:ZHccvsQCD',
+#                          'pfMassDecorrelatedDeepBoostedDiscriminatorsJetTags:bbvsLight', 'pfMassDecorrelatedDeepBoostedDiscriminatorsJetTags:ccvsLight'],
+#    postfix = 'AK8Puppi',
+#    printWarning = False
+#    )
 
 ################################################################################################
 #### Establish references between PATified fat jets and subjets using the BoostedJetMerger
 ################################################################################################
-process.updatedJetsAK8PuppiSoftDropPacked = cms.EDProducer("BoostedJetMerger",
-                                                           jetSrc=cms.InputTag('selectedUpdatedPatJetsAK8Puppi'),
-                                                           subjetSrc=cms.InputTag('slimmedJetsAK8PFPuppiSoftDropPacked','SubJets')
-                                                           )
+# process.updatedJetsAK8PuppiSoftDropPacked = cms.EDProducer("BoostedJetMerger",
+#                                                            jetSrc=cms.InputTag('selectedUpdatedPatJetsAK8Puppi'),
+#                                                            subjetSrc=cms.InputTag('slimmedJetsAK8PFPuppiSoftDropPacked','SubJets')
+#                                                            )
 ################################
 #### Pack fat jets with subjets
 ################################
-process.packedJetsAK8Puppi = cms.EDProducer("JetSubstructurePacker",
-                                            jetSrc=cms.InputTag('selectedUpdatedPatJetsAK8Puppi'),
-                                            distMax = cms.double(0.8),
-                                            fixDaughters = cms.bool(False),
-                                            algoTags = cms.VInputTag(cms.InputTag("updatedJetsAK8PuppiSoftDropPacked")),
-                                            algoLabels =cms.vstring('SoftDropPuppi')
-)
+# process.packedJetsAK8Puppi = cms.EDProducer("JetSubstructurePacker",
+#                                             jetSrc=cms.InputTag('selectedUpdatedPatJetsAK8Puppi'),
+#                                             distMax = cms.double(0.8),
+#                                             fixDaughters = cms.bool(False),
+#                                             algoTags = cms.VInputTag(cms.InputTag("updatedJetsAK8PuppiSoftDropPacked")),
+#                                             algoLabels =cms.vstring('SoftDropPuppi')
+# )
 
 
 ##############################################
 #run QGTagger code again to calculate jet axis1  (HOT Tagger) - https://github.com/susy2015/TopTagger/tree/master/TopTagger#instructions-for-saving-tagger-results-to-nanoaod-with-cmssw_9_4_11
 ##############################################
-updateJetCollection(
-    process,
-    jetSource = cms.InputTag('slimmedJets'),
-)
-process.load('RecoJets.JetProducers.QGTagger_cfi')
-# patAlgosToolsTask.add(process.QGTagger)
-process.QGTagger.srcJets = cms.InputTag('slimmedJets')
-process.updatedPatJets.userData.userFloats.src += ['QGTagger:ptD','QGTagger:axis1','QGTagger:axis2']
-process.updatedPatJets.userData.userInts.src += ['QGTagger:mult']
+# updateJetCollection(
+#     process,
+#     jetSource = cms.InputTag('slimmedJets'),
+# )
+# process.load('RecoJets.JetProducers.QGTagger_cfi')
+# # patAlgosToolsTask.add(process.QGTagger)
+# process.QGTagger.srcJets = cms.InputTag('slimmedJets')
+# process.updatedPatJets.userData.userFloats.src += ['QGTagger:ptD','QGTagger:axis1','QGTagger:axis2']
+# process.updatedPatJets.userData.userInts.src += ['QGTagger:mult']
 
 
 ################################
@@ -335,6 +335,7 @@ DataResJetParAK8         = 'FWLJMET/LJMet/data/Autumn18V8/Autumn18_RunA_V8_DATA_
 #El MVA ID
 UseElIDV1_ = False #False means using ElIDV2
 
+#Selector/Calc config
 MultiLepSelector_cfg = cms.PSet(
 
             debug  = cms.bool(False),
@@ -508,7 +509,7 @@ MultiLepCalc_cfg = cms.PSet(
 
             debug                  = cms.bool(False),
             isMc                   = cms.bool(isMC),
-            saveLooseLeps          = cms.bool(True),
+            saveLooseLeps          = cms.bool(not isMC),
             keepFullMChistory      = cms.bool(isMC),
 
             rhoJetsNCInputTag      = cms.InputTag("fixedGridRhoFastjetCentralNeutral",""), #this is for muon
@@ -667,6 +668,7 @@ HOTTaggerCalc_cfg = cms.PSet(
 
     )
 
+## nominal
 process.ljmet = cms.EDAnalyzer(
         'LJMet',
 
@@ -748,9 +750,9 @@ if (isTTbar):
                          #process.fullPatMetSequenceModifiedMET *
                          #process.prefiringweight *
                          process.egammaPostRecoSeq *
-                         process.updatedJetsAK8PuppiSoftDropPacked *
-                         process.packedJetsAK8Puppi *
-                         process.QGTagger *
+                         #process.updatedJetsAK8PuppiSoftDropPacked *
+                         #process.packedJetsAK8Puppi *
+                         #process.QGTagger *
                          process.ecalBadCalibReducedMINIAODFilter *
                          process.ttbarcat *
                          process.ljmet #(ntuplizer)
@@ -763,9 +765,9 @@ else:
        #process.fullPatMetSequenceModifiedMET *
        #process.prefiringweight *
        process.egammaPostRecoSeq *
-       process.updatedJetsAK8PuppiSoftDropPacked *
-       process.packedJetsAK8Puppi *
-       process.QGTagger *
+       #process.updatedJetsAK8PuppiSoftDropPacked *
+       #process.packedJetsAK8Puppi *
+       #process.QGTagger *
        process.ecalBadCalibReducedMINIAODFilter *
        process.ljmet #(ntuplizer)
     )
