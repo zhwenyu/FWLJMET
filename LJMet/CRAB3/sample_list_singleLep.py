@@ -82,17 +82,17 @@ ttbarbkgdict['TTToSemiLeptonic'] = '/TTToSemiLeptonic_TuneCP5_13TeV-powheg-pythi
 ttbarbkgdict['TTTo2L2Nu'] = '/TTTo2L2Nu_TuneCP5_13TeV-powheg-pythia8/RunIIAutumn18MiniAOD-102X_upgrade2018_realistic_v15-v1/MINIAODSIM'
 
 
-datadict2018 = {}
+datadict = {}
 
-datadict2018['EGammaRun2018A']  = '/EGamma/Run2018A-17Sep2018-v2/MINIAOD'
-datadict2018['EGammaRun2018B']  = '/EGamma/Run2018B-17Sep2018-v1/MINIAOD'
-datadict2018['EGammaRun2018C']  = '/EGamma/Run2018C-17Sep2018-v1/MINIAOD'
-datadict2018['EGammaRun2018D']  = '/EGamma/Run2018D-PromptReco-v2/MINIAOD'
+datadict['EGammaRun2018A']  = '/EGamma/Run2018A-17Sep2018-v2/MINIAOD'
+datadict['EGammaRun2018B']  = '/EGamma/Run2018B-17Sep2018-v1/MINIAOD'
+datadict['EGammaRun2018C']  = '/EGamma/Run2018C-17Sep2018-v1/MINIAOD'
+datadict['EGammaRun2018D']  = '/EGamma/Run2018D-PromptReco-v2/MINIAOD'
 
-datadict2018['SingleMuonRun2018A']  = '/DoubleMuon/Run2018A-17Sep2018-v2/MINIAOD'
-datadict2018['SingleMuonRun2018B']  = '/DoubleMuon/Run2018B-17Sep2018-v1/MINIAOD'
-datadict2018['SingleMuonRun2018C']  = '/DoubleMuon/Run2018C-17Sep2018-v1/MINIAOD'
-datadict2018['SingleMuonRun2018D']  = '/DoubleMuon/Run2018D-PromptReco-v2/MINIAOD'
+datadict['SingleMuonRun2018A']  = '/DoubleMuon/Run2018A-17Sep2018-v2/MINIAOD'
+datadict['SingleMuonRun2018B']  = '/DoubleMuon/Run2018B-17Sep2018-v1/MINIAOD'
+datadict['SingleMuonRun2018C']  = '/DoubleMuon/Run2018C-17Sep2018-v1/MINIAOD'
+datadict['SingleMuonRun2018D']  = '/DoubleMuon/Run2018D-PromptReco-v2/MINIAOD'
 
 
 

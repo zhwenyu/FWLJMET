@@ -22,8 +22,8 @@ isTTbar        = ISTTBAR
 ### GENERAL
 ##############
 config.section_("General")
-config.General.requestName = requestName
-config.General.workArea = 'crabSubmitLogs/'+logFolder+'/'
+config.General.requestName = requestName+"_"+logFolder
+config.General.workArea = 'crabSubmitLogs/'+requestName+'/'
 config.General.transferLogs = True
 config.General.transferOutputs = True
 

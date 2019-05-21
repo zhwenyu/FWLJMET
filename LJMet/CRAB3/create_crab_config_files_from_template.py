@@ -50,6 +50,7 @@ def create_crab_config_files_from_template(sample_dict,**kwargs):
 		os.system("sed -i 's|REQNAME|"+REQNAME+"|g' "+CRABCONFIG_DIR+"/"+filename)
 		os.system("sed -i 's|OUTFOLDER|"+OUTFOLDER+"|g' "+CRABCONFIG_DIR+"/"+filename)
 		os.system("sed -i 's|LOGFOLDER|"+dataset+"|g' "+CRABCONFIG_DIR+"/"+filename)
+		os.system("sed -i 's|JSONFORDATA|"+JSONFORDATA+"|g' "+CRABCONFIG_DIR+"/"+filename)
 		os.system("sed -i 's|ISMC|"+kwargs['ISMC']+"|g' "+CRABCONFIG_DIR+"/"+filename)
 		os.system("sed -i 's|ISVLQSIGNAL|"+kwargs['ISVLQSIGNAL']+"|g' "+CRABCONFIG_DIR+"/"+filename)
 		os.system("sed -i 's|ISTTBAR|"+kwargs['ISTTBAR']+"|g' "+CRABCONFIG_DIR+"/"+filename)
@@ -85,7 +86,7 @@ if __name__=='__main__':
 
 	#### Data
 	create_crab_config_files_from_template(
-		sample.datadict2018,
+		sample.datadict,
 		ISMC='False',
 		ISVLQSIGNAL='False',
 		ISTTBAR='False',
