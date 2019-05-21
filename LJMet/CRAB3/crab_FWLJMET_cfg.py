@@ -39,10 +39,6 @@ config.section_("JobType")
 config.JobType.pluginName = 'Analysis'
 config.JobType.psetName = cmsRun_config
 
-#for VLQ signal this will run using crab_script.sh which will reset the env var in order to access LHApdf outside of CMSSW
-if(isVLQsignal):
-	config.JobType.scriptExe = 'crab_script.sh'
-
 #cmsRun params
 if(isMC):
 	config.JobType.pyCfgParams = ['isMC=True']
@@ -52,6 +48,12 @@ else:
 if(isTTbar):
 	config.JobType.pyCfgParams += ['isTTbar=True']
 
+#for VLQ signal this will run using crab_script.sh which will reset the env var in order to access LHApdf outside of CMSSW
+if(isVLQsignal):
+	config.JobType.scriptExe = 'crab_script.sh'
+else:
+	config.JobType.pyCfgParams += ['isVLQsignal=False']
+	
 # runtime, memory, cores
 if(isMC):
 	config.JobType.maxJobRuntimeMin = 2750 #minutes

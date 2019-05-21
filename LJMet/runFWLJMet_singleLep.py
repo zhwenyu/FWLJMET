@@ -10,10 +10,13 @@ from FWCore.ParameterSet.VarParsing import VarParsing
 options = VarParsing('analysis')
 options.register('isMC', '', VarParsing.multiplicity.singleton, VarParsing.varType.bool, 'Is MC')
 options.register('isTTbar', '', VarParsing.multiplicity.singleton, VarParsing.varType.bool, 'Is TTbar')
-options.register('isSignal', '', VarParsing.multiplicity.singleton, VarParsing.varType.bool, 'Is Signal')
+options.register('isVLQsignal', '', VarParsing.multiplicity.singleton, VarParsing.varType.bool, 'Is VLQ Signal')
+
+## SET DEFAULT VALUES
+## ATTENTION: THESE DEFAULT VALUES ARE SET FOR VLQ SIGNAL ! isMC=True, isTTbar=False, isVLQsignal=True 
 options.isMC = True
 options.isTTbar = False
-options.isSignal = False
+options.isVLQsignal = True
 options.inputFiles = [
     'root://cmsxrootd.fnal.gov//store/mc/RunIIAutumn18MiniAOD/TprimeTprime_M-1400_TuneCP5_PSweights_13TeV-madgraph-pythia8/MINIAODSIM/102X_upgrade2018_realistic_v15-v2/80000/FEFD008E-00DF-9A4A-B3C4-4CE60A67B5C6.root'
     ]
@@ -22,9 +25,7 @@ options.parseArguments()
 
 isMC= options.isMC
 isTTbar = options.isTTbar
-isSignal = options.isSignal
-
-if 'Tprime' in options.inputFiles[0] or 'Bprime' in options.inputFiles[0] :  isSignal=True
+isVLQsignal = options.isVLQsignal
 
 #Check arguments
 print options
@@ -97,7 +98,7 @@ process.TFileService = cms.Service("TFileService", fileName = cms.string(OUTFILE
 ################################
 process.mcweightanalyzer = cms.EDAnalyzer(
     "WeightAnalyzer",
-    overrideLHEweight = cms.bool(isSignal),
+    overrideLHEweight = cms.bool(isVLQsignal),
     basePDFname = cms.string("NNPDF31_nnlo_as_0118_nf_4"),
     newPDFname = cms.string("NNPDF31_nnlo_as_0118_nf_4_mc_hessian"),
     )
@@ -305,11 +306,11 @@ process.updatedPatJets.userData.userInts.src += ['QGTagger:mult']
 ### LJMET
 ################################################
 
-#For MET filter
+## For MET filter
 if(isMC): MET_filt_flag_tag        = 'TriggerResults::PAT'
 else:     MET_filt_flag_tag        = 'TriggerResults::RECO'
 
-#For Jet corrections
+## For Jet corrections
 doNewJEC                 = True
 JECup                    = False
 JECdown                  = False
@@ -335,9 +336,47 @@ DataL2JetParAK8          = 'FWLJMET/LJMet/data/Autumn18V8/Autumn18_RunA_V8_DATA_
 DataL3JetParAK8          = 'FWLJMET/LJMet/data/Autumn18V8/Autumn18_RunA_V8_DATA_L3Absolute_AK8PFPuppi.txt'
 DataResJetParAK8         = 'FWLJMET/LJMet/data/Autumn18V8/Autumn18_RunA_V8_DATA_L2L3Residual_AK8PFPuppi.txt'
 
-#El MVA ID
+## El MVA ID
 UseElIDV1_ = False #False means using ElIDV2
 
+## TriggerPaths (for ljmet): 
+hlt_path_el  = cms.vstring(
+        #'digitisation_step',
+        'HLT_Ele35_WPTight_Gsf',
+        'HLT_Ele38_WPTight_Gsf',
+        'HLT_Ele40_WPTight_Gsf',
+        'HLT_Ele28_eta2p1_WPTight_Gsf_HT150',
+        'HLT_Ele15_IsoVVVL_PFHT450_PFMET50',
+        'HLT_Ele15_IsoVVVL_PFHT450',
+        'HLT_Ele50_IsoVVVL_PFHT450',
+        'HLT_Ele15_IsoVVVL_PFHT600',
+        'HLT_Ele50_CaloIdVT_GsfTrkIdT_PFJet165',
+        'HLT_Ele115_CaloIdVT_GsfTrkIdT'
+        
+        'HLT_Ele32_WPTight_Gsf',
+        'HLT_Ele32_WPTight_Gsf_L1DoubleEG',
+        'HLT_Ele30_eta2p1_WPTight_Gsf_CentralPFJet35_EleCleaned',
+        )
+hlt_path_mu = cms.vstring(
+        #'digitisation_step',
+        'HLT_IsoMu24',
+        'HLT_IsoMu24_eta2p1',
+        'HLT_IsoMu27',
+        'HLT_IsoMu30',
+        'HLT_Mu50',
+        'HLT_TkMu50',
+        'HLT_Mu55',
+        'HLT_Mu15_IsoVVVL_PFHT450_PFMET50',
+        'HLT_Mu15_IsoVVVL_PFHT450',
+        'HLT_Mu50_IsoVVVL_PFHT450',
+        'HLT_Mu15_IsoVVVL_PFHT600',
+        
+        'HLT_IsoTkMu24',
+        'HLT_IsoMu24_2p1',
+        )
+    
+
+#Selector/Calc config
 MultiLepSelector_cfg = cms.PSet(
 
             debug  = cms.bool(False),
@@ -348,42 +387,6 @@ MultiLepSelector_cfg = cms.PSet(
             trigger_cut  = cms.bool(True),
             HLTcollection= cms.InputTag("TriggerResults","","HLT"),
             dump_trigger = cms.bool(False),
-            mctrigger_path_el = cms.vstring(
-                        #'digitisation_step',
-                        'HLT_Ele35_WPTight_Gsf',
-                        'HLT_Ele38_WPTight_Gsf',
-                        'HLT_Ele40_WPTight_Gsf',
-                        'HLT_Ele28_eta2p1_WPTight_Gsf_HT150',
-                        'HLT_Ele15_IsoVVVL_PFHT450_PFMET50',
-                        'HLT_Ele15_IsoVVVL_PFHT450',
-                        'HLT_Ele50_IsoVVVL_PFHT450',
-                        'HLT_Ele15_IsoVVVL_PFHT600',
-                        'HLT_Ele50_CaloIdVT_GsfTrkIdT_PFJet165',
-                        'HLT_Ele115_CaloIdVT_GsfTrkIdT'
-
-                        'HLT_Ele32_WPTight_Gsf',
-                        'HLT_Ele32_WPTight_Gsf_L1DoubleEG',
-                        'HLT_Ele30_eta2p1_WPTight_Gsf_CentralPFJet35_EleCleaned',
-                        ),
-            mctrigger_path_mu = cms.vstring(
-                        #'digitisation_step',
-                        'HLT_IsoMu24',
-                        'HLT_IsoMu24_eta2p1',
-                        'HLT_IsoMu27',
-                        'HLT_IsoMu30',
-                        'HLT_Mu50',
-                        'HLT_TkMu50',
-                        'HLT_Mu55',
-                        'HLT_Mu15_IsoVVVL_PFHT450_PFMET50',
-                        'HLT_Mu15_IsoVVVL_PFHT450',
-                        'HLT_Mu50_IsoVVVL_PFHT450',
-                        'HLT_Mu15_IsoVVVL_PFHT600',
-
-                        'HLT_IsoTkMu24',
-                        'HLT_IsoMu24_2p1',
-                        ),
-            trigger_path_el = cms.vstring(''),
-            trigger_path_mu = cms.vstring(''),
 
             # PV cuts
             pv_cut     = cms.bool(True),
@@ -510,6 +513,16 @@ MultiLepSelector_cfg = cms.PSet(
             MistagUncertDown          = cms.bool(False), # no longer needed, but can still be utilized. Keep false as default.
 
             )
+if isMC:
+    MultiLepSelector_cfg.mctrigger_path_el = hlt_path_el
+    MultiLepSelector_cfg.mctrigger_path_mu = hlt_path_mu
+    MultiLepSelector_cfg.trigger_path_el = cms.vstring('')
+    MultiLepSelector_cfg.trigger_path_mu = cms.vstring('')
+else:
+    MultiLepSelector_cfg.mctrigger_path_el = cms.vstring('')
+    MultiLepSelector_cfg.mctrigger_path_mu = cms.vstring('')
+    MultiLepSelector_cfg.trigger_path_el = hlt_path_el
+    MultiLepSelector_cfg.trigger_path_mu = hlt_path_mu
 
 MultiLepCalc_cfg = cms.PSet(
 
@@ -559,7 +572,7 @@ MultiLepCalc_cfg = cms.PSet(
             #Gen stuff
             saveGenHT          = cms.bool(False),
             genJetsCollection  = cms.InputTag("slimmedGenJets"),
-            OverrideLHEWeights = cms.bool(isSignal), #TRUE FOR SIGNALS, False otherwise
+            OverrideLHEWeights = cms.bool(isVLQsignal), #TRUE FOR SIGNALS, False otherwise
             basePDFname        = cms.string('NNPDF31_nnlo_as_0118_nf_4'),
             newPDFname         = cms.string('NNPDF31_nnlo_as_0118_nf_4_mc_hessian'),
             keepPDGID          = cms.vuint32(1, 2, 3, 4, 5, 6, 21, 11, 12, 13, 14, 15, 16, 24),
@@ -674,6 +687,7 @@ HOTTaggerCalc_cfg = cms.PSet(
 
     )
 
+## nominal
 process.ljmet = cms.EDAnalyzer(
         'LJMet',
 
@@ -763,19 +777,31 @@ if (isTTbar):
                          process.ljmet #(ntuplizer)
                          )
 
+elif(isMC):
+    process.p = cms.Path(
+        process.mcweightanalyzer *
+        process.filter_any_explicit *
+        #process.fullPatMetSequenceModifiedMET *
+        #process.prefiringweight *
+        process.egammaPostRecoSeq *
+        process.updatedJetsAK8PuppiSoftDropPacked *
+        process.packedJetsAK8Puppi *
+        process.QGTagger *
+        process.ecalBadCalibReducedMINIAODFilter *
+        process.ljmet #(ntuplizer)
+        )
 else:
     process.p = cms.Path(
-       process.mcweightanalyzer *
-       process.filter_any_explicit *
-       #process.fullPatMetSequenceModifiedMET *
-       #process.prefiringweight *
-       process.egammaPostRecoSeq *
-       process.updatedJetsAK8PuppiSoftDropPacked *
-       process.packedJetsAK8Puppi *
-       process.QGTagger *
-       process.ecalBadCalibReducedMINIAODFilter *
-       process.ljmet #(ntuplizer)
-    )
+        process.filter_any_explicit *
+        #process.fullPatMetSequenceModifiedMET *
+        #process.prefiringweight *
+        process.egammaPostRecoSeq *
+        process.updatedJetsAK8PuppiSoftDropPacked *
+        process.packedJetsAK8Puppi *
+        process.QGTagger *
+        process.ecalBadCalibReducedMINIAODFilter *
+        process.ljmet #(ntuplizer)
+        )
 
 process.p.associate(patAlgosToolsTask)
 
