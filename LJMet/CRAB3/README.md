@@ -10,12 +10,12 @@ Always good to do a dryrun first (will show if it could be successfully delivere
 
        python create_crab_config_files_from_template.py --finalState singleLep (--nominalTreeOnly)
 
-       python submit_multiple_crab_jobs,py --finalState singleLep (--nominalTreeOnly)
+       python submit_mutiple_crab_jobs.py --finalState singleLep (--nominalTreeOnly)
 ### Or: 3Lep
 
        python create_crab_config_files_from_template.py --finalState multiLep (--nominalTreeOnly)
 
-       python submit_multiple_crab_jobs,py --finalState multiLep (--nominalTreeOnly)
+       python submit_mutiple_crab_jobs.py --finalState multiLep (--nominalTreeOnly)
 
 
 Note:
