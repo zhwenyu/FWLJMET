@@ -39,21 +39,21 @@ bkgdict['TTW'] = '/TTWJetsToLNu_TuneCP5_13TeV-amcatnloFXFX-madspin-pythia8/RunII
 bkgdict['TTZ'] = '/TTZToLLNuNu_M-10_TuneCP5_13TeV-amcatnlo-pythia8/RunIIFall18MiniAOD-102X_upgrade2018_realistic_v12-v1/MINIAODSIM'
 #bkgdict['WW'] = ''
 
-datadict2018 = {}
+datadict = {}
 
-datadict2018['EGammaRun2018A']  = '/EGamma/Run2018A-17Sep2018-v2/MINIAOD'
-datadict2018['EGammaRun2018B']  = '/EGamma/Run2018B-17Sep2018-v1/MINIAOD'
-datadict2018['EGammaRun2018C']  = '/EGamma/Run2018C-17Sep2018-v1/MINIAOD'
-datadict2018['EGammaRun2018D']  = '/EGamma/Run2018D-PromptReco-v2/MINIAOD'
+datadict['EGammaRun2018A']  = '/EGamma/Run2018A-17Sep2018-v2/MINIAOD'
+datadict['EGammaRun2018B']  = '/EGamma/Run2018B-17Sep2018-v1/MINIAOD'
+datadict['EGammaRun2018C']  = '/EGamma/Run2018C-17Sep2018-v1/MINIAOD'
+datadict['EGammaRun2018D']  = '/EGamma/Run2018D-PromptReco-v2/MINIAOD'
 
-datadict2018['DoubleMuonRun2018A']  = '/DoubleMuon/Run2018A-17Sep2018-v2/MINIAOD'
-datadict2018['DoubleMuonRun2018B']  = '/DoubleMuon/Run2018B-17Sep2018-v1/MINIAOD'
-datadict2018['DoubleMuonRun2018C']  = '/DoubleMuon/Run2018C-17Sep2018-v1/MINIAOD'
-datadict2018['DoubleMuonRun2018D']  = '/DoubleMuon/Run2018D-PromptReco-v2/MINIAOD'
+datadict['DoubleMuonRun2018A']  = '/DoubleMuon/Run2018A-17Sep2018-v2/MINIAOD'
+datadict['DoubleMuonRun2018B']  = '/DoubleMuon/Run2018B-17Sep2018-v1/MINIAOD'
+datadict['DoubleMuonRun2018C']  = '/DoubleMuon/Run2018C-17Sep2018-v1/MINIAOD'
+datadict['DoubleMuonRun2018D']  = '/DoubleMuon/Run2018D-PromptReco-v2/MINIAOD'
 
-datadict2018['MuonEGRun2018A']  = '/MuonEG/Run2018A-17Sep2018-v1/MINIAOD'
-datadict2018['MuonEGRun2018B']  = '/MuonEG/Run2018B-17Sep2018-v1/MINIAOD'
-datadict2018['MuonEGRun2018C']  = '/MuonEG/Run2018C-17Sep2018-v1/MINIAOD'
-datadict2018['MuonEGRun2018D']  = '/MuonEG/Run2018D-PromptReco-v2/MINIAOD'
+datadict['MuonEGRun2018A']  = '/MuonEG/Run2018A-17Sep2018-v1/MINIAOD'
+datadict['MuonEGRun2018B']  = '/MuonEG/Run2018B-17Sep2018-v1/MINIAOD'
+datadict['MuonEGRun2018C']  = '/MuonEG/Run2018C-17Sep2018-v1/MINIAOD'
+datadict['MuonEGRun2018D']  = '/MuonEG/Run2018D-PromptReco-v2/MINIAOD'
 
 
