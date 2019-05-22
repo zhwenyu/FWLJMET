@@ -335,6 +335,45 @@ DataL2JetParAK8          = 'FWLJMET/LJMet/data/Fall17V32/Fall17_17Nov2017B_V32_D
 DataL3JetParAK8          = 'FWLJMET/LJMet/data/Fall17V32/Fall17_17Nov2017B_V32_DATA_L3Absolute_AK8PFPuppi.txt'
 DataResJetParAK8         = 'FWLJMET/LJMet/data/Fall17V32/Fall17_17Nov2017B_V32_DATA_L2L3Residual_AK8PFPuppi.txt'
 
+## El MVA ID
+UseElIDV1_ = False #False means using ElIDV2
+
+## TriggerPaths (for ljmet): 
+hlt_path_el  = cms.vstring(
+        #'digitisation_step',
+        'HLT_Ele35_WPTight_Gsf',
+        'HLT_Ele38_WPTight_Gsf',
+        'HLT_Ele40_WPTight_Gsf',
+        'HLT_Ele28_eta2p1_WPTight_Gsf_HT150',
+        'HLT_Ele15_IsoVVVL_PFHT450_PFMET50',
+        'HLT_Ele15_IsoVVVL_PFHT450',
+        'HLT_Ele50_IsoVVVL_PFHT450',
+        'HLT_Ele15_IsoVVVL_PFHT600',
+        'HLT_Ele50_CaloIdVT_GsfTrkIdT_PFJet165',
+        'HLT_Ele115_CaloIdVT_GsfTrkIdT'
+        
+        'HLT_Ele32_WPTight_Gsf',
+        'HLT_Ele32_WPTight_Gsf_L1DoubleEG',
+        'HLT_Ele30_eta2p1_WPTight_Gsf_CentralPFJet35_EleCleaned',
+        )
+hlt_path_mu = cms.vstring(
+        #'digitisation_step',
+        'HLT_IsoMu24',
+        'HLT_IsoMu24_eta2p1',
+        'HLT_IsoMu27',
+        'HLT_IsoMu30',
+        'HLT_Mu50',
+        'HLT_TkMu50',
+        'HLT_Mu55',
+        'HLT_Mu15_IsoVVVL_PFHT450_PFMET50',
+        'HLT_Mu15_IsoVVVL_PFHT450',
+        'HLT_Mu50_IsoVVVL_PFHT450',
+        'HLT_Mu15_IsoVVVL_PFHT600',
+        
+        'HLT_IsoTkMu24',
+        'HLT_IsoMu24_2p1',
+        )
+
 #Selector/Calc config
 MultiLepSelector_cfg = cms.PSet(
 
