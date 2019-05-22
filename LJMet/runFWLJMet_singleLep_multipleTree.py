@@ -10,23 +10,22 @@ from FWCore.ParameterSet.VarParsing import VarParsing
 options = VarParsing('analysis')
 options.register('isMC', '', VarParsing.multiplicity.singleton, VarParsing.varType.bool, 'Is MC')
 options.register('isTTbar', '', VarParsing.multiplicity.singleton, VarParsing.varType.bool, 'Is TTbar')
+options.register('isVLQsignal', '', VarParsing.multiplicity.singleton, VarParsing.varType.bool, 'Is VLQ Signal')
+
+## SET DEFAULT VALUES
+## ATTENTION: THESE DEFAULT VALUES ARE SET FOR VLQ SIGNAL ! isMC=True, isTTbar=False, isVLQsignal=True 
 options.isMC = True
 options.isTTbar = False
+options.isVLQsignal = True
 options.inputFiles = [
-	#matched with ~jmanagan/nobackup/LJMet94X_1lep_013019_logs/nominal/TTTT_TuneCP5_PSweights_13TeV-amcatnlo-pythia8/producer_TTTT_TuneCP5_PSweights_13TeV-amcatnlo-pythia8_1.py
-	'root://cmsxrootd.fnal.gov//store/mc/RunIIFall17MiniAODv2/TTTT_TuneCP5_PSweights_13TeV-amcatnlo-pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14-v1/70000/0ED34A55-DD52-E811-91CC-E0071B73B6B0.root',
-	'root://cmsxrootd.fnal.gov//store/mc/RunIIFall17MiniAODv2/TTTT_TuneCP5_PSweights_13TeV-amcatnlo-pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14-v1/70000/E2A4455F-FA53-E811-8017-E0071B7A8560.root',
-#     'file:TTTT_TuneCP5_PSweights_13TeV-amcatnlo-pythia8_postReco_MC.root'
-
-    #'root://cmsxrootd.fnal.gov//store/data/Run2017B/SingleMuon/MINIAOD/31Mar2018-v1/80000/4462B46E-653C-E811-BA97-0025905A6064.root'
-    #'root://cmsxrootd.fnal.gov//store/mc/RunIIFall17MiniAODv2/TprimeTprime_M-1800_TuneCP5_13TeV-madgraph-pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14-v2/80000/12A585B9-F46B-E811-A775-FA163EFD0C51.root'
-    #'root://cmsxrootd.fnal.gov//store/mc/RunIIFall17MiniAODv2/TTToSemiLeptonic_TuneCP5_PSweights_13TeV-powheg-pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14-v1/50000/5E7E4AA9-0743-E811-999A-0CC47A7C35A8.root'
+    'root://cmsxrootd.fnal.gov//store/mc/RunIIFall17MiniAODv2/TprimeTprime_M-1400_TuneCP5_13TeV-madgraph-pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14-v2/50000/F82DC089-5591-E811-9210-6C3BE5B58198.root'
     ]
 options.maxEvents = 100
 options.parseArguments()
 
 isMC= options.isMC
 isTTbar = options.isTTbar
+isVLQsignal = options.isVLQsignal
 
 #Check arguments
 print options
@@ -51,7 +50,7 @@ def customise(process):
                                           oncePerEventMode=cms.untracked.bool(True))
     #Adding Timing service:
     process.Timing=cms.Service("Timing")
-
+    
     #Add these 3 lines to put back the summary for timing information at the end of the logfile
     #(needed for TimeReport report)
     if hasattr(process,'options'):
@@ -60,7 +59,7 @@ def customise(process):
         process.options = cms.untracked.PSet(
             wantSummary = cms.untracked.bool(True)
         )
-
+        
     return(process)
 #customise(process)
 
@@ -76,15 +75,12 @@ process.source = cms.Source("PoolSource",
     )
 )
 
+OUTFILENAME = "cmsRun" #This could be better !
 if(isMC):
-        # OUTFILENAME = 'TprimeTprime_M-1100_TuneCP5_13TeV-madgraph-pythia8'
-        OUTFILENAME = 'TTTT_TuneCP5_PSweights_13TeV-amcatnlo-pythia8'
-        if (isTTbar):
-            OUTFILENAME = 'TTToSemiLeptonic_TuneCP5_PSweights_13TeV-powheg-pythia8'
         POSTFIX = 'MC'
 else:
-        OUTFILENAME = 'DoubleEG_Run2017F'
         POSTFIX = 'DATA'
+POSTFIX+='_1Lep'
 ## TFileService
 process.TFileService = cms.Service("TFileService", fileName = cms.string(OUTFILENAME+'_FWLJMET_'+POSTFIX+'.root'))
 
@@ -96,6 +92,16 @@ process.TFileService = cms.Service("TFileService", fileName = cms.string(OUTFILE
 #                                outputCommands = cms.untracked.vstring('keep *')
 #                                )
 
+
+################################
+## MC Weights Analyzer
+################################
+process.mcweightanalyzer = cms.EDAnalyzer(
+    "WeightAnalyzer",
+    overrideLHEweight = cms.bool(isVLQsignal),
+    basePDFname = cms.string("NNPDF31_nnlo_as_0118_nf_4"),
+    newPDFname = cms.string("NNPDF31_nnlo_as_0118_nf_4_mc_hessian"),
+    )
 
 ################################
 ## Trigger filter
@@ -299,11 +305,11 @@ process.prefiringweight = l1ECALPrefiringWeightProducer.clone(
 ### LJMET
 ################################################
 
-#For MET filter
+## For MET filter
 if(isMC): MET_filt_flag_tag        = 'TriggerResults::PAT'
 else:     MET_filt_flag_tag        = 'TriggerResults::RECO'
 
-#For Jet corrections
+## For Jet corrections
 doNewJEC                 = True
 JECup                    = False
 JECdown                  = False
@@ -340,42 +346,6 @@ MultiLepSelector_cfg = cms.PSet(
             trigger_cut  = cms.bool(True),
             HLTcollection= cms.InputTag("TriggerResults","","HLT"),
             dump_trigger = cms.bool(False),
-            mctrigger_path_el = cms.vstring(
-                        #'digitisation_step',
-                        'HLT_Ele35_WPTight_Gsf',
-                        'HLT_Ele38_WPTight_Gsf',
-                        'HLT_Ele40_WPTight_Gsf',
-                        'HLT_Ele28_eta2p1_WPTight_Gsf_HT150',
-                        'HLT_Ele15_IsoVVVL_PFHT450_PFMET50',
-                        'HLT_Ele15_IsoVVVL_PFHT450',
-                        'HLT_Ele50_IsoVVVL_PFHT450',
-                        'HLT_Ele15_IsoVVVL_PFHT600',
-                        'HLT_Ele50_CaloIdVT_GsfTrkIdT_PFJet165',
-                        'HLT_Ele115_CaloIdVT_GsfTrkIdT'
-
-                        'HLT_Ele32_WPTight_Gsf',
-                        'HLT_Ele32_WPTight_Gsf_L1DoubleEG',
-                        'HLT_Ele30_eta2p1_WPTight_Gsf_CentralPFJet35_EleCleaned',
-                        ),
-            mctrigger_path_mu = cms.vstring(
-                        #'digitisation_step',
-                        'HLT_IsoMu24',
-                        'HLT_IsoMu24_eta2p1',
-                        'HLT_IsoMu27',
-                        'HLT_IsoMu30',
-                        'HLT_Mu50',
-                        'HLT_TkMu50',
-                        'HLT_Mu55',
-                        'HLT_Mu15_IsoVVVL_PFHT450_PFMET50',
-                        'HLT_Mu15_IsoVVVL_PFHT450',
-                        'HLT_Mu50_IsoVVVL_PFHT450',
-                        'HLT_Mu15_IsoVVVL_PFHT600',
-
-                        'HLT_IsoTkMu24',
-                        'HLT_IsoMu24_2p1',
-                        ),
-            trigger_path_el = cms.vstring(''), #currently set to be the same as mc in the src code
-            trigger_path_mu = cms.vstring(''), #currently set to be the same as mc in the src code
 
             # PV cuts
             pv_cut     = cms.bool(True),
@@ -433,8 +403,8 @@ MultiLepSelector_cfg = cms.PSet(
             loose_electron_minpt     = cms.double(10.0),
             loose_electron_maxeta    = cms.double(2.5),
             UseElMVA                 = cms.bool(True),
-            # UseElIDV1                = cms.bool(True), #False means using ElIDV2
-            UseElIDV1                = cms.bool(False), #False means using ElIDV2
+            UseElIDV1                = cms.bool(UseElIDV1_), #False means using ElIDV2
+            # UseElIDV1                = cms.bool(False), #False means using ElIDV2
 
             #nLeptons
             minLooseLeptons_cut = cms.bool(False), #inclusive Loose.
@@ -456,7 +426,7 @@ MultiLepSelector_cfg = cms.PSet(
             JERup                    = cms.bool(JERup),
             JERdown                  = cms.bool(JERdown),
             doLepJetCleaning         = cms.bool(True),
-            CleanLooseLeptons        = cms.bool(False),
+            CleanLooseLeptons        = cms.bool(False), #This needs to be well thought of depending on saving loose leptons or not and make sure treatment is the same for MC/Data!!
             LepJetDR                 = cms.double(0.4),
             LepJetDRAK8              = cms.double(0.8),
             jet_cuts                 = cms.bool(True),
@@ -503,6 +473,17 @@ MultiLepSelector_cfg = cms.PSet(
             MistagUncertDown          = cms.bool(False), # no longer needed, but can still be utilized. Keep false as default.
 
             )
+if isMC:
+    MultiLepSelector_cfg.mctrigger_path_el = hlt_path_el
+    MultiLepSelector_cfg.mctrigger_path_mu = hlt_path_mu
+    MultiLepSelector_cfg.trigger_path_el = cms.vstring('')
+    MultiLepSelector_cfg.trigger_path_mu = cms.vstring('')
+else:
+    MultiLepSelector_cfg.mctrigger_path_el = cms.vstring('')
+    MultiLepSelector_cfg.mctrigger_path_mu = cms.vstring('')
+    MultiLepSelector_cfg.trigger_path_el = hlt_path_el
+    MultiLepSelector_cfg.trigger_path_mu = hlt_path_mu
+
 MultiLepCalc_cfg = cms.PSet(
 
             debug                  = cms.bool(False),
@@ -515,8 +496,8 @@ MultiLepCalc_cfg = cms.PSet(
             PFparticlesCollection  = cms.InputTag("packedPFCandidates"),
 
             rhoJetsInputTag            = cms.InputTag("fixedGridRhoFastjetAll"), #this is for electron. Why is it different compared to muon?
-            UseElMVA                 = cms.bool(True),
-            UseElIDV1                = cms.bool(False), #False means using ElIDV2.
+            UseElMVA                 = cms.bool(False), #True means save MVA values, False means not saving.
+            UseElIDV1                = cms.bool(UseElIDV1_), #False means using ElIDV2.
 
             # Jet corrections needs to be passed here again if Calc uses jet correction
             doNewJEC                 = cms.bool(doNewJEC),
@@ -551,9 +532,9 @@ MultiLepCalc_cfg = cms.PSet(
             #Gen stuff
             saveGenHT          = cms.bool(False),
             genJetsCollection  = cms.InputTag("slimmedGenJets"),
-            OverrideLHEWeights = cms.bool(False),
+            OverrideLHEWeights = cms.bool(isVLQsignal), #TRUE FOR SIGNALS, False otherwise
             basePDFname        = cms.string('NNPDF31_nnlo_as_0118_nf_4'),
-            newPDFname         = cms.string('NNPDF31_lo_as_0118'),
+            newPDFname         = cms.string('NNPDF31_nnlo_as_0118_nf_4_mc_hessian'),
             keepPDGID          = cms.vuint32(1, 2, 3, 4, 5, 6, 21, 11, 12, 13, 14, 15, 16, 24),
             keepMomPDGID       = cms.vuint32(6, 24),
             keepPDGIDForce     = cms.vuint32(6,6),
@@ -677,7 +658,7 @@ process.ljmet = cms.EDAnalyzer(
                         'TTbarMassCalc',
                         'DeepAK8Calc',
                         'HOTTaggerCalc',
-                        #'BestCalc',
+                        'BestCalc',  # is this really working?
         ),
         exclude_calcs = cms.vstring(
                         'TestCalc',
@@ -719,6 +700,7 @@ process.ljmet_JECup = cms.EDAnalyzer(
                         'TTbarMassCalc',
                         'DeepAK8Calc',
                         'HOTTaggerCalc',
+                        'BestCalc', # is this really working?
         ),
         exclude_calcs = cms.vstring(
                         'TestCalc',
@@ -736,6 +718,7 @@ process.ljmet_JECup = cms.EDAnalyzer(
         TTbarMassCalc = cms.PSet(TTbarMassCalc_cfg),
         DeepAK8Calc    = cms.PSet(), #current ljmet wants all calc to send a PSet, event if its empty.
         HOTTaggerCalc = cms.PSet(HOTTaggerCalc_cfg),
+        BestCalc      = cms.PSet(BestCalc_cfg),
 
         )
 
@@ -762,6 +745,7 @@ process.ljmet_JECdown = cms.EDAnalyzer(
                         'TTbarMassCalc',
                         'DeepAK8Calc',
                         'HOTTaggerCalc',
+                        'BestCalc', # is this really working?
         ),
         exclude_calcs = cms.vstring(
                         'TestCalc',
@@ -779,6 +763,7 @@ process.ljmet_JECdown = cms.EDAnalyzer(
         TTbarMassCalc = cms.PSet(TTbarMassCalc_cfg),
         DeepAK8Calc    = cms.PSet(), #current ljmet wants all calc to send a PSet, event if its empty.
         HOTTaggerCalc = cms.PSet(HOTTaggerCalc_cfg),
+        BestCalc      = cms.PSet(BestCalc_cfg),
 
         )
 
@@ -807,6 +792,7 @@ process.ljmet_JERup = cms.EDAnalyzer(
                         'TTbarMassCalc',
                         'DeepAK8Calc',
                         'HOTTaggerCalc',
+                        'BestCalc', # is this really working?
         ),
         exclude_calcs = cms.vstring(
                         'TestCalc',
@@ -824,6 +810,7 @@ process.ljmet_JERup = cms.EDAnalyzer(
         TTbarMassCalc = cms.PSet(TTbarMassCalc_cfg),
         DeepAK8Calc    = cms.PSet(), #current ljmet wants all calc to send a PSet, event if its empty.
         HOTTaggerCalc = cms.PSet(HOTTaggerCalc_cfg),
+        BestCalc      = cms.PSet(BestCalc_cfg),
 
         )
 
@@ -855,6 +842,7 @@ process.ljmet_JERdown = cms.EDAnalyzer(
                         'TTbarMassCalc',
                         'DeepAK8Calc',
                         'HOTTaggerCalc',
+                        'BestCalc', # is this really working?
         ),
         exclude_calcs = cms.vstring(
                         'TestCalc',
@@ -872,6 +860,7 @@ process.ljmet_JERdown = cms.EDAnalyzer(
         TTbarMassCalc = cms.PSet(TTbarMassCalc_cfg),
         DeepAK8Calc    = cms.PSet(), #current ljmet wants all calc to send a PSet, event if its empty.
         HOTTaggerCalc = cms.PSet(HOTTaggerCalc_cfg),
+        BestCalc      = cms.PSet(BestCalc_cfg),
 
         )
 
@@ -882,7 +871,7 @@ process.ljmet_JERdown = cms.EDAnalyzer(
 
 # Configure a path and endpath to run the producer and output modules
 
-# ----------------------- GenHFHadronMatcher -----------------
+# ----------------------- GenHFHadronMatcher -----------------                                                
 if (isTTbar):
     process.load("PhysicsTools.JetMCAlgos.GenHFHadronMatcher_cff")
 
@@ -908,12 +897,15 @@ if (isTTbar):
     process.categorizeGenTtbar.genJets = cms.InputTag("slimmedGenJets")
 
     process.ttbarcat = cms.Sequence(
-        process.selectedHadronsAndPartons * process.genJetFlavourInfos * process.matchGenBHadron
-        * process.matchGenCHadron* ## gen HF flavour matching
-        process.categorizeGenTtbar  ## return already a categorization id for tt
+        process.selectedHadronsAndPartons * process.genJetFlavourInfos * process.matchGenBHadron 
+        * process.matchGenCHadron* ## gen HF flavour matching            
+        process.categorizeGenTtbar  ## return already a categorization id for tt                  
         )
 
-    process.p = cms.Path(process.fullPatMetSequenceModifiedMET *
+    process.p = cms.Path(
+                         process.mcweightanalyzer *
+                         process.filter_any_explicit *
+                         process.fullPatMetSequenceModifiedMET *
                          process.prefiringweight *
                          process.egammaPostRecoSeq *
                          process.updatedJetsAK8PuppiSoftDropPacked *
@@ -921,13 +913,30 @@ if (isTTbar):
                          process.QGTagger *
                          process.ecalBadCalibReducedMINIAODFilter *
                          process.ttbarcat *
-                         process.ljmet *#(ntuplizer)
-                         process.ljmet_JECup *#(ntuplizer)
-                         process.ljmet_JECdown * #(ntuplizer)
-                         process.ljmet_JERup *#(ntuplizer)
-                         process.ljmet_JERdown #(ntuplizer)
+                         process.ljmet *#(ntuplizer) 
+                         process.ljmet_JECup *#(ntuplizer) 
+                         process.ljmet_JECdown * #(ntuplizer) 
+                         process.ljmet_JERup *#(ntuplizer) 
+                         process.ljmet_JERdown #(ntuplizer) 
                          )
 
+elif(isMC):
+    process.p = cms.Path(
+       process.mcweightanalyzer *
+       process.filter_any_explicit *
+       process.fullPatMetSequenceModifiedMET *
+       process.prefiringweight *
+       process.egammaPostRecoSeq *
+       process.updatedJetsAK8PuppiSoftDropPacked *
+       process.packedJetsAK8Puppi *
+       process.QGTagger *
+       process.ecalBadCalibReducedMINIAODFilter *
+       process.ljmet *#(ntuplizer) 
+       process.ljmet_JECup *#(ntuplizer) 
+       process.ljmet_JECdown *#(ntuplizer) 
+       process.ljmet_JERup *#(ntuplizer) 
+       process.ljmet_JERdown #(ntuplizer) 
+    )
 else:
     process.p = cms.Path(
        process.filter_any_explicit *
@@ -946,19 +955,6 @@ else:
     )
 
 process.p.associate(patAlgosToolsTask)
-
-#from Configuration.EventContent.EventContent_cff import MINIAODSIMEventContent
-# process.out.outputCommands.append('drop *_*_*_LJMET')
-# process.out.outputCommands.append('keep *_prefiringweight*_*_LJMET')
-# process.out.outputCommands.append('keep *_slimmedElectrons_*_LJMET')
-# process.out.outputCommands.append('keep *_packedJetsAK8Puppi*_*_LJMET')
-# process.out.outputCommands.append('keep *_*_SubJets_*')
-# process.out.outputCommands.append('keep *_updatedPatJets_*_LJMET')
-# process.out.outputCommands.append('keep *_updatedPatJets*_tagInfos_LJMET')
-# # process.out.outputCommands.append('keep *_QGTagger_*_LJMET')
-# process.out.outputCommands.append('keep *_slimmedMETsModifiedMET_*_LJMET')
-# process.out.outputCommands.append('keep *_ecalBadCalibReducedMINIAODFilter_*_LJMET')
-# process.out.outputCommands.append('keep int_categorize*_*_LJMET'),
 
 
 # process.ep = cms.EndPath(process.out)

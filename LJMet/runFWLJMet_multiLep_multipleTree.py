@@ -80,7 +80,7 @@ if(isMC):
         POSTFIX = 'MC'
 else:
         POSTFIX = 'DATA'
-POSTFIX+='_1Lep'
+POSTFIX+='_3Lep'
 ## TFileService
 process.TFileService = cms.Service("TFileService", fileName = cms.string(OUTFILENAME+'_FWLJMET_'+POSTFIX+'.root'))
 
@@ -89,7 +89,7 @@ process.TFileService = cms.Service("TFileService", fileName = cms.string(OUTFILE
 # process.out = cms.OutputModule("PoolOutputModule",
 #                                fileName = cms.untracked.string(OUTFILENAME+'_postReco_MC.root'),
 #                                #SelectEvents = cms.untracked.PSet( SelectEvents = cms.vstring('p') ),
-#                                outputCommands = cms.untracked.vstring('keep *')
+#                                #outputCommands = cms.untracked.vstring('keep *')
 #                                )
 
 
@@ -110,36 +110,33 @@ import HLTrigger.HLTfilters.hltHighLevel_cfi as hlt
 # accept if any path succeeds (explicit)
 process.filter_any_explicit = hlt.hltHighLevel.clone(
     HLTPaths = [
-                        'HLT_Ele35_WPTight_Gsf*',
-                        'HLT_Ele38_WPTight_Gsf*',
-                        'HLT_Ele40_WPTight_Gsf*',
-                        'HLT_Ele28_eta2p1_WPTight_Gsf_HT150*',
-                        'HLT_Ele15_IsoVVVL_PFHT450_PFMET50*',
-                        'HLT_Ele15_IsoVVVL_PFHT450*',
-                        'HLT_Ele50_IsoVVVL_PFHT450*',
-                        'HLT_Ele15_IsoVVVL_PFHT600*',
-                        'HLT_Ele50_CaloIdVT_GsfTrkIdT_PFJet165*',
-                        'HLT_Ele115_CaloIdVT_GsfTrkIdT*'
+                        'HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_v*',  #exists in 2017
+                        'HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v*', #exists in 2017
 
-                        'HLT_Ele32_WPTight_Gsf*',
-                        'HLT_Ele32_WPTight_Gsf_L1DoubleEG*',
-                        'HLT_Ele30_eta2p1_WPTight_Gsf_CentralPFJet35_EleCleaned*',
+                        'HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_v*',   #exists in 2017
+                        'HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_DZ*', #exists in 2017
+                        'HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_v*', #exists in 2017
+                        'HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v*',  #exists in 2017
 
-                        'HLT_IsoMu24*',
-                        'HLT_IsoMu24_eta2p1*',
-                        'HLT_IsoMu27*',
-                        'HLT_IsoMu30*',
-                        'HLT_Mu50*',
-                        'HLT_TkMu50*',
-                        'HLT_Mu55*',
-                        'HLT_Mu15_IsoVVVL_PFHT450_PFMET50*',
-                        'HLT_Mu15_IsoVVVL_PFHT450*',
-                        'HLT_Mu50_IsoVVVL_PFHT450*',
-                        'HLT_Mu15_IsoVVVL_PFHT600*',
+                        #for trig efficiency
+                        'HLT_Ele27_WPTight_Gsf_v*',
+                        'HLT_Ele35_WPTight_Gsf_v*',
 
-                        'HLT_IsoTkMu24*',
-                        'HLT_IsoMu24_2p1*',
+                        'HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_v*',   #exists in 2017
+                        'HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_DZ*', #exists in 2017
+                        'HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_v*', #exists in 2017
+                        'HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v*',  #exists in 2017
 
+                        'HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_v*',    #exists in 2017  (PreScaled!)
+                        'HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_v*',  #exists in 2017 (PreScaled!)
+                        'HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_Mass3p8_v*',
+                        'HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_v*',
+                        'HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ_v*',
+
+                        #for trig efficiency
+                        'HLT_IsoMu24_v*',
+                        'HLT_IsoTkMu24_v*',
+                        'HLT_IsoMu27_v*',
     ],
     throw = False
     )
@@ -158,9 +155,9 @@ process.load("Configuration.Geometry.GeometryRecoDB_cff")
 process.load('Configuration.StandardSequences.Services_cff')
 process.load("Configuration.StandardSequences.MagneticField_cff")
 process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
-from Configuration.AlCa.GlobalTag import GlobalTag
+from Configuration.AlCa.GlobalTag import GlobalTag # See https://twiki.cern.ch/twiki/bin/viewauth/CMS/PdmVAnalysisSummaryTable
 process.GlobalTag = GlobalTag(process.GlobalTag, '94X_mc2017_realistic_v17', '')
-if isMC == False: process.GlobalTag = GlobalTag(process.GlobalTag, '94X_dataRun2_v11')
+if not isMC: process.GlobalTag = GlobalTag(process.GlobalTag, '94X_dataRun2_v11')
 print 'Using global tag', process.GlobalTag.globaltag
 
 
@@ -177,15 +174,15 @@ setupEgammaPostRecoSeq(process,
 ################################################
 ## Produce modified MET with the ECAL noise fix
 ################################################
-from PhysicsTools.PatUtils.tools.runMETCorrectionsAndUncertainties import runMetCorAndUncFromMiniAOD
+# from PhysicsTools.PatUtils.tools.runMETCorrectionsAndUncertainties import runMetCorAndUncFromMiniAOD
 
-runMetCorAndUncFromMiniAOD(
-    process,
-    isData = not isMC,
-    fixEE2017 = True,
-    fixEE2017Params = {'userawPt': True, 'ptThreshold':50.0, 'minEtaThreshold':2.65, 'maxEtaThreshold': 3.139},
-    postfix = "ModifiedMET"
-    )
+# runMetCorAndUncFromMiniAOD(
+#     process,
+#     isData = not isMC,
+#     fixEE2017 = True,
+#     fixEE2017Params = {'userawPt': True, 'ptThreshold':50.0, 'minEtaThreshold':2.65, 'maxEtaThreshold': 3.139},
+#     postfix = "ModifiedMET"
+#     )
 
 ################################
 ## Rerun the ecalBadCalibFilter
@@ -221,83 +218,83 @@ process.ecalBadCalibReducedMINIAODFilter = cms.EDFilter(
 ################################
 ## Produce DeepAK8 jet tags
 ################################
-from PhysicsTools.PatAlgos.tools.jetTools import updateJetCollection
-from RecoBTag.MXNet.pfDeepBoostedJet_cff import *
-
-updateJetCollection(
-   process,
-   jetSource = cms.InputTag('slimmedJetsAK8'),
-   pvSource = cms.InputTag('offlineSlimmedPrimaryVertices'),
-   svSource = cms.InputTag('slimmedSecondaryVertices'),
-   rParam = 0.8,
-   jetCorrections = ('AK8PFPuppi', cms.vstring(['L2Relative', 'L3Absolute']), 'None'),
-   btagDiscriminators = ['pfCombinedInclusiveSecondaryVertexV2BJetTags',
-                         'pfDeepBoostedJetTags:probTbcq', 'pfDeepBoostedJetTags:probTbqq',
-                         'pfDeepBoostedJetTags:probWcq', 'pfDeepBoostedJetTags:probWqq',
-                         'pfDeepBoostedJetTags:probZbb', 'pfDeepBoostedJetTags:probZcc', 'pfDeepBoostedJetTags:probZqq',
-                         'pfDeepBoostedJetTags:probHbb', 'pfDeepBoostedJetTags:probHcc', 'pfDeepBoostedJetTags:probHqqqq',
-                         'pfDeepBoostedJetTags:probQCDbb', 'pfDeepBoostedJetTags:probQCDcc',
-                         'pfDeepBoostedJetTags:probQCDb', 'pfDeepBoostedJetTags:probQCDc',
-                         'pfDeepBoostedJetTags:probQCDothers',
-                         'pfDeepBoostedDiscriminatorsJetTags:TvsQCD', 'pfDeepBoostedDiscriminatorsJetTags:WvsQCD',
-                         'pfDeepBoostedDiscriminatorsJetTags:ZvsQCD', 'pfDeepBoostedDiscriminatorsJetTags:ZbbvsQCD',
-                         'pfDeepBoostedDiscriminatorsJetTags:HbbvsQCD', 'pfDeepBoostedDiscriminatorsJetTags:H4qvsQCD',
-                         'pfMassDecorrelatedDeepBoostedJetTags:probTbcq', 'pfMassDecorrelatedDeepBoostedJetTags:probTbqq',
-                         'pfMassDecorrelatedDeepBoostedJetTags:probWcq', 'pfMassDecorrelatedDeepBoostedJetTags:probWqq',
-                         'pfMassDecorrelatedDeepBoostedJetTags:probZbb', 'pfMassDecorrelatedDeepBoostedJetTags:probZcc', 'pfMassDecorrelatedDeepBoostedJetTags:probZqq',
-                         'pfMassDecorrelatedDeepBoostedJetTags:probHbb', 'pfMassDecorrelatedDeepBoostedJetTags:probHcc', 'pfMassDecorrelatedDeepBoostedJetTags:probHqqqq',
-                         'pfMassDecorrelatedDeepBoostedJetTags:probQCDbb', 'pfMassDecorrelatedDeepBoostedJetTags:probQCDcc',
-                         'pfMassDecorrelatedDeepBoostedJetTags:probQCDb', 'pfMassDecorrelatedDeepBoostedJetTags:probQCDc',
-                         'pfMassDecorrelatedDeepBoostedJetTags:probQCDothers',
-                         'pfMassDecorrelatedDeepBoostedDiscriminatorsJetTags:TvsQCD', 'pfMassDecorrelatedDeepBoostedDiscriminatorsJetTags:WvsQCD',
-                         'pfMassDecorrelatedDeepBoostedDiscriminatorsJetTags:ZHbbvsQCD', 'pfMassDecorrelatedDeepBoostedDiscriminatorsJetTags:ZHccvsQCD',
-                         'pfMassDecorrelatedDeepBoostedDiscriminatorsJetTags:bbvsLight', 'pfMassDecorrelatedDeepBoostedDiscriminatorsJetTags:ccvsLight'],
-   postfix = 'AK8Puppi',
-   printWarning = False
-   )
+# from PhysicsTools.PatAlgos.tools.jetTools import updateJetCollection
+# from RecoBTag.MXNet.pfDeepBoostedJet_cff import *
+# 
+# updateJetCollection(
+#    process,
+#    jetSource = cms.InputTag('slimmedJetsAK8'),
+#    pvSource = cms.InputTag('offlineSlimmedPrimaryVertices'),
+#    svSource = cms.InputTag('slimmedSecondaryVertices'),
+#    rParam = 0.8,
+#    jetCorrections = ('AK8PFPuppi', cms.vstring(['L2Relative', 'L3Absolute']), 'None'),
+#    btagDiscriminators = ['pfCombinedInclusiveSecondaryVertexV2BJetTags',
+#                          'pfDeepBoostedJetTags:probTbcq', 'pfDeepBoostedJetTags:probTbqq',
+#                          'pfDeepBoostedJetTags:probWcq', 'pfDeepBoostedJetTags:probWqq',
+#                          'pfDeepBoostedJetTags:probZbb', 'pfDeepBoostedJetTags:probZcc', 'pfDeepBoostedJetTags:probZqq',
+#                          'pfDeepBoostedJetTags:probHbb', 'pfDeepBoostedJetTags:probHcc', 'pfDeepBoostedJetTags:probHqqqq',
+#                          'pfDeepBoostedJetTags:probQCDbb', 'pfDeepBoostedJetTags:probQCDcc',
+#                          'pfDeepBoostedJetTags:probQCDb', 'pfDeepBoostedJetTags:probQCDc',
+#                          'pfDeepBoostedJetTags:probQCDothers',
+#                          'pfDeepBoostedDiscriminatorsJetTags:TvsQCD', 'pfDeepBoostedDiscriminatorsJetTags:WvsQCD',
+#                          'pfDeepBoostedDiscriminatorsJetTags:ZvsQCD', 'pfDeepBoostedDiscriminatorsJetTags:ZbbvsQCD',
+#                          'pfDeepBoostedDiscriminatorsJetTags:HbbvsQCD', 'pfDeepBoostedDiscriminatorsJetTags:H4qvsQCD',
+#                          'pfMassDecorrelatedDeepBoostedJetTags:probTbcq', 'pfMassDecorrelatedDeepBoostedJetTags:probTbqq',
+#                          'pfMassDecorrelatedDeepBoostedJetTags:probWcq', 'pfMassDecorrelatedDeepBoostedJetTags:probWqq',
+#                          'pfMassDecorrelatedDeepBoostedJetTags:probZbb', 'pfMassDecorrelatedDeepBoostedJetTags:probZcc', 'pfMassDecorrelatedDeepBoostedJetTags:probZqq',
+#                          'pfMassDecorrelatedDeepBoostedJetTags:probHbb', 'pfMassDecorrelatedDeepBoostedJetTags:probHcc', 'pfMassDecorrelatedDeepBoostedJetTags:probHqqqq',
+#                          'pfMassDecorrelatedDeepBoostedJetTags:probQCDbb', 'pfMassDecorrelatedDeepBoostedJetTags:probQCDcc',
+#                          'pfMassDecorrelatedDeepBoostedJetTags:probQCDb', 'pfMassDecorrelatedDeepBoostedJetTags:probQCDc',
+#                          'pfMassDecorrelatedDeepBoostedJetTags:probQCDothers',
+#                          'pfMassDecorrelatedDeepBoostedDiscriminatorsJetTags:TvsQCD', 'pfMassDecorrelatedDeepBoostedDiscriminatorsJetTags:WvsQCD',
+#                          'pfMassDecorrelatedDeepBoostedDiscriminatorsJetTags:ZHbbvsQCD', 'pfMassDecorrelatedDeepBoostedDiscriminatorsJetTags:ZHccvsQCD',
+#                          'pfMassDecorrelatedDeepBoostedDiscriminatorsJetTags:bbvsLight', 'pfMassDecorrelatedDeepBoostedDiscriminatorsJetTags:ccvsLight'],
+#    postfix = 'AK8Puppi',
+#    printWarning = False
+#    )
 
 ################################################################################################
 #### Establish references between PATified fat jets and subjets using the BoostedJetMerger
 ################################################################################################
-process.updatedJetsAK8PuppiSoftDropPacked = cms.EDProducer("BoostedJetMerger",
-                                                           jetSrc=cms.InputTag('selectedUpdatedPatJetsAK8Puppi'),
-                                                           subjetSrc=cms.InputTag('slimmedJetsAK8PFPuppiSoftDropPacked','SubJets')
-                                                           )
+# process.updatedJetsAK8PuppiSoftDropPacked = cms.EDProducer("BoostedJetMerger",
+#                                                            jetSrc=cms.InputTag('selectedUpdatedPatJetsAK8Puppi'),
+#                                                            subjetSrc=cms.InputTag('slimmedJetsAK8PFPuppiSoftDropPacked','SubJets')
+#                                                            )
 ################################
 #### Pack fat jets with subjets
 ################################
-process.packedJetsAK8Puppi = cms.EDProducer("JetSubstructurePacker",
-                                            jetSrc=cms.InputTag('selectedUpdatedPatJetsAK8Puppi'),
-                                            distMax = cms.double(0.8),
-                                            fixDaughters = cms.bool(False),
-                                            algoTags = cms.VInputTag(cms.InputTag("updatedJetsAK8PuppiSoftDropPacked")),
-                                            algoLabels =cms.vstring('SoftDropPuppi')
-)
+# process.packedJetsAK8Puppi = cms.EDProducer("JetSubstructurePacker",
+#                                             jetSrc=cms.InputTag('selectedUpdatedPatJetsAK8Puppi'),
+#                                             distMax = cms.double(0.8),
+#                                             fixDaughters = cms.bool(False),
+#                                             algoTags = cms.VInputTag(cms.InputTag("updatedJetsAK8PuppiSoftDropPacked")),
+#                                             algoLabels =cms.vstring('SoftDropPuppi')
+# )
 
 
 ##############################################
 #run QGTagger code again to calculate jet axis1  (HOT Tagger) - https://github.com/susy2015/TopTagger/tree/master/TopTagger#instructions-for-saving-tagger-results-to-nanoaod-with-cmssw_9_4_11
 ##############################################
-updateJetCollection(
-    process,
-    jetSource = cms.InputTag('slimmedJets'),
-)
-process.load('RecoJets.JetProducers.QGTagger_cfi')
-# patAlgosToolsTask.add(process.QGTagger)
-process.QGTagger.srcJets = cms.InputTag('slimmedJets')
-process.updatedPatJets.userData.userFloats.src += ['QGTagger:ptD','QGTagger:axis1','QGTagger:axis2']
-process.updatedPatJets.userData.userInts.src += ['QGTagger:mult']
+# updateJetCollection(
+#     process,
+#     jetSource = cms.InputTag('slimmedJets'),
+# )
+# process.load('RecoJets.JetProducers.QGTagger_cfi')
+# # patAlgosToolsTask.add(process.QGTagger)
+# process.QGTagger.srcJets = cms.InputTag('slimmedJets')
+# process.updatedPatJets.userData.userFloats.src += ['QGTagger:ptD','QGTagger:axis1','QGTagger:axis2']
+# process.updatedPatJets.userData.userInts.src += ['QGTagger:mult']
 
 
 ################################
 ## Produce L1 Prefiring probabilities - https://twiki.cern.ch/twiki/bin/viewauth/CMS/L1ECALPrefiringWeightRecipe
 ################################
-from PhysicsTools.PatUtils.l1ECALPrefiringWeightProducer_cfi import l1ECALPrefiringWeightProducer
-process.prefiringweight = l1ECALPrefiringWeightProducer.clone(
-    DataEra = cms.string("2017BtoF"),
-    UseJetEMPt = cms.bool(False),
-    PrefiringRateSystematicUncty = cms.double(0.2),
-    SkipWarnings = False)
+# from PhysicsTools.PatUtils.l1ECALPrefiringWeightProducer_cfi import l1ECALPrefiringWeightProducer
+# process.prefiringweight = l1ECALPrefiringWeightProducer.clone(
+#     DataEra = cms.string("2017BtoF"),
+#     UseJetEMPt = cms.bool(False),
+#     PrefiringRateSystematicUncty = cms.double(0.2),
+#     SkipWarnings = False)
 
 
 
@@ -364,7 +361,7 @@ MultiLepSelector_cfg = cms.PSet(
 
             # MET cuts
             met_cuts       = cms.bool(True),
-            min_met        = cms.double(30.0),
+            min_met        = cms.double(20.0),
             max_met        = cms.double(99999999999.0),
             met_collection = cms.InputTag('slimmedMETs'),
             rhoJetsInputTag = cms.InputTag("fixedGridRhoFastjetAll"), #for jetmetcorrection
@@ -376,10 +373,10 @@ MultiLepSelector_cfg = cms.PSet(
             muon_cuts                = cms.bool(True),
             muonsCollection          = cms.InputTag("slimmedMuons"),
             min_muon                 = cms.int32(0), #not implemented in src code
-            muon_minpt               = cms.double(25.0),
+            muon_minpt               = cms.double(20.0),
             muon_maxeta              = cms.double(2.4),
             muon_useMiniIso          = cms.bool(True),
-            loose_muon_minpt         = cms.double(10.0),
+            loose_muon_minpt         = cms.double(20.0),
             loose_muon_maxeta        = cms.double(2.4),
             muon_dxy                 = cms.double(0.2),
             muon_dz                  = cms.double(0.5),
@@ -395,48 +392,47 @@ MultiLepSelector_cfg = cms.PSet(
             # electronsCollection      = cms.InputTag("slimmedElectrons"), #slimmedElectrons::LJMET" #for Egamma ID V2
             electronsCollection      = cms.InputTag("slimmedElectrons::LJMET"), #slimmedElectrons::LJMET" #for Egamma ID V2
             min_electron             = cms.int32(0), #not implemented in src code
-            electron_minpt           = cms.double(25.0),
-            electron_maxeta          = cms.double(2.5),
+            electron_minpt           = cms.double(20.0),
+            electron_maxeta          = cms.double(2.4),
             electron_useMiniIso      = cms.bool(True),
             electron_miniIso         = cms.double(0.1),
             loose_electron_miniIso   = cms.double(0.4),
-            loose_electron_minpt     = cms.double(10.0),
-            loose_electron_maxeta    = cms.double(2.5),
+            loose_electron_minpt     = cms.double(20.0),
+            loose_electron_maxeta    = cms.double(2.4),
             UseElMVA                 = cms.bool(True),
             UseElIDV1                = cms.bool(UseElIDV1_), #False means using ElIDV2
             # UseElIDV1                = cms.bool(False), #False means using ElIDV2
 
             #nLeptons
-            minLooseLeptons_cut = cms.bool(False), #inclusive Loose.
-            minLooseLeptons     = cms.int32(0),
-            maxLooseLeptons_cut = cms.bool(True), #to veto second lepton, as in old ljmet, turn this on, and require only 1 loose lepton, since this is inclusive loose.
-            maxLooseLeptons     = cms.int32(1),
-            minLeptons_cut      = cms.bool(True),
-            minLeptons          = cms.int32(1),
-            maxLeptons_cut      = cms.bool(True),
-            maxLeptons          = cms.int32(1),
+            minLooseLeptons_cut = cms.bool(True), #inclusive Loose.
+            minLooseLeptons     = cms.int32(3),
+            maxLooseLeptons_cut = cms.bool(False),
+            maxLooseLeptons     = cms.int32(9999),
+            minLeptons_cut      = cms.bool(False),
+            minLeptons          = cms.int32(3),
+            maxLeptons_cut      = cms.bool(False),
+            maxLeptons          = cms.int32(9999),
 
             # Jets
-            # jet_collection           = cms.InputTag('slimmedJets'), #original collection
-            jet_collection           = cms.InputTag('updatedPatJets::LJMET'),
-            # AK8jet_collection        = cms.InputTag('slimmedJetsAK8'), #original collection
-            AK8jet_collection        = cms.InputTag('packedJetsAK8Puppi'),
+            # jet_collection           = cms.InputTag('slimmedJets'),
+            jet_collection           = cms.InputTag('updatedPatJets::LJMET'), #if using updated jets
+            AK8jet_collection        = cms.InputTag('slimmedJetsAK8'),
             JECup                    = cms.bool(JECup),
             JECdown                  = cms.bool(JECdown),
             JERup                    = cms.bool(JERup),
             JERdown                  = cms.bool(JERdown),
             doLepJetCleaning         = cms.bool(True),
-            CleanLooseLeptons        = cms.bool(False), #This needs to be well thought of depending on saving loose leptons or not and make sure treatment is the same for MC/Data!!
+            CleanLooseLeptons        = cms.bool(True), #This needs to be well thought of depending on saving loose leptons or not and make sure treatment is the same for MC/Data!!
             LepJetDR                 = cms.double(0.4),
             LepJetDRAK8              = cms.double(0.8),
             jet_cuts                 = cms.bool(True),
-            jet_minpt                = cms.double(20.0),
-            jet_maxeta               = cms.double(3.0),
-            jet_minpt_AK8            = cms.double(170.0),
+            jet_minpt                = cms.double(30.0),
+            jet_maxeta               = cms.double(2.5),
+            jet_minpt_AK8            = cms.double(200.0),
             jet_maxeta_AK8           = cms.double(2.4),
             min_jet                  = cms.int32(1),
-            max_jet                  = cms.int32(4000),
-            leading_jet_pt           = cms.double(20.0),
+            max_jet                  = cms.int32(9999),
+            leading_jet_pt           = cms.double(30.0),
             # Jet corrections are read from txt files
             doNewJEC                 = cms.bool(doNewJEC),
             doAllJetSyst             = cms.bool(doAllJetSyst),
@@ -488,7 +484,7 @@ MultiLepCalc_cfg = cms.PSet(
 
             debug                  = cms.bool(False),
             isMc                   = cms.bool(isMC),
-            saveLooseLeps          = cms.bool(False),
+            saveLooseLeps          = cms.bool(not isMC),
             keepFullMChistory      = cms.bool(isMC),
 
             rhoJetsNCInputTag      = cms.InputTag("fixedGridRhoFastjetCentralNeutral",""), #this is for muon
@@ -655,10 +651,52 @@ process.ljmet = cms.EDAnalyzer(
                         'TpTpCalc',
                         'CommonCalc',
                         'JetSubCalc',
-                        'TTbarMassCalc',
-                        'DeepAK8Calc',
-                        'HOTTaggerCalc',
-                        'BestCalc',  # is this really working?
+                        # 'TTbarMassCalc',
+                        # 'DeepAK8Calc',
+                        # 'HOTTaggerCalc',
+                        # 'BestCalc', #NOT WORKING at the moment, April 5, 2019.--Rizki.
+        ),
+        exclude_calcs = cms.vstring(
+                        'TestCalc',
+                        'DummyCalc',
+        ),
+
+        # name has to match the name as registered in BeginJob of  EventSelector.cc
+        MultiLepSelector = cms.PSet(MultiLepSelector_cfg),
+
+        # Calc cfg name has to match the name as registered in Calc.cc
+        MultiLepCalc  = cms.PSet(MultiLepCalc_cfg),
+        TpTpCalc      = cms.PSet(TpTpCalc_cfg),
+        CommonCalc    = cms.PSet(), #current ljmet wants all calc to send a PSet, event if its empty.
+        JetSubCalc    = cms.PSet(JetSubCalc_cfg),
+        # TTbarMassCalc = cms.PSet(TTbarMassCalc_cfg),
+        # DeepAK8Calc    = cms.PSet(), #current ljmet wants all calc to send a PSet, event if its empty.
+        # HOTTaggerCalc = cms.PSet(HOTTaggerCalc_cfg),
+        # BestCalc      = cms.PSet(BestCalc_cfg),
+
+        )
+
+
+## JECup - reset bools for all calcs/selectors that use JEC
+MultiLepSelector_cfg.JECup = cms.bool(True)
+MultiLepCalc_cfg.JECup     = cms.bool(True)
+JetSubCalc_cfg.JECup       = cms.bool(True)
+process.ljmet_JECup = cms.EDAnalyzer(
+        'LJMet',
+
+        debug         = cms.bool(False),
+        ttree_name    = cms.string('ljmet_JECup'),
+        verbosity     = cms.int32(0),
+        selector      = cms.string('MultiLepSelector'),
+        include_calcs = cms.vstring(
+                        'MultiLepCalc',
+                        'TpTpCalc',
+                        'CommonCalc',
+                        'JetSubCalc',
+                        # 'TTbarMassCalc',
+                        # 'DeepAK8Calc',
+                        # 'HOTTaggerCalc',
+                        #'BestCalc',
         ),
         exclude_calcs = cms.vstring(
                         'TestCalc',
@@ -678,7 +716,149 @@ process.ljmet = cms.EDAnalyzer(
         HOTTaggerCalc = cms.PSet(HOTTaggerCalc_cfg),
         BestCalc      = cms.PSet(BestCalc_cfg),
 
-)
+        )
+
+
+##JECdown - reset bools for all calcs/selectors that use JEC
+MultiLepSelector_cfg.JECup   = cms.bool(False)
+MultiLepCalc_cfg.JECup       = cms.bool(False)
+JetSubCalc_cfg.JECup         = cms.bool(False)
+MultiLepSelector_cfg.JECdown = cms.bool(True)
+MultiLepCalc_cfg.JECdown     = cms.bool(True)
+JetSubCalc_cfg.JECdown       = cms.bool(True)
+process.ljmet_JECdown = cms.EDAnalyzer(
+        'LJMet',
+
+        debug         = cms.bool(False),
+        ttree_name    = cms.string('ljmet_JECdown'),
+        verbosity     = cms.int32(0),
+        selector      = cms.string('MultiLepSelector'),
+        include_calcs = cms.vstring(
+                        'MultiLepCalc',
+                        'TpTpCalc',
+                        'CommonCalc',
+                        'JetSubCalc',
+                        # 'TTbarMassCalc',
+                        # 'DeepAK8Calc',
+                        # 'HOTTaggerCalc',
+                        #'BestCalc',
+        ),
+        exclude_calcs = cms.vstring(
+                        'TestCalc',
+                        'DummyCalc',
+        ),
+
+        # name has to match the name as registered in BeginJob of  EventSelector.cc
+        MultiLepSelector = cms.PSet(MultiLepSelector_cfg),
+
+        # Calc cfg name has to match the name as registered in Calc.cc
+        MultiLepCalc  = cms.PSet(MultiLepCalc_cfg),
+        TpTpCalc      = cms.PSet(TpTpCalc_cfg),
+        CommonCalc    = cms.PSet(), #current ljmet wants all calc to send a PSet, event if its empty.
+        JetSubCalc    = cms.PSet(JetSubCalc_cfg),
+        TTbarMassCalc = cms.PSet(TTbarMassCalc_cfg),
+        DeepAK8Calc    = cms.PSet(), #current ljmet wants all calc to send a PSet, event if its empty.
+        HOTTaggerCalc = cms.PSet(HOTTaggerCalc_cfg),
+        BestCalc      = cms.PSet(BestCalc_cfg),
+
+        )
+
+##JERup - reset bools for all calcs/selectors that use JEC
+MultiLepSelector_cfg.JECup   = cms.bool(False)
+MultiLepCalc_cfg.JECup       = cms.bool(False)
+JetSubCalc_cfg.JECup         = cms.bool(False)
+MultiLepSelector_cfg.JECdown = cms.bool(False)
+MultiLepCalc_cfg.JECdown     = cms.bool(False)
+JetSubCalc_cfg.JECdown       = cms.bool(False)
+MultiLepSelector_cfg.JERup   = cms.bool(True)
+MultiLepCalc_cfg.JERup       = cms.bool(True)
+JetSubCalc_cfg.JERup         = cms.bool(True)
+process.ljmet_JERup = cms.EDAnalyzer(
+        'LJMet',
+
+        debug         = cms.bool(False),
+        ttree_name    = cms.string('ljmet_JERup'),
+        verbosity     = cms.int32(0),
+        selector      = cms.string('MultiLepSelector'),
+        include_calcs = cms.vstring(
+                        'MultiLepCalc',
+                        'TpTpCalc',
+                        'CommonCalc',
+                        'JetSubCalc',
+                        # 'TTbarMassCalc',
+                        # 'DeepAK8Calc',
+                        # 'HOTTaggerCalc',
+                        #'BestCalc',
+        ),
+        exclude_calcs = cms.vstring(
+                        'TestCalc',
+                        'DummyCalc',
+        ),
+
+        # name has to match the name as registered in BeginJob of  EventSelector.cc
+        MultiLepSelector = cms.PSet(MultiLepSelector_cfg),
+
+        # Calc cfg name has to match the name as registered in Calc.cc
+        MultiLepCalc  = cms.PSet(MultiLepCalc_cfg),
+        TpTpCalc      = cms.PSet(TpTpCalc_cfg),
+        CommonCalc    = cms.PSet(), #current ljmet wants all calc to send a PSet, event if its empty.
+        JetSubCalc    = cms.PSet(JetSubCalc_cfg),
+        TTbarMassCalc = cms.PSet(TTbarMassCalc_cfg),
+        DeepAK8Calc    = cms.PSet(), #current ljmet wants all calc to send a PSet, event if its empty.
+        HOTTaggerCalc = cms.PSet(HOTTaggerCalc_cfg),
+        BestCalc      = cms.PSet(BestCalc_cfg),
+
+        )
+
+##JERup - reset bools for all calcs/selectors that use JEC
+MultiLepSelector_cfg.JECup   = cms.bool(False)
+MultiLepCalc_cfg.JECup       = cms.bool(False)
+JetSubCalc_cfg.JECup         = cms.bool(False)
+MultiLepSelector_cfg.JECdown = cms.bool(False)
+MultiLepCalc_cfg.JECdown     = cms.bool(False)
+JetSubCalc_cfg.JECdown       = cms.bool(False)
+MultiLepSelector_cfg.JERup   = cms.bool(False)
+MultiLepCalc_cfg.JERup       = cms.bool(False)
+JetSubCalc_cfg.JERup         = cms.bool(False)
+MultiLepSelector_cfg.JERdown = cms.bool(True)
+MultiLepCalc_cfg.JERdown     = cms.bool(True)
+JetSubCalc_cfg.JERdown       = cms.bool(True)
+process.ljmet_JERdown = cms.EDAnalyzer(
+        'LJMet',
+
+        debug         = cms.bool(False),
+        ttree_name    = cms.string('ljmet_JERdown'),
+        verbosity     = cms.int32(0),
+        selector      = cms.string('MultiLepSelector'),
+        include_calcs = cms.vstring(
+                        'MultiLepCalc',
+                        'TpTpCalc',
+                        'CommonCalc',
+                        'JetSubCalc',
+                        # 'TTbarMassCalc',
+                        # 'DeepAK8Calc',
+                        # 'HOTTaggerCalc',
+                        #'BestCalc',
+        ),
+        exclude_calcs = cms.vstring(
+                        'TestCalc',
+                        'DummyCalc',
+        ),
+
+        # name has to match the name as registered in BeginJob of  EventSelector.cc
+        MultiLepSelector = cms.PSet(MultiLepSelector_cfg),
+
+        # Calc cfg name has to match the name as registered in Calc.cc
+        MultiLepCalc  = cms.PSet(MultiLepCalc_cfg),
+        TpTpCalc      = cms.PSet(TpTpCalc_cfg),
+        CommonCalc    = cms.PSet(), #current ljmet wants all calc to send a PSet, event if its empty.
+        JetSubCalc    = cms.PSet(JetSubCalc_cfg),
+        TTbarMassCalc = cms.PSet(TTbarMassCalc_cfg),
+        DeepAK8Calc    = cms.PSet(), #current ljmet wants all calc to send a PSet, event if its empty.
+        HOTTaggerCalc = cms.PSet(HOTTaggerCalc_cfg),
+        BestCalc      = cms.PSet(BestCalc_cfg),
+
+        )
 
 
 ################################################
@@ -721,41 +901,53 @@ if (isTTbar):
     process.p = cms.Path(
                          process.mcweightanalyzer *
                          process.filter_any_explicit *
-                         process.fullPatMetSequenceModifiedMET *
-                         process.prefiringweight *
+                         #process.fullPatMetSequenceModifiedMET *
+                         #process.prefiringweight *
                          process.egammaPostRecoSeq *
-                         process.updatedJetsAK8PuppiSoftDropPacked *
-                         process.packedJetsAK8Puppi *
-                         process.QGTagger *
+                         #process.updatedJetsAK8PuppiSoftDropPacked *
+                         #process.packedJetsAK8Puppi *
+                         #process.QGTagger *
                          process.ecalBadCalibReducedMINIAODFilter *
                          process.ttbarcat *
-                         process.ljmet #(ntuplizer)
+                         process.ljmet *#(ntuplizer) 
+                         process.ljmet_JECup *#(ntuplizer) 
+                         process.ljmet_JECdown * #(ntuplizer) 
+                         process.ljmet_JERup *#(ntuplizer) 
+                         process.ljmet_JERdown #(ntuplizer) 
                          )
 
 elif(isMC):
     process.p = cms.Path(
-        process.mcweightanalyzer *
-        process.filter_any_explicit *
-        process.fullPatMetSequenceModifiedMET *
-        process.prefiringweight *
-        process.egammaPostRecoSeq *
-        process.updatedJetsAK8PuppiSoftDropPacked *
-        process.packedJetsAK8Puppi *
-        process.QGTagger *
-        process.ecalBadCalibReducedMINIAODFilter *
-        process.ljmet #(ntuplizer)
-        )
+       process.mcweightanalyzer *
+       process.filter_any_explicit *
+       #process.fullPatMetSequenceModifiedMET *
+       #process.prefiringweight *
+       process.egammaPostRecoSeq *
+       #process.updatedJetsAK8PuppiSoftDropPacked *
+       #process.packedJetsAK8Puppi *
+       #process.QGTagger *
+       process.ecalBadCalibReducedMINIAODFilter *
+       process.ljmet *#(ntuplizer) 
+       process.ljmet_JECup *#(ntuplizer) 
+       process.ljmet_JECdown *#(ntuplizer) 
+       process.ljmet_JERup *#(ntuplizer) 
+       process.ljmet_JERdown #(ntuplizer) 
+    )
 else:
     process.p = cms.Path(
        process.filter_any_explicit *
-       process.fullPatMetSequenceModifiedMET *
-       process.prefiringweight *
+       #process.fullPatMetSequenceModifiedMET *
+       #process.prefiringweight *
        process.egammaPostRecoSeq *
-       process.updatedJetsAK8PuppiSoftDropPacked *
-       process.packedJetsAK8Puppi *
-       process.QGTagger *
+       #process.updatedJetsAK8PuppiSoftDropPacked *
+       #process.packedJetsAK8Puppi *
+       #process.QGTagger *
        process.ecalBadCalibReducedMINIAODFilter *
-       process.ljmet #(ntuplizer)
+       process.ljmet *#(ntuplizer) 
+       process.ljmet_JECup *#(ntuplizer) 
+       process.ljmet_JECdown *#(ntuplizer) 
+       process.ljmet_JERup *#(ntuplizer) 
+       process.ljmet_JERdown #(ntuplizer) 
     )
 
 process.p.associate(patAlgosToolsTask)
