@@ -5,29 +5,25 @@ import datetime
 cTime=datetime.datetime.now()
 date_str='%i_%i_%i'%(cTime.year,cTime.month,cTime.day)
 
-import os
-userName = os.environ['USER']
-
 ####################
 ### SET YOUR STRINGS
 ####################
-cmsRun_config  = '../runFWLJMet_multiLep_multipleTree.py'
-inputDataset   = '/TprimeTprime_M-1400_TuneCP5_13TeV-madgraph-pythia8/RunIIFall17MiniAODv2-PU2017_12Apr2018_94X_mc2017_realistic_v14-v2/MINIAODSIM'
-requestName    = 'FWLJMET_1Lep_'+date_str+'_'+userName
-outputFolder   = 'FWLJMET_crab_test'
-Json_for_data  = "https://cms-service-dqm.web.cern.ch/cms-service-dqm/CAF/certification/Collisions18/13TeV/PromptReco/Cert_314472-325175_13TeV_PromptReco_Collisions18_JSON.txt" #https://twiki.cern.ch/twiki/bin/view/CMS/PdmV2018Analysis#DATA
-isMC           = True
-isVLQsignal    = False
-isTTbar        = False
-
-if 'Tprime' in inputDataset or 'Bprime' in inputDataset: isVLQsignal=True
+cmsRun_config  = 'CMSRUNCONFIG'
+inputDataset   = 'INPUT'
+requestName    = 'REQNAME'
+outputFolder   = 'OUTFOLDER'
+logFolder      = 'LOGFOLDER'
+Json_for_data  = 'JSONFORDATA'
+isMC           = ISMC
+isVLQsignal    = ISVLQSIGNAL
+isTTbar        = ISTTBAR
 
 ##############
 ### GENERAL
 ##############
 config.section_("General")
-config.General.requestName = requestName
-config.General.workArea = 'crabSubmitLogs/'
+config.General.requestName = requestName+"_"+logFolder
+config.General.workArea = 'crabSubmitLogs/'+requestName+'/'
 config.General.transferLogs = True
 config.General.transferOutputs = True
 
