@@ -31,7 +31,7 @@ OUTFOLDER           = 'FWLJMET_crab_test'
 #log folder
 LOGFOLDER           = 'FWLJMET_crab_test'
 #JSON for Data
-JSONFORDATA         = 'https://cms-service-dqm.web.cern.ch/cms-service-dqm/CAF/certification/Collisions18/13TeV/PromptReco/Cert_314472-325175_13TeV_PromptReco_Collisions18_JSON.txt' #https://twiki.cern.ch/twiki/bin/view/CMS/PdmV2018Analysis#DATA
+JSONFORDATA         = 'https://cms-service-dqm.web.cern.ch/cms-service-dqm/CAF/certification/Collisions17/13TeV/PromptReco/Cert_294927-306462_13TeV_PromptReco_Collisions17_JSONtxt' #https://twiki.cern.ch/twiki/bin/view/CMS/PdmV2017Analysis#DATA
 
 def create_crab_config_files_from_template(sample_dict,**kwargs):
 
