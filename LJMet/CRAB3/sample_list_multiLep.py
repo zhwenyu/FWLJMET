@@ -39,6 +39,8 @@ bkgdict['TTW'] = '/TTWJetsToLNu_TuneCP5_13TeV-amcatnloFXFX-madspin-pythia8/RunII
 bkgdict['TTZ'] = '/TTZToLLNuNu_M-10_TuneCP5_13TeV-amcatnlo-pythia8/RunIIFall17MiniAODv2-PU2017_12Apr2018_94X_mc2017_realistic_v14-v2/MINIAODSIM'
 #bkgdict['WW'] = ''
 
+ttbarbkgdict = {}
+
 datadict = {}
 
 datadict['DoubleEGRun2018B']  = '/DoubleEG/Run2017B-31Mar2018-v1/MINIAOD'
