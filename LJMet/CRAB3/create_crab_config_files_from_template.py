@@ -25,11 +25,11 @@ CRABCONFIG_DIR      = 'crabConfigs_'+option.finalState
 #the crab cfg template to copy from
 CRABCONFIG_TEMPLATE = 'crab_FWLJMET_cfg_template.py'
 #crab request name
-REQNAME             = 'FWLJMET_'+option.finalState+'_'+date_str+'_'+userName
+REQNAME             = option.finalState
 #eos out folder
 OUTFOLDER           = 'FWLJMET_crab_test'
 #log folder
-LOGFOLDER           = 'FWLJMET_crab_test'
+LOGFOLDER           = 'FWLJMET_crab_test' ## JH: this is not actually used in the sed commands below, dummy variable
 #JSON for Data
 JSONFORDATA         = 'https://cms-service-dqm.web.cern.ch/cms-service-dqm/CAF/certification/Collisions17/13TeV/PromptReco/Cert_294927-306462_13TeV_PromptReco_Collisions17_JSONtxt' #https://twiki.cern.ch/twiki/bin/view/CMS/PdmV2017Analysis#DATA
 
