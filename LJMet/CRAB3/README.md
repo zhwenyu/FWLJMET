@@ -1,3 +1,5 @@
+### Set environment for CRAB3
+
        source /cvmfs/cms.cern.ch/crab3/crab.sh
 
 ### Submitting a crab job
@@ -6,12 +8,15 @@ Always good to do a dryrun first (will show if it could be successfully delivere
 
        crab submit --dryrun crab_FWLJMET_cfg.py
 
-### Submitting multiple crab jobs (with options of --finalState & --nominalTreeOnly): 1Lep
+### Submitting multiple crab jobs (with options of --finalState & --nominalTreeOnly): 
+
+#### 1Lep
 
        python create_crab_config_files_from_template.py --finalState singleLep (--nominalTreeOnly)
 
        python submit_mutiple_crab_jobs.py --finalState singleLep (--nominalTreeOnly)
-### Or: 3Lep
+
+#### 3Lep
 
        python create_crab_config_files_from_template.py --finalState multiLep (--nominalTreeOnly)
 
