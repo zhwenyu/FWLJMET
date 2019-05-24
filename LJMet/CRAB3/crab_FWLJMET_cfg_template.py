@@ -78,6 +78,7 @@ if(isMC):
 #		config.Data.unitsPerJob = 2
 else:
 	config.Data.splitting = 'Automatic'
+	config.Data.unitsPerJob = 1440 # 24 hours
 	config.Data.lumiMask = Json_for_data
 config.Data.inputDBS = 'global'
 config.Data.ignoreLocality = False
