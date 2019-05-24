@@ -14,9 +14,9 @@ options.register('isVLQsignal', '', VarParsing.multiplicity.singleton, VarParsin
 
 ## SET DEFAULT VALUES
 ## ATTENTION: THESE DEFAULT VALUES ARE SET FOR VLQ SIGNAL ! isMC=True, isTTbar=False, isVLQsignal=True 
-options.isMC = True
-options.isTTbar = False
-options.isVLQsignal = True
+options.isMC = ISMC
+options.isTTbar = ISTTBAR
+options.isVLQsignal = ISVLQSIGNAL
 options.inputFiles = [
     'root://cmsxrootd.fnal.gov//store/mc/RunIIAutumn18MiniAOD/TprimeTprime_M-1400_TuneCP5_PSweights_13TeV-madgraph-pythia8/MINIAODSIM/102X_upgrade2018_realistic_v15-v2/80000/FEFD008E-00DF-9A4A-B3C4-4CE60A67B5C6.root'
     ]
@@ -75,14 +75,17 @@ process.source = cms.Source("PoolSource",
     )
 )
 
-OUTFILENAME = "cmsRun" #This could be better !
-if(isMC):
-        POSTFIX = 'MC'
-else:
-        POSTFIX = 'DATA'
-POSTFIX+='_1Lep'
-## TFileService
-process.TFileService = cms.Service("TFileService", fileName = cms.string(OUTFILENAME+'_FWLJMET_'+POSTFIX+'.root'))
+OUTFILENAME = "DATASET"
+process.TFileService = cms.Service("TFileService", fileName = cms.string(OUTFILENAME+'.root'))
+
+# OUTFILENAME = "cmsRun" #This could be better !
+# if(isMC):
+#         POSTFIX = 'MC'
+# else:
+#         POSTFIX = 'DATA'
+# POSTFIX+='_1Lep'
+# ## TFileService
+# process.TFileService = cms.Service("TFileService", fileName = cms.string(OUTFILENAME+'_FWLJMET_'+POSTFIX+'.root'))
 
 
 ## Output Module Configuration (expects a path 'p')

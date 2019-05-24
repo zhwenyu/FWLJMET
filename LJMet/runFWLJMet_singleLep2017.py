@@ -14,9 +14,9 @@ options.register('isVLQsignal', '', VarParsing.multiplicity.singleton, VarParsin
 
 ## SET DEFAULT VALUES
 ## ATTENTION: THESE DEFAULT VALUES ARE SET FOR VLQ SIGNAL ! isMC=True, isTTbar=False, isVLQsignal=True 
-options.isMC = True
-options.isTTbar = False
-options.isVLQsignal = False
+options.isMC = ISMC
+options.isTTbar = ISTTBAR
+options.isVLQsignal = ISVLQSIGNAL
 options.inputFiles = [
     #'root://cmsxrootd.fnal.gov//store/mc/RunIIFall17MiniAODv2/TTTT_TuneCP5_PSweights_13TeV-amcatnlo-pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14-v1/70000/0ED34A55-DD52-E811-91CC-E0071B73B6B0.root'
     #'root://cmsxrootd.fnal.gov//store/mc/RunIIFall17MiniAODv2/TprimeTprime_M-1400_TuneCP5_13TeV-madgraph-pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14-v2/50000/F82DC089-5591-E811-9210-6C3BE5B58198.root'
@@ -77,14 +77,17 @@ process.source = cms.Source("PoolSource",
     )
 )
 
-OUTFILENAME = "cmsRun" #This could be better !
-if(isMC):
-        POSTFIX = 'MC'
-else:
-        POSTFIX = 'DATA'
-POSTFIX+='_1Lep'
+OUTFILENAME = "DATASET"
+process.TFileService = cms.Service("TFileService", fileName = cms.string(OUTFILENAME+'.root'))
+
+#OUTFILENAME = "cmsRun" #This could be better !
+#if(isMC):
+#        POSTFIX = 'MC'
+#else:
+#        POSTFIX = 'DATA'
+#POSTFIX+='_1Lep'
 ## TFileService
-process.TFileService = cms.Service("TFileService", fileName = cms.string(OUTFILENAME+'_FWLJMET_'+POSTFIX+'.root'))
+#process.TFileService = cms.Service("TFileService", fileName = cms.string(OUTFILENAME+'_FWLJMET_'+POSTFIX+'.root'))
 
 
 ## Output Module Configuration (expects a path 'p')

@@ -31,14 +31,14 @@ CRABCONFIG_DIR      = 'crabConfigs_'+option.finalState+option.year
 #CRABCONFIG_DIR      = home+'/nobackup/FWLJMET102X_crabConfigs_'+option.finalState+option.year  #JH: crab stuff in nobackup
 
 #the crab cfg template to copy from
-CRABCONFIG_TEMPLATE = 'crab_FWLJMET_cfg_template'+option.year+'.py'
+CRABCONFIG_TEMPLATE = 'crab_FWLJMET_cfg_template.py'
 
 #crab request name
 REQNAME             = option.finalState+option.year
 
 #eos out folder
-OUTFOLDER           = 'FWLJMET_crab_test'
-#OUTFOLDER           = 'FWLJMET102X_1lep2017_052219'  #JH: single lepton 2017
+#OUTFOLDER           = 'FWLJMET_crab_test'
+OUTFOLDER           = 'FWLJMET102X_1lep2017_052219'  #JH: single lepton 2017
 
 #log folder
 LOGFOLDER           = 'FWLJMET_crab_test' ## JH: this is not actually used in the sed commands below, dummy variable
@@ -55,12 +55,14 @@ def create_crab_config_files_from_template(sample_dict,**kwargs):
 		print dataset,sample_dict[dataset]
 
 		filename = 'crab_FWLJMET_cfg_'+dataset+'.py'
+		cmsRunname = 'run_FWLJMET_'+dataset+'.py'
 
 		#copy template file to new directory
 		os.system('cp -v '+CRABCONFIG_TEMPLATE+' '+CRABCONFIG_DIR+'/'+filename)
+		os.system('cp -v '+CMSRUNCONFIG+' '+CRABCONFIG_DIR+'/'+cmsRunname)
 
-		#replace strings in new file
-		os.system("sed -i 's|CMSRUNCONFIG|"+CMSRUNCONFIG+"|g' "+CRABCONFIG_DIR+"/"+filename)
+		#replace strings in new crab file
+		os.system("sed -i 's|CMSRUNCONFIG|"+CRABCONFIG_DIR+"/"+cmsRunname+"|g' "+CRABCONFIG_DIR+"/"+filename)
 		os.system("sed -i 's|INPUT|"+sample_dict[dataset]+"|g' "+CRABCONFIG_DIR+"/"+filename)
 		os.system("sed -i 's|REQNAME|"+REQNAME+"|g' "+CRABCONFIG_DIR+"/"+filename)
 		os.system("sed -i 's|OUTFOLDER|"+OUTFOLDER+"|g' "+CRABCONFIG_DIR+"/"+filename)
@@ -68,7 +70,15 @@ def create_crab_config_files_from_template(sample_dict,**kwargs):
 		os.system("sed -i 's|JSONFORDATA|"+JSONFORDATA+"|g' "+CRABCONFIG_DIR+"/"+filename)
 		os.system("sed -i 's|ISMC|"+kwargs['ISMC']+"|g' "+CRABCONFIG_DIR+"/"+filename)
 		os.system("sed -i 's|ISVLQSIGNAL|"+kwargs['ISVLQSIGNAL']+"|g' "+CRABCONFIG_DIR+"/"+filename)
-		os.system("sed -i 's|ISTTBAR|"+kwargs['ISTTBAR']+"|g' "+CRABCONFIG_DIR+"/"+filename)
+
+		#replace strings in new cmsRun file
+		if 'EGamma' in dataset or 'Single' in dataset:
+			os.system("sed -i 's|DATASET|"+dataset+"|g' "+CRABCONFIG_DIR+"/"+cmsRunname)
+		else:
+			os.system("sed -i 's|DATASET|"+sample_dict[dataset].split('/')[1]+"|g' "+CRABCONFIG_DIR+"/"+cmsRunname)
+		os.system("sed -i 's|ISMC|"+kwargs['ISMC']+"|g' "+CRABCONFIG_DIR+"/"+cmsRunname)
+		os.system("sed -i 's|ISVLQSIGNAL|"+kwargs['ISVLQSIGNAL']+"|g' "+CRABCONFIG_DIR+"/"+cmsRunname)		
+		os.system("sed -i 's|ISTTBAR|"+kwargs['ISTTBAR']+"|g' "+CRABCONFIG_DIR+"/"+cmsRunname)
 
 
 if __name__=='__main__':

@@ -19,7 +19,7 @@ logFolder      = 'LOGFOLDER'
 Json_for_data  = 'JSONFORDATA'
 isMC           = ISMC
 isVLQsignal    = ISVLQSIGNAL
-isTTbar        = ISTTBAR
+#isTTbar        = ISTTBAR
 
 ##############
 ### GENERAL
@@ -40,24 +40,25 @@ config.JobType.pluginName = 'Analysis'
 config.JobType.psetName = cmsRun_config
 
 #cmsRun params
-if(isMC):
-	config.JobType.pyCfgParams = ['isMC=True']
-else:
-	config.JobType.pyCfgParams = ['isMC=False']
-
-if(isTTbar):
-	config.JobType.pyCfgParams += ['isTTbar=True']
+#config.JobType.pyCfgParams = ['dataset='+dataset]
+#if(isMC):
+#	config.JobType.pyCfgParams = ['isMC=True']
+#else:
+#	config.JobType.pyCfgParams = ['isMC=False']
+#
+#if(isTTbar):
+#	config.JobType.pyCfgParams += ['isTTbar=True']
 
 #for VLQ signal this will run using crab_script.sh which will reset the env var in order to access LHApdf outside of CMSSW
 if(isVLQsignal):
 	config.JobType.scriptExe = relBase+'/src/FWLJMET/LJMet/CRAB3/crab_script.sh'
-else:
-	config.JobType.pyCfgParams += ['isVLQsignal=False']
+#else:
+#	config.JobType.pyCfgParams += ['isVLQsignal=False']
 	
 # runtime, memory, cores
-if(isMC):
-	config.JobType.maxJobRuntimeMin = 2750 #minutes
-config.JobType.maxMemoryMB = 2000 #MB
+#if(isMC):
+#	config.JobType.maxJobRuntimeMin = 2750 #minutes
+config.JobType.maxMemoryMB = 2000 #MB, believed to be per core based on CRAB3FAQ TWiki
 config.JobType.numCores = 4 #use wisely if turned on.
 
 ##############
@@ -67,12 +68,14 @@ config.section_("Data")
 config.Data.inputDataset = inputDataset
 config.Data.allowNonValidInputDataset = True
 if(isMC):
-	if(isVLQsignal):
-		config.Data.splitting = 'FileBased'
-		config.Data.unitsPerJob = 1
-	else:
-		config.Data.splitting = 'FileBased'
-		config.Data.unitsPerJob = 2
+	config.Data.splitting = 'Automatic'
+	config.Data.unitsPerJob = 1440 # 24 hours
+#	if(isVLQsignal):
+#		config.Data.splitting = 'FileBased'
+#		config.Data.unitsPerJob = 1
+#	else:
+#		config.Data.splitting = 'FileBased'
+#		config.Data.unitsPerJob = 2
 else:
 	config.Data.splitting = 'Automatic'
 	config.Data.lumiMask = Json_for_data
