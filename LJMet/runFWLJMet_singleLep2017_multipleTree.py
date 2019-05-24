@@ -16,11 +16,9 @@ options.register('isVLQsignal', '', VarParsing.multiplicity.singleton, VarParsin
 ## ATTENTION: THESE DEFAULT VALUES ARE SET FOR VLQ SIGNAL ! isMC=True, isTTbar=False, isVLQsignal=True 
 options.isMC = True
 options.isTTbar = False
-options.isVLQsignal = False
+options.isVLQsignal = True
 options.inputFiles = [
-    #'root://cmsxrootd.fnal.gov//store/mc/RunIIFall17MiniAODv2/TTTT_TuneCP5_PSweights_13TeV-amcatnlo-pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14-v1/70000/0ED34A55-DD52-E811-91CC-E0071B73B6B0.root'
-    #'root://cmsxrootd.fnal.gov//store/mc/RunIIFall17MiniAODv2/TprimeTprime_M-1400_TuneCP5_13TeV-madgraph-pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14-v2/50000/F82DC089-5591-E811-9210-6C3BE5B58198.root'
-    'root://cmsxrootd-site.fnal.gov//store/mc/RunIIFall17MiniAODv2/WJetsToLNu_HT-200To400_TuneCP5_13TeV-madgraphMLM-pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14-v1/10000/001187B6-E554-E811-89C7-24BE05C63721.root'
+    'root://cmsxrootd.fnal.gov//store/mc/RunIIFall17MiniAODv2/TprimeTprime_M-1400_TuneCP5_13TeV-madgraph-pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14-v2/50000/F82DC089-5591-E811-9210-6C3BE5B58198.root'
     ]
 options.maxEvents = 100
 options.parseArguments()
@@ -52,7 +50,7 @@ def customise(process):
                                           oncePerEventMode=cms.untracked.bool(True))
     #Adding Timing service:
     process.Timing=cms.Service("Timing")
-
+    
     #Add these 3 lines to put back the summary for timing information at the end of the logfile
     #(needed for TimeReport report)
     if hasattr(process,'options'):
@@ -61,9 +59,9 @@ def customise(process):
         process.options = cms.untracked.PSet(
             wantSummary = cms.untracked.bool(True)
         )
-
+        
     return(process)
-# customise(process)
+#customise(process)
 
 ## Multithreading option
 process.options.numberOfThreads=cms.untracked.uint32(4)
@@ -376,6 +374,7 @@ hlt_path_mu = cms.vstring(
         'HLT_IsoMu24_2p1',
         )
 
+
 #Selector/Calc config
 MultiLepSelector_cfg = cms.PSet(
 
@@ -458,9 +457,9 @@ MultiLepSelector_cfg = cms.PSet(
             maxLeptons          = cms.int32(1),
 
             # Jets
-            # jet_collection           = cms.InputTag('slimmedJets'), #original collection
+            # jet_collection           = cms.InputTag('slimmedJets'), # original collection
             jet_collection           = cms.InputTag('updatedPatJets::LJMET'),
-            # AK8jet_collection        = cms.InputTag('slimmedJetsAK8'), #original collection
+            # AK8jet_collection        = cms.InputTag('slimmedJetsAK8'), # original collection
             AK8jet_collection        = cms.InputTag('packedJetsAK8Puppi'),
             JECup                    = cms.bool(JECup),
             JECdown                  = cms.bool(JECdown),
@@ -715,11 +714,195 @@ process.ljmet = cms.EDAnalyzer(
         CommonCalc    = cms.PSet(), #current ljmet wants all calc to send a PSet, event if its empty.
         JetSubCalc    = cms.PSet(JetSubCalc_cfg),
         TTbarMassCalc = cms.PSet(TTbarMassCalc_cfg),
+        DeepAK8Calc   = cms.PSet(), #current ljmet wants all calc to send a PSet, event if its empty.
+        HOTTaggerCalc = cms.PSet(HOTTaggerCalc_cfg),
+        BestCalc      = cms.PSet(BestCalc_cfg),
+
+        )
+
+
+## JECup - reset bools for all calcs/selectors that use JEC
+MultiLepSelector_cfg.JECup = cms.bool(True)
+MultiLepCalc_cfg.JECup     = cms.bool(True)
+JetSubCalc_cfg.JECup       = cms.bool(True)
+process.ljmet_JECup = cms.EDAnalyzer(
+        'LJMet',
+
+        debug         = cms.bool(False),
+        ttree_name    = cms.string('ljmet_JECup'),
+        verbosity     = cms.int32(0),
+        selector      = cms.string('MultiLepSelector'),
+        include_calcs = cms.vstring(
+                        'MultiLepCalc',
+                        'TpTpCalc',
+                        'CommonCalc',
+                        'JetSubCalc',
+                        'TTbarMassCalc',
+                        'DeepAK8Calc',
+                        'HOTTaggerCalc',
+                        'BestCalc', # is this really working?
+        ),
+        exclude_calcs = cms.vstring(
+                        'TestCalc',
+                        'DummyCalc',
+        ),
+
+        # name has to match the name as registered in BeginJob of  EventSelector.cc
+        MultiLepSelector = cms.PSet(MultiLepSelector_cfg),
+
+        # Calc cfg name has to match the name as registered in Calc.cc
+        MultiLepCalc  = cms.PSet(MultiLepCalc_cfg),
+        TpTpCalc      = cms.PSet(TpTpCalc_cfg),
+        CommonCalc    = cms.PSet(), #current ljmet wants all calc to send a PSet, event if its empty.
+        JetSubCalc    = cms.PSet(JetSubCalc_cfg),
+        TTbarMassCalc = cms.PSet(TTbarMassCalc_cfg),
         DeepAK8Calc    = cms.PSet(), #current ljmet wants all calc to send a PSet, event if its empty.
         HOTTaggerCalc = cms.PSet(HOTTaggerCalc_cfg),
         BestCalc      = cms.PSet(BestCalc_cfg),
 
-)
+        )
+
+
+##JECdown - reset bools for all calcs/selectors that use JEC
+MultiLepSelector_cfg.JECup   = cms.bool(False)
+MultiLepCalc_cfg.JECup       = cms.bool(False)
+JetSubCalc_cfg.JECup         = cms.bool(False)
+MultiLepSelector_cfg.JECdown = cms.bool(True)
+MultiLepCalc_cfg.JECdown     = cms.bool(True)
+JetSubCalc_cfg.JECdown       = cms.bool(True)
+process.ljmet_JECdown = cms.EDAnalyzer(
+        'LJMet',
+
+        debug         = cms.bool(False),
+        ttree_name    = cms.string('ljmet_JECdown'),
+        verbosity     = cms.int32(0),
+        selector      = cms.string('MultiLepSelector'),
+        include_calcs = cms.vstring(
+                        'MultiLepCalc',
+                        'TpTpCalc',
+                        'CommonCalc',
+                        'JetSubCalc',
+                        'TTbarMassCalc',
+                        'DeepAK8Calc',
+                        'HOTTaggerCalc',
+                        'BestCalc', # is this really working?
+        ),
+        exclude_calcs = cms.vstring(
+                        'TestCalc',
+                        'DummyCalc',
+        ),
+
+        # name has to match the name as registered in BeginJob of  EventSelector.cc
+        MultiLepSelector = cms.PSet(MultiLepSelector_cfg),
+
+        # Calc cfg name has to match the name as registered in Calc.cc
+        MultiLepCalc  = cms.PSet(MultiLepCalc_cfg),
+        TpTpCalc      = cms.PSet(TpTpCalc_cfg),
+        CommonCalc    = cms.PSet(), #current ljmet wants all calc to send a PSet, event if its empty.
+        JetSubCalc    = cms.PSet(JetSubCalc_cfg),
+        TTbarMassCalc = cms.PSet(TTbarMassCalc_cfg),
+        DeepAK8Calc    = cms.PSet(), #current ljmet wants all calc to send a PSet, event if its empty.
+        HOTTaggerCalc = cms.PSet(HOTTaggerCalc_cfg),
+        BestCalc      = cms.PSet(BestCalc_cfg),
+
+        )
+
+##JERup - reset bools for all calcs/selectors that use JEC
+MultiLepSelector_cfg.JECup   = cms.bool(False)
+MultiLepCalc_cfg.JECup       = cms.bool(False)
+JetSubCalc_cfg.JECup         = cms.bool(False)
+MultiLepSelector_cfg.JECdown = cms.bool(False)
+MultiLepCalc_cfg.JECdown     = cms.bool(False)
+JetSubCalc_cfg.JECdown       = cms.bool(False)
+MultiLepSelector_cfg.JERup   = cms.bool(True)
+MultiLepCalc_cfg.JERup       = cms.bool(True)
+JetSubCalc_cfg.JERup         = cms.bool(True)
+process.ljmet_JERup = cms.EDAnalyzer(
+        'LJMet',
+
+        debug         = cms.bool(False),
+        ttree_name    = cms.string('ljmet_JERup'),
+        verbosity     = cms.int32(0),
+        selector      = cms.string('MultiLepSelector'),
+        include_calcs = cms.vstring(
+                        'MultiLepCalc',
+                        'TpTpCalc',
+                        'CommonCalc',
+                        'JetSubCalc',
+                        'TTbarMassCalc',
+                        'DeepAK8Calc',
+                        'HOTTaggerCalc',
+                        'BestCalc', # is this really working?
+        ),
+        exclude_calcs = cms.vstring(
+                        'TestCalc',
+                        'DummyCalc',
+        ),
+
+        # name has to match the name as registered in BeginJob of  EventSelector.cc
+        MultiLepSelector = cms.PSet(MultiLepSelector_cfg),
+
+        # Calc cfg name has to match the name as registered in Calc.cc
+        MultiLepCalc  = cms.PSet(MultiLepCalc_cfg),
+        TpTpCalc      = cms.PSet(TpTpCalc_cfg),
+        CommonCalc    = cms.PSet(), #current ljmet wants all calc to send a PSet, event if its empty.
+        JetSubCalc    = cms.PSet(JetSubCalc_cfg),
+        TTbarMassCalc = cms.PSet(TTbarMassCalc_cfg),
+        DeepAK8Calc    = cms.PSet(), #current ljmet wants all calc to send a PSet, event if its empty.
+        HOTTaggerCalc = cms.PSet(HOTTaggerCalc_cfg),
+        BestCalc      = cms.PSet(BestCalc_cfg),
+
+        )
+
+##JERup - reset bools for all calcs/selectors that use JEC
+MultiLepSelector_cfg.JECup   = cms.bool(False)
+MultiLepCalc_cfg.JECup       = cms.bool(False)
+JetSubCalc_cfg.JECup         = cms.bool(False)
+MultiLepSelector_cfg.JECdown = cms.bool(False)
+MultiLepCalc_cfg.JECdown     = cms.bool(False)
+JetSubCalc_cfg.JECdown       = cms.bool(False)
+MultiLepSelector_cfg.JERup   = cms.bool(False)
+MultiLepCalc_cfg.JERup       = cms.bool(False)
+JetSubCalc_cfg.JERup         = cms.bool(False)
+MultiLepSelector_cfg.JERdown = cms.bool(True)
+MultiLepCalc_cfg.JERdown     = cms.bool(True)
+JetSubCalc_cfg.JERdown       = cms.bool(True)
+process.ljmet_JERdown = cms.EDAnalyzer(
+        'LJMet',
+
+        debug         = cms.bool(False),
+        ttree_name    = cms.string('ljmet_JERdown'),
+        verbosity     = cms.int32(0),
+        selector      = cms.string('MultiLepSelector'),
+        include_calcs = cms.vstring(
+                        'MultiLepCalc',
+                        'TpTpCalc',
+                        'CommonCalc',
+                        'JetSubCalc',
+                        'TTbarMassCalc',
+                        'DeepAK8Calc',
+                        'HOTTaggerCalc',
+                        'BestCalc', # is this really working?
+        ),
+        exclude_calcs = cms.vstring(
+                        'TestCalc',
+                        'DummyCalc',
+        ),
+
+        # name has to match the name as registered in BeginJob of  EventSelector.cc
+        MultiLepSelector = cms.PSet(MultiLepSelector_cfg),
+
+        # Calc cfg name has to match the name as registered in Calc.cc
+        MultiLepCalc  = cms.PSet(MultiLepCalc_cfg),
+        TpTpCalc      = cms.PSet(TpTpCalc_cfg),
+        CommonCalc    = cms.PSet(), #current ljmet wants all calc to send a PSet, event if its empty.
+        JetSubCalc    = cms.PSet(JetSubCalc_cfg),
+        TTbarMassCalc = cms.PSet(TTbarMassCalc_cfg),
+        DeepAK8Calc    = cms.PSet(), #current ljmet wants all calc to send a PSet, event if its empty.
+        HOTTaggerCalc = cms.PSet(HOTTaggerCalc_cfg),
+        BestCalc      = cms.PSet(BestCalc_cfg),
+
+        )
 
 
 ################################################
@@ -728,7 +911,7 @@ process.ljmet = cms.EDAnalyzer(
 
 # Configure a path and endpath to run the producer and output modules
 
-# ----------------------- GenHFHadronMatcher -----------------
+# ----------------------- GenHFHadronMatcher -----------------                                                
 if (isTTbar):
     process.load("PhysicsTools.JetMCAlgos.GenHFHadronMatcher_cff")
 
@@ -754,9 +937,9 @@ if (isTTbar):
     process.categorizeGenTtbar.genJets = cms.InputTag("slimmedGenJets")
 
     process.ttbarcat = cms.Sequence(
-        process.selectedHadronsAndPartons * process.genJetFlavourInfos * process.matchGenBHadron
-        * process.matchGenCHadron* ## gen HF flavour matching
-        process.categorizeGenTtbar  ## return already a categorization id for tt
+        process.selectedHadronsAndPartons * process.genJetFlavourInfos * process.matchGenBHadron 
+        * process.matchGenCHadron* ## gen HF flavour matching            
+        process.categorizeGenTtbar  ## return already a categorization id for tt                  
         )
 
     process.p = cms.Path(
@@ -770,22 +953,30 @@ if (isTTbar):
                          process.QGTagger *
                          process.ecalBadCalibReducedMINIAODFilter *
                          process.ttbarcat *
-                         process.ljmet #(ntuplizer)
+                         process.ljmet *#(ntuplizer) 
+                         process.ljmet_JECup *#(ntuplizer) 
+                         process.ljmet_JECdown * #(ntuplizer) 
+                         process.ljmet_JERup *#(ntuplizer) 
+                         process.ljmet_JERdown #(ntuplizer) 
                          )
 
 elif(isMC):
     process.p = cms.Path(
-        process.mcweightanalyzer *
-        process.filter_any_explicit *
-        process.fullPatMetSequenceModifiedMET *
-        process.prefiringweight *
-        process.egammaPostRecoSeq *
-        process.updatedJetsAK8PuppiSoftDropPacked *
-        process.packedJetsAK8Puppi *
-        process.QGTagger *
-        process.ecalBadCalibReducedMINIAODFilter *
-        process.ljmet #(ntuplizer)
-        )
+       process.mcweightanalyzer *
+       process.filter_any_explicit *
+       process.fullPatMetSequenceModifiedMET *
+       process.prefiringweight *
+       process.egammaPostRecoSeq *
+       process.updatedJetsAK8PuppiSoftDropPacked *
+       process.packedJetsAK8Puppi *
+       process.QGTagger *
+       process.ecalBadCalibReducedMINIAODFilter *
+       process.ljmet *#(ntuplizer) 
+       process.ljmet_JECup *#(ntuplizer) 
+       process.ljmet_JECdown *#(ntuplizer) 
+       process.ljmet_JERup *#(ntuplizer) 
+       process.ljmet_JERdown #(ntuplizer) 
+    )
 else:
     process.p = cms.Path(
        process.filter_any_explicit *
@@ -796,7 +987,11 @@ else:
        process.packedJetsAK8Puppi *
        process.QGTagger *
        process.ecalBadCalibReducedMINIAODFilter *
-       process.ljmet #(ntuplizer)
+       process.ljmet *#(ntuplizer)
+       process.ljmet_JECup *#(ntuplizer)
+       process.ljmet_JECdown *#(ntuplizer)
+       process.ljmet_JERup *#(ntuplizer)
+       process.ljmet_JERdown #(ntuplizer)
     )
 
 process.p.associate(patAlgosToolsTask)

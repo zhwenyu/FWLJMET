@@ -10,23 +10,22 @@ from FWCore.ParameterSet.VarParsing import VarParsing
 options = VarParsing('analysis')
 options.register('isMC', '', VarParsing.multiplicity.singleton, VarParsing.varType.bool, 'Is MC')
 options.register('isTTbar', '', VarParsing.multiplicity.singleton, VarParsing.varType.bool, 'Is TTbar')
-options.register('isSignal', '', VarParsing.multiplicity.singleton, VarParsing.varType.bool, 'Is Signal')
-options.isMC = False
+options.register('isVLQsignal', '', VarParsing.multiplicity.singleton, VarParsing.varType.bool, 'Is VLQ Signal')
+
+## SET DEFAULT VALUES
+## ATTENTION: THESE DEFAULT VALUES ARE SET FOR VLQ SIGNAL ! isMC=True, isTTbar=False, isVLQsignal=True 
+options.isMC = True
 options.isTTbar = False
-options.isSignal = False
+options.isVLQsignal = True
 options.inputFiles = [
-    #'root://cmsxrootd.fnal.gov//store/mc/RunIIAutumn18MiniAOD/TprimeTprime_M-1400_TuneCP5_PSweights_13TeV-madgraph-pythia8/MINIAODSIM/102X_upgrade2018_realistic_v15-v2/80000/FEFD008E-00DF-9A4A-B3C4-4CE60A67B5C6.root'
-    'root://cmsxrootd.fnal.gov//store/data/Run2018B/SingleMuon/MINIAOD/17Sep2018-v1/270000/9654C1C8-3075-4B48-A1B3-3D97DEFC2B06.root',
-    'root://cmsxrootd.fnal.gov//store/data/Run2018B/SingleMuon/MINIAOD/17Sep2018-v1/270000/66892497-F81B-C84C-AE9D-16EBC653A4A5.root',
-    'root://cmsxrootd.fnal.gov//store/data/Run2018B/SingleMuon/MINIAOD/17Sep2018-v1/270000/BE03DBD8-999F-EA45-A11C-D3104B4E9D91.root',
-    'root://cmsxrootd.fnal.gov//store/data/Run2018B/SingleMuon/MINIAOD/17Sep2018-v1/270000/FAC085DA-3EB6-FF48-BF15-21D257260848.root',
+    'root://cmsxrootd.fnal.gov//store/mc/RunIIAutumn18MiniAOD/TprimeTprime_M-1400_TuneCP5_PSweights_13TeV-madgraph-pythia8/MINIAODSIM/102X_upgrade2018_realistic_v15-v2/80000/FEFD008E-00DF-9A4A-B3C4-4CE60A67B5C6.root'
     ]
-options.maxEvents = 10
+options.maxEvents = 100
 options.parseArguments()
 
 isMC= options.isMC
 isTTbar = options.isTTbar
-isSignal = options.isSignal
+isVLQsignal = options.isVLQsignal
 
 #Check arguments
 print options
@@ -76,13 +75,10 @@ process.source = cms.Source("PoolSource",
     )
 )
 
+OUTFILENAME = "cmsRun" #This could be better !
 if(isMC):
-        OUTFILENAME = 'TprimeTprime_M-1400_TuneCP5_13TeV-madgraph-pythia8'
-        if (isTTbar):
-            OUTFILENAME = 'TTToSemiLeptonic_TuneCP5_PSweights_13TeV-powheg-pythia8'
         POSTFIX = 'MC'
 else:
-        OUTFILENAME = 'DoubleEG_Run2017F'
         POSTFIX = 'DATA'
 POSTFIX+='_1Lep'
 ## TFileService
@@ -102,7 +98,7 @@ process.TFileService = cms.Service("TFileService", fileName = cms.string(OUTFILE
 ################################
 process.mcweightanalyzer = cms.EDAnalyzer(
     "WeightAnalyzer",
-    overrideLHEweight = cms.bool(isSignal),
+    overrideLHEweight = cms.bool(isVLQsignal),
     basePDFname = cms.string("NNPDF31_nnlo_as_0118_nf_4"),
     newPDFname = cms.string("NNPDF31_nnlo_as_0118_nf_4_mc_hessian"),
     )
@@ -167,8 +163,8 @@ process.GlobalTag = GlobalTag(process.GlobalTag, '102X_upgrade2018_realistic_v18
 if isMC == False:
     if 'Run2018D' in options.inputFiles[0]: process.GlobalTag = GlobalTag(process.GlobalTag, '102X_dataRun2_Prompt_v13')
     else: process.GlobalTag = GlobalTag(process.GlobalTag, '102X_dataRun2_Sep2018ABC_v2')
-        
 print 'Using global tag', process.GlobalTag.globaltag
+
 
 
 ################################################
@@ -310,11 +306,11 @@ process.updatedPatJets.userData.userInts.src += ['QGTagger:mult']
 ### LJMET
 ################################################
 
-#For MET filter
+## For MET filter
 if(isMC): MET_filt_flag_tag        = 'TriggerResults::PAT'
 else:     MET_filt_flag_tag        = 'TriggerResults::RECO'
 
-#For Jet corrections
+## For Jet corrections
 doNewJEC                 = True
 JECup                    = False
 JECdown                  = False
@@ -340,9 +336,47 @@ DataL2JetParAK8          = 'FWLJMET/LJMet/data/Autumn18V8/Autumn18_RunA_V8_DATA_
 DataL3JetParAK8          = 'FWLJMET/LJMet/data/Autumn18V8/Autumn18_RunA_V8_DATA_L3Absolute_AK8PFPuppi.txt'
 DataResJetParAK8         = 'FWLJMET/LJMet/data/Autumn18V8/Autumn18_RunA_V8_DATA_L2L3Residual_AK8PFPuppi.txt'
 
-#El MVA ID
+## El MVA ID
 UseElIDV1_ = False #False means using ElIDV2
 
+## TriggerPaths (for ljmet): 
+hlt_path_el  = cms.vstring(
+        #'digitisation_step',
+        'HLT_Ele35_WPTight_Gsf',
+        'HLT_Ele38_WPTight_Gsf',
+        'HLT_Ele40_WPTight_Gsf',
+        'HLT_Ele28_eta2p1_WPTight_Gsf_HT150',
+        'HLT_Ele15_IsoVVVL_PFHT450_PFMET50',
+        'HLT_Ele15_IsoVVVL_PFHT450',
+        'HLT_Ele50_IsoVVVL_PFHT450',
+        'HLT_Ele15_IsoVVVL_PFHT600',
+        'HLT_Ele50_CaloIdVT_GsfTrkIdT_PFJet165',
+        'HLT_Ele115_CaloIdVT_GsfTrkIdT'
+        
+        'HLT_Ele32_WPTight_Gsf',
+        'HLT_Ele32_WPTight_Gsf_L1DoubleEG',
+        'HLT_Ele30_eta2p1_WPTight_Gsf_CentralPFJet35_EleCleaned',
+        )
+hlt_path_mu = cms.vstring(
+        #'digitisation_step',
+        'HLT_IsoMu24',
+        'HLT_IsoMu24_eta2p1',
+        'HLT_IsoMu27',
+        'HLT_IsoMu30',
+        'HLT_Mu50',
+        'HLT_TkMu50',
+        'HLT_Mu55',
+        'HLT_Mu15_IsoVVVL_PFHT450_PFMET50',
+        'HLT_Mu15_IsoVVVL_PFHT450',
+        'HLT_Mu50_IsoVVVL_PFHT450',
+        'HLT_Mu15_IsoVVVL_PFHT600',
+        
+        'HLT_IsoTkMu24',
+        'HLT_IsoMu24_2p1',
+        )
+    
+
+#Selector/Calc config
 MultiLepSelector_cfg = cms.PSet(
 
             debug  = cms.bool(False),
@@ -353,42 +387,6 @@ MultiLepSelector_cfg = cms.PSet(
             trigger_cut  = cms.bool(True),
             HLTcollection= cms.InputTag("TriggerResults","","HLT"),
             dump_trigger = cms.bool(False),
-            mctrigger_path_el = cms.vstring(
-                        #'digitisation_step',
-                        'HLT_Ele35_WPTight_Gsf',
-                        'HLT_Ele38_WPTight_Gsf',
-                        'HLT_Ele40_WPTight_Gsf',
-                        'HLT_Ele28_eta2p1_WPTight_Gsf_HT150',
-                        'HLT_Ele15_IsoVVVL_PFHT450_PFMET50',
-                        'HLT_Ele15_IsoVVVL_PFHT450',
-                        'HLT_Ele50_IsoVVVL_PFHT450',
-                        'HLT_Ele15_IsoVVVL_PFHT600',
-                        'HLT_Ele50_CaloIdVT_GsfTrkIdT_PFJet165',
-                        'HLT_Ele115_CaloIdVT_GsfTrkIdT'
-
-                        'HLT_Ele32_WPTight_Gsf',
-                        'HLT_Ele32_WPTight_Gsf_L1DoubleEG',
-                        'HLT_Ele30_eta2p1_WPTight_Gsf_CentralPFJet35_EleCleaned',
-                        ),
-            mctrigger_path_mu = cms.vstring(
-                        #'digitisation_step',
-                        'HLT_IsoMu24',
-                        'HLT_IsoMu24_eta2p1',
-                        'HLT_IsoMu27',
-                        'HLT_IsoMu30',
-                        'HLT_Mu50',
-                        'HLT_TkMu50',
-                        'HLT_Mu55',
-                        'HLT_Mu15_IsoVVVL_PFHT450_PFMET50',
-                        'HLT_Mu15_IsoVVVL_PFHT450',
-                        'HLT_Mu50_IsoVVVL_PFHT450',
-                        'HLT_Mu15_IsoVVVL_PFHT600',
-
-                        'HLT_IsoTkMu24',
-                        'HLT_IsoMu24_2p1',
-                        ),
-            trigger_path_el = cms.vstring(''),
-            trigger_path_mu = cms.vstring(''),
 
             # PV cuts
             pv_cut     = cms.bool(True),
@@ -515,43 +513,16 @@ MultiLepSelector_cfg = cms.PSet(
             MistagUncertDown          = cms.bool(False), # no longer needed, but can still be utilized. Keep false as default.
 
             )
-if not isMC:
+if isMC:
+    MultiLepSelector_cfg.mctrigger_path_el = hlt_path_el
+    MultiLepSelector_cfg.mctrigger_path_mu = hlt_path_mu
+    MultiLepSelector_cfg.trigger_path_el = cms.vstring('')
+    MultiLepSelector_cfg.trigger_path_mu = cms.vstring('')
+else:
     MultiLepSelector_cfg.mctrigger_path_el = cms.vstring('')
     MultiLepSelector_cfg.mctrigger_path_mu = cms.vstring('')
-    MultiLepSelector_cfg.trigger_path_el = cms.vstring(
-        #'digitisation_step',
-        'HLT_Ele35_WPTight_Gsf',
-        'HLT_Ele38_WPTight_Gsf',
-        'HLT_Ele40_WPTight_Gsf',
-        'HLT_Ele28_eta2p1_WPTight_Gsf_HT150',
-        'HLT_Ele15_IsoVVVL_PFHT450_PFMET50',
-        'HLT_Ele15_IsoVVVL_PFHT450',
-        'HLT_Ele50_IsoVVVL_PFHT450',
-        'HLT_Ele15_IsoVVVL_PFHT600',
-        'HLT_Ele50_CaloIdVT_GsfTrkIdT_PFJet165',
-        'HLT_Ele115_CaloIdVT_GsfTrkIdT'
-        
-        'HLT_Ele32_WPTight_Gsf',
-        'HLT_Ele32_WPTight_Gsf_L1DoubleEG',
-        'HLT_Ele30_eta2p1_WPTight_Gsf_CentralPFJet35_EleCleaned',
-        )
-    MultiLepSelector_cfg.trigger_path_mu = cms.vstring(
-        #'digitisation_step',
-        'HLT_IsoMu24',
-        'HLT_IsoMu24_eta2p1',
-        'HLT_IsoMu27',
-        'HLT_IsoMu30',
-        'HLT_Mu50',
-        'HLT_TkMu50',
-        'HLT_Mu55',
-        'HLT_Mu15_IsoVVVL_PFHT450_PFMET50',
-        'HLT_Mu15_IsoVVVL_PFHT450',
-        'HLT_Mu50_IsoVVVL_PFHT450',
-        'HLT_Mu15_IsoVVVL_PFHT600',
-        
-        'HLT_IsoTkMu24',
-        'HLT_IsoMu24_2p1',
-        )
+    MultiLepSelector_cfg.trigger_path_el = hlt_path_el
+    MultiLepSelector_cfg.trigger_path_mu = hlt_path_mu
 
 MultiLepCalc_cfg = cms.PSet(
 
@@ -601,7 +572,7 @@ MultiLepCalc_cfg = cms.PSet(
             #Gen stuff
             saveGenHT          = cms.bool(False),
             genJetsCollection  = cms.InputTag("slimmedGenJets"),
-            OverrideLHEWeights = cms.bool(isSignal), #TRUE FOR SIGNALS, False otherwise
+            OverrideLHEWeights = cms.bool(isVLQsignal), #TRUE FOR SIGNALS, False otherwise
             basePDFname        = cms.string('NNPDF31_nnlo_as_0118_nf_4'),
             newPDFname         = cms.string('NNPDF31_nnlo_as_0118_nf_4_mc_hessian'),
             keepPDGID          = cms.vuint32(1, 2, 3, 4, 5, 6, 21, 11, 12, 13, 14, 15, 16, 24),
@@ -716,6 +687,7 @@ HOTTaggerCalc_cfg = cms.PSet(
 
     )
 
+## nominal
 process.ljmet = cms.EDAnalyzer(
         'LJMet',
 
@@ -748,8 +720,8 @@ process.ljmet = cms.EDAnalyzer(
         JetSubCalc    = cms.PSet(JetSubCalc_cfg),
         TTbarMassCalc = cms.PSet(TTbarMassCalc_cfg),
         DeepAK8Calc    = cms.PSet(), #current ljmet wants all calc to send a PSet, event if its empty.
-        BestCalc      = cms.PSet(BestCalc_cfg),
         HOTTaggerCalc = cms.PSet(HOTTaggerCalc_cfg)
+        BestCalc      = cms.PSet(BestCalc_cfg),
 
 )
 
