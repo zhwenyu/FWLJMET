@@ -56,9 +56,9 @@ if(isVLQsignal):
 #	config.JobType.pyCfgParams += ['isVLQsignal=False']
 	
 # runtime, memory, cores
-#if(isMC):
-#	config.JobType.maxJobRuntimeMin = 2750 #minutes
-config.JobType.maxMemoryMB = 2000 #MB, believed to be per core based on CRAB3FAQ TWiki
+if(isMC):
+	config.JobType.maxJobRuntimeMin = 2750 #minutes
+config.JobType.maxMemoryMB = 4000 #MB, believed to be per core based on CRAB3FAQ TWiki, evidently not based on tests
 config.JobType.numCores = 4 #use wisely if turned on.
 
 ##############
@@ -68,14 +68,14 @@ config.section_("Data")
 config.Data.inputDataset = inputDataset
 config.Data.allowNonValidInputDataset = True
 if(isMC):
-	config.Data.splitting = 'Automatic'
-	config.Data.unitsPerJob = 1440 # 24 hours
-#	if(isVLQsignal):
-#		config.Data.splitting = 'FileBased'
-#		config.Data.unitsPerJob = 1
-#	else:
-#		config.Data.splitting = 'FileBased'
-#		config.Data.unitsPerJob = 2
+	#config.Data.splitting = 'Automatic'
+	#config.Data.unitsPerJob = 1440 # 24 hours
+	if(isVLQsignal):
+		config.Data.splitting = 'LumiBased'
+		config.Data.unitsPerJob = 2
+	else:
+		config.Data.splitting = 'FileBased'
+		config.Data.unitsPerJob = 1
 else:
 	config.Data.splitting = 'Automatic'
 	config.Data.unitsPerJob = 1440 # 24 hours

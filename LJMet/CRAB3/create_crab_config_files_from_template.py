@@ -37,14 +37,14 @@ CRABCONFIG_TEMPLATE = 'crab_FWLJMET_cfg_template.py'
 REQNAME             = option.finalState+option.year
 
 #eos out folder
-#OUTFOLDER           = 'FWLJMET_crab_test'
-OUTFOLDER           = 'FWLJMET102X_1lep2017_052219'  #JH: single lepton 2017
+OUTFOLDER           = 'FWLJMET_crab_test'
+#OUTFOLDER           = 'FWLJMET102X_1lep2017_052219'  #JH: single lepton 2017
 
 #log folder
 LOGFOLDER           = 'FWLJMET_crab_test' ## JH: this is not actually used in the sed commands below, dummy variable
 
 #JSON for Data
-JSONFORDATA         = 'https://cms-service-dqm.web.cern.ch/cms-service-dqm/CAF/certification/Collisions17/13TeV/PromptReco/Cert_294927-306462_13TeV_PromptReco_Collisions17_JSON.txt' #https://twiki.cern.ch/twiki/bin/view/CMS/PdmV2017Analysis#DATA
+JSONFORDATA         = 'https://cms-service-dqm.web.cern.ch/cms-service-dqm/CAF/certification/Collisions17/13TeV/Final/Cert_294927-306462_13TeV_PromptReco_Collisions17_JSON.txt' #https://twiki.cern.ch/twiki/bin/view/CMS/PdmV2017Analysis#DATA
 if option.year == '2018': 
 	JSONFORDATA = 'https://cms-service-dqm.web.cern.ch/cms-service-dqm/CAF/certification/Collisions18/13TeV/PromptReco/Cert_314472-325175_13TeV_PromptReco_Collisions18_JSON.txt' #https://twiki.cern.ch/twiki/bin/view/CMS/PdmV2018Analysis#DATA
 

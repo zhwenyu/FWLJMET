@@ -6,10 +6,12 @@ parser.add_argument("--year",action="store")
 option = parser.parse_args()
 
 #Sample list file
-sampleListPath = "sample_list_"+option.finalState+option.year".py"
+sampleListPath = "sample_list_"+option.finalState+option.year+".py"
 sample = imp.load_source("Sample",sampleListPath,open(sampleListPath,"r"))
 
+home = os.environ['HOME']
 CRABCONFIG_DIR      = 'crabConfigs_'+option.finalState+option.year
+#CRABCONFIG_DIR      = home+'/nobackup/FWLJMET102X_crabConfigs_'+option.finalState+option.year #JH: crab stuff in nobackup
 
 def submit_multiple_crab_jobs(sample_dict):
 

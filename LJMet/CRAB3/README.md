@@ -14,13 +14,23 @@ REQNAME
 OUTFOLDER           
 
 Check crab_FWLJMET_cfg_template.py to understand it and look for any necessary changes to the job splitting or master eos folder ("lpcljm").
+Default behavior:
+  -- Memory: 4000 MB. This is supposed to be "per core" (default 4) but it seems to be the total based on test jobs
+  -- General MC: file-based splitting, 1 file per job. Should be safe, but a dryrun is recommended! Some heavy jobs may need lumi-based splitting instead
+  -- VLQ signal: due to recreating the PDF, these jobs can't handle 1 file without going over time and memory. Set to 2 lumi-sections instead. 
+  -- Data: "Automatic" splitting, max of 24 hours. This has not been tested as much -- time might need to be shortened if memory failures appear
 
 ### Submitting a crab job
 
 Always good to do a dryrun first (will show if it could be successfully delivered to the CRAB server):
-First configure crab_FWLJMET_cfg.py with meaningful info, or use the "create config" script below and do a dryrun on one of the configs it creates
+First configure crab_FWLJMET_cfg.py with meaningful info: 
 
        crab submit --dryrun crab_FWLJMET_cfg.py
+
+OR use the "create config" script below and do a dryrun on one of the configs it creates:
+
+       crab submit --dryrun /path/to/your/crab/configs/crab_FWLJMET_cfg_<your dataset>.py
+
 
 ### Submitting multiple crab jobs (with options of --finalState & --year & --nominalTreeOnly): 
 
