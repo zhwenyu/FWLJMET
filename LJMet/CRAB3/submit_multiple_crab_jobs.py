@@ -14,7 +14,7 @@ def submit_multiple_crab_jobs(sample_dict):
 
 	for dataset in sample_dict:
 
-		print 'Submitting ',dataset,':',sample_dict[dataset]
+		print '\nSubmitting ',dataset,':',sample_dict[dataset]
 
 		crab_cfg = CRABCONFIG_DIR+'/crab_FWLJMET_cfg_'+dataset+'.py'
 
