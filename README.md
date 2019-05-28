@@ -30,7 +30,7 @@ install:
 	cp -r ~jmanagan/nobackup/CMSSW_9_4_12/src/lwtnn .   ## use scp after a Fermilab kinit to copy onto non-LPC clusters
 
 	## Check out FWLJMET
-	git clone -b 10_2_X_2018data git@github.com:cms-ljmet/FWLJMET.git
+	git clone -b 10_2_X_fullRun2data git@github.com:cms-ljmet/FWLJMET.git
 
 	## JetSubCalc currently uses uses PUPPI mass corrections: (NOTE: no updates available on JetWtagging TWiki as of May 11, but this branch will always be the most updated.)
 	cd ${CMSSW_BASE}/src/FWLJMET/LJMet/data/
