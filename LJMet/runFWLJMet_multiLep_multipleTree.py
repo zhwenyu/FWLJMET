@@ -979,7 +979,7 @@ else: #Data
        #process.packedJetsAK8Puppi *
        #process.QGTagger *
        process.ecalBadCalibReducedMINIAODFilter *
-       process.ljmet *#(ntuplizer)
+       process.ljmet #(ntuplizer)
     )
 
 process.p.associate(patAlgosToolsTask)
