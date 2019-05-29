@@ -44,6 +44,7 @@ install:
 
 	## HOT tagger part2
 	cd ${CMSSW_BASE}/src
+	cmsenv
 	mkdir -p ${CMSSW_BASE}/src/TopTagger/TopTagger/data
 	getTaggerCfg.sh -o -n -t DeepResolved_DeepCSV_GR_noDisc_Release_v1.0.0 -d $CMSSW_BASE/src/TopTagger/TopTagger/data
 
