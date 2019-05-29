@@ -13,7 +13,7 @@ options.register('isTTbar', '', VarParsing.multiplicity.singleton, VarParsing.va
 options.register('isVLQsignal', '', VarParsing.multiplicity.singleton, VarParsing.varType.bool, 'Is VLQ Signal')
 
 ## SET DEFAULT VALUES
-## ATTENTION: THESE DEFAULT VALUES ARE SET FOR VLQ SIGNAL ! isMC=True, isTTbar=False, isVLQsignal=True 
+## ATTENTION: THESE DEFAULT VALUES ARE SET FOR VLQ SIGNAL ! isMC=True, isTTbar=False, isVLQsignal=True
 options.isMC = True
 options.isTTbar = False
 options.isVLQsignal = True
@@ -221,7 +221,7 @@ process.ecalBadCalibReducedMINIAODFilter = cms.EDFilter(
 ################################
 # from PhysicsTools.PatAlgos.tools.jetTools import updateJetCollection
 # from RecoBTag.MXNet.pfDeepBoostedJet_cff import *
-# 
+#
 # updateJetCollection(
 #    process,
 #    jetSource = cms.InputTag('slimmedJetsAK8'),
@@ -336,7 +336,7 @@ DataResJetParAK8         = 'FWLJMET/LJMet/data/Autumn18V8/Autumn18_RunA_V8_DATA_
 ## El MVA ID
 UseElIDV1_ = False #False means using ElIDV2
 
-## TriggerPaths (for ljmet): 
+## TriggerPaths (for ljmet):
 hlt_path_el  = cms.vstring(
         'HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_v',  #exists in 2017
         'HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v', #exists in 2017
@@ -951,11 +951,11 @@ if (isTTbar):
                          #process.QGTagger *
                          process.ecalBadCalibReducedMINIAODFilter *
                          process.ttbarcat *
-                         process.ljmet *#(ntuplizer) 
-                         process.ljmet_JECup *#(ntuplizer) 
-                         process.ljmet_JECdown * #(ntuplizer) 
-                         process.ljmet_JERup *#(ntuplizer) 
-                         process.ljmet_JERdown #(ntuplizer) 
+                         process.ljmet *#(ntuplizer)
+                         process.ljmet_JECup *#(ntuplizer)
+                         process.ljmet_JECdown * #(ntuplizer)
+                         process.ljmet_JERup *#(ntuplizer)
+                         process.ljmet_JERdown #(ntuplizer)
                          )
 
 elif(isMC):
@@ -969,13 +969,13 @@ elif(isMC):
        #process.packedJetsAK8Puppi *
        #process.QGTagger *
        process.ecalBadCalibReducedMINIAODFilter *
-       process.ljmet *#(ntuplizer) 
-       process.ljmet_JECup *#(ntuplizer) 
-       process.ljmet_JECdown *#(ntuplizer) 
-       process.ljmet_JERup *#(ntuplizer) 
-       process.ljmet_JERdown #(ntuplizer) 
+       process.ljmet *#(ntuplizer)
+       process.ljmet_JECup *#(ntuplizer)
+       process.ljmet_JECdown *#(ntuplizer)
+       process.ljmet_JERup *#(ntuplizer)
+       process.ljmet_JERdown #(ntuplizer)
     )
-else:
+else: #Data
     process.p = cms.Path(
        process.filter_any_explicit *
        #process.fullPatMetSequenceModifiedMET *
@@ -985,11 +985,7 @@ else:
        #process.packedJetsAK8Puppi *
        #process.QGTagger *
        process.ecalBadCalibReducedMINIAODFilter *
-       process.ljmet *#(ntuplizer) 
-       process.ljmet_JECup *#(ntuplizer) 
-       process.ljmet_JECdown *#(ntuplizer) 
-       process.ljmet_JERup *#(ntuplizer) 
-       process.ljmet_JERdown #(ntuplizer) 
+       process.ljmet #(ntuplizer)
     )
 
 process.p.associate(patAlgosToolsTask)
