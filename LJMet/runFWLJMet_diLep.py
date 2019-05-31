@@ -407,14 +407,11 @@ DileptonSelector_cfg = cms.PSet(
 #             met_collection = cms.InputTag('slimmedMETs'),
 #             rhoJetsInputTag = cms.InputTag("fixedGridRhoFastjetAll"), #for jetmetcorrection
 # 
-#             PFparticlesCollection  = cms.InputTag("packedPFCandidates"),
-#             rhoJetsNCInputTag            = cms.InputTag("fixedGridRhoFastjetCentralNeutral",""),
-
             #Muon
-            muon_cuts                = cms.bool(False),
+            muon_cuts                = cms.bool(True),
             muonsCollection          = cms.InputTag("slimmedMuons"),
-            min_muon                 = cms.int32(0), #not implemented in src code
-            max_muon                 = cms.int32(10), #not implemented in src code
+            min_muon                 = cms.int32(0), 
+            max_muon                 = cms.int32(10), 
             muon_minpt               = cms.double(10.0),
             muon_maxeta              = cms.double(2.4),
 #             muon_useMiniIso          = cms.bool(True),
@@ -429,19 +426,23 @@ DileptonSelector_cfg = cms.PSet(
 #             muon_relIso              = cms.double(0.2),
 #             loose_muon_relIso        = cms.double(0.4),
 
+			#Misc
+            PFparticlesCollection  = cms.InputTag("packedPFCandidates"),
+            rhoJetsNCInputTag            = cms.InputTag("fixedGridRhoFastjetCentralNeutral",""),
+
             # Electon
-#             electron_cuts            = cms.bool(True),
-#             # electronsCollection      = cms.InputTag("slimmedElectrons"), #slimmedElectrons::LJMET" #for Egamma ID V2
-#             electronsCollection      = cms.InputTag("slimmedElectrons::LJMET"), #slimmedElectrons::LJMET" #for Egamma ID V2
-#             min_electron             = cms.int32(0), #not implemented in src code
-#             electron_minpt           = cms.double(20.0),
-#             electron_maxeta          = cms.double(2.4),
+            electronsCollection      = cms.InputTag("slimmedElectrons::LJMET"), #slimmedElectrons::LJMET" #for Egamma ID V2
+            electron_cuts            = cms.bool(True),
+            min_electron             = cms.int32(0), 
+            electron_minpt           = cms.double(10.0),
+            electron_maxeta          = cms.double(2.4),
+            max_electron             = cms.int32(10), 
+            UseElMVA                 = cms.bool(True),
 #             electron_useMiniIso      = cms.bool(True),
 #             electron_miniIso         = cms.double(0.1),
 #             loose_electron_miniIso   = cms.double(0.4),
 #             loose_electron_minpt     = cms.double(20.0),
 #             loose_electron_maxeta    = cms.double(2.4),
-#             UseElMVA                 = cms.bool(True),
 #             UseElIDV1                = cms.bool(UseElIDV1_), #False means using ElIDV2
 #             # UseElIDV1                = cms.bool(False), #False means using ElIDV2
 

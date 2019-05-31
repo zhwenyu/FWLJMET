@@ -17,8 +17,8 @@ void DileptonEventSelector::BeginJob( const edm::ParameterSet& iConfig, edm::Con
     std::string thisSelectorName = GetName();
     const edm::ParameterSet& selectorConfig = iConfig.getParameterSet( thisSelectorName ) ;
 
-    // PFCandToken = iC.consumes<pat::PackedCandidateCollection>(selectorConfig.getParameter<edm::InputTag>("PFparticlesCollection"));
-    // rhoJetsNC_Token = iC.consumes<double>(selectorConfig.getParameter<edm::InputTag>("rhoJetsNCInputTag"));
+    PFCandToken = iC.consumes<pat::PackedCandidateCollection>(selectorConfig.getParameter<edm::InputTag>("PFparticlesCollection"));
+    rhoJetsNC_Token = iC.consumes<double>(selectorConfig.getParameter<edm::InputTag>("rhoJetsNCInputTag"));
 
     // //PFJetID
     // const edm::ParameterSet& PFJetIFconfig = selectorConfig.getParameterSet("pfJetIDSelector") ;
@@ -56,6 +56,14 @@ void DileptonEventSelector::BeginJob( const edm::ParameterSet& iConfig, edm::Con
     muon_minpt               = selectorConfig.getParameter<double>       ("muon_minpt");
     muon_maxeta              = selectorConfig.getParameter<double>       ("muon_maxeta");
 
+    //Electron
+    electronsToken           = iC.consumes<pat::ElectronCollection>(selectorConfig.getParameter<edm::InputTag>("electronsCollection"));
+    electron_cuts            = selectorConfig.getParameter<bool>         ("electron_cuts");
+    min_electron             = selectorConfig.getParameter<int>          ("min_electron");
+    max_electron             = selectorConfig.getParameter<int>          ("max_electron");
+    electron_minpt           = selectorConfig.getParameter<double>       ("electron_minpt");
+    electron_maxeta          = selectorConfig.getParameter<double>       ("electron_maxeta");
+    UseElMVA                 = selectorConfig.getParameter<bool>         ("UseElMVA");
 
     // hbhe_cut                 = selectorConfig.getParameter<bool>         ("hbhe_cut");
     // metfilters                   = selectorConfig.getParameter<bool>         ("metfilters");
@@ -76,28 +84,17 @@ void DileptonEventSelector::BeginJob( const edm::ParameterSet& iConfig, edm::Con
     // min_jet                  = selectorConfig.getParameter<int>          ("min_jet");
     // max_jet                  = selectorConfig.getParameter<int>          ("max_jet");
 
-    // electron_cuts            = selectorConfig.getParameter<bool>         ("electron_cuts");
-    // min_electron             = selectorConfig.getParameter<int>          ("min_electron");
-    // max_electron             = selectorConfig.getParameter<int>          ("max_electron");
-    // electron_minpt           = selectorConfig.getParameter<double>       ("electron_minpt");
-    // electron_maxeta          = selectorConfig.getParameter<double>       ("electron_maxeta");
 
     // min_lepton               = selectorConfig.getParameter<int>          ("min_lepton");
 
     // met_cuts                 = selectorConfig.getParameter<bool>         ("met_cuts");
 
-    // trigger_collection       = selectorConfig.getParameter<edm::InputTag>("trigger_collection");
-    // pv_collection            = selectorConfig.getParameter<edm::InputTag>("pv_collection");
     // jet_collection           = selectorConfig.getParameter<edm::InputTag>("jet_collection");
-    // muon_collection          = selectorConfig.getParameter<edm::InputTag>("muon_collection");
-    // electron_collection      = selectorConfig.getParameter<edm::InputTag>("electron_collection");
     // met_collection           = selectorConfig.getParameter<edm::InputTag>("met_collection");
     // doLepJetCleaning         = selectorConfig.getParameter<bool>         ("doLepJetCleaning");
     // doNewJEC                 = selectorConfig.getParameter<bool>         ("doNewJEC");
     // isMc                     = selectorConfig.getParameter<bool>         ("isMc");
 
-    // //mva value
-    // UseElMVA                 = selectorConfig.getParameter<bool>         ("UseElMVA");
 
 
     push_back("No selection");
@@ -106,8 +103,8 @@ void DileptonEventSelector::BeginJob( const edm::ParameterSet& iConfig, edm::Con
     push_back("MET filters");
     push_back("Min muon");
     push_back("Max muon");
-    // push_back("Min electron");
-    // push_back("Max electron");
+    push_back("Min electron");
+    push_back("Max electron");
     // push_back("Min lepton");
     // push_back("One jet or more");
     // push_back("Two jets or more");
@@ -130,15 +127,14 @@ void DileptonEventSelector::BeginJob( const edm::ParameterSet& iConfig, edm::Con
         set("Min muon", false);
         set("Max muon", false);
     }
-
-    // if (electron_cuts){
-    //     set("Min electron", min_electron"]);
-    //     set("Max electron", max_electron"]);
-    // }
-    // else{
-    //     set("Min electron", false);
-    //     set("Max electron", false);
-    // }
+    if (electron_cuts){
+        set("Min electron", min_electron);
+        set("Max electron", max_electron);
+    }
+    else{
+        set("Min electron", false);
+        set("Max electron", false);
+    }
 
     // set("Min lepton", min_lepton);
 
@@ -169,6 +165,8 @@ void DileptonEventSelector::BeginJob( const edm::ParameterSet& iConfig, edm::Con
     SetHistogram("MET filters", 2, 0,2);
     SetHistogram("Min muon", 2, 0,2);
     SetHistogram("Max muon", 2, 0,2);
+    SetHistogram("Min electron", 2, 0,2);
+    SetHistogram("Max electron", 2, 0,2);
     // SetHistogram("Lepton Selection", 2, 0,2); // keeping it simple for now
     // if(jet_cuts){
     //     SetHistogram("Jet Selection", 2, 0,2); // keeping it simple for now
@@ -223,96 +221,9 @@ bool DileptonEventSelector::operator()( edm::Event const & event, pat::strbitset
 
 	if (! MuonSelection(event, ret)) break; //FillHist and passCut for this are in the method.
 
-
+	if (! ElectronSelection(event, ret)) break; //FillHist and passCut for this are in the method.
 
 /*
-    //
-    //_____ Electron cuts __________________________________
-    //
-    // loop over electrons
-
-    int _n_electrons  = 0;
-    int nSelElectrons = 0;
-    //collection of electrons for cleaning
-    std::vector<pat::Electron> electronsForCleaning;
-    //read in pvs which we will need for dZ calculation:
-    std::vector<reco::Vertex> goodPVs;
-    edm::Handle<std::vector<reco::Vertex> > pvHandle;
-    event.getByLabel(pv_collection, pvHandle);
-    goodPVs = *(pvHandle.product());
-
-
-
-    if ( electron_cuts ) {
-
-      //get rho src
-      edm::InputTag rhoSrc_it("fixedGridRhoFastjetAll","");
-      edm::Handle<double> rhoHandle;
-      event.getByLabel(rhoSrc_it, rhoHandle);
-      double rhoIso = std::max(*(rhoHandle.product()), 0.0);
-
-
-      //get electrons
-      event.getByLabel( electron_collection, mhElectrons );
-
-      mvSelElectrons.clear();
-
-
-
-      for ( std::vector<pat::Electron>::const_iterator _iel = mhElectrons->begin(); _iel != mhElectrons->end(); _iel++){
-
-        bool pass = false;
-        bool passLoose=false;
-        while(1){
-          if (not _iel->gsfTrack().isNonnull() or not _iel->gsfTrack().isAvailable()) break;
-          //skip if in barrel-endcap gap; doing it here means I never have to worry about it downstream since both electrons for analysis and those for cleaning are made here
-          if( fabs(_iel->ecalDrivenMomentum().eta())>1.442 && fabs(_iel->ecalDrivenMomentum().eta())<1.556) break;
-          //if (_iel->isEBEEGap()) break;
-
-          //mva loose for cleaning
-          pat::Electron* elptr = new pat::Electron(*_iel);
-          float miniIso = getPFMiniIsolation_EffectiveArea(packedPFCands, dynamic_cast<const reco::Candidate* > (elptr), 0.05, 0.2, 10., false, false,myRhoJetsNC);
-
-
-          if(_iel->pt() > 10) {
-            passLoose = _iel->electronID("mvaEleID-Fall17-noIso-V2-wpLoose");
-            if (miniIso > 0.4) passLoose = false;
-          }
-
-          delete elptr;
-
-          // electron Et cut
-          if (_iel->pt()>electron_minpt){ }
-          else break;
-
-          // electron eta cut
-          if ( fabs(_iel->eta())<electron_maxeta ){ }
-          else break;
-
-          pass = true;
-          break;
-        }
-        //store loose electron for lepton-jet cleaning
-        if(passLoose){
-          electronsForCleaning.push_back(*_iel);
-        }
-
-        if ( pass ){
-          ++nSelElectrons;
-          // save every good electron
-          mvSelElectrons.push_back( edm::Ptr<pat::Electron>( mhElectrons, _n_electrons) );
-
-        }
-        _n_electrons++;
-      } // end of the electron loop
-
-      if( nSelElectrons >= cut("Min electron", int()) || ignoreCut("Min electron") ) passCut(ret, "Min electron");
-      else break;
-
-      if( nSelElectrons <= cut("Max electron", int()) || ignoreCut("Max electron") ) passCut(ret, "Max electron");
-      else break;
-
-    } // end of electron cuts
 
     int nSelLeptons = nSelElectrons + nSelMuons;
 
@@ -320,6 +231,7 @@ bool DileptonEventSelector::operator()( edm::Event const & event, pat::strbitset
     else break;
 
     //     if (nSelLeptons < 2) std::cout<<"Too few leptons!"<<std::endl;
+
 
 */
 
@@ -340,6 +252,9 @@ bool DileptonEventSelector::operator()( edm::Event const & event, pat::strbitset
     mvSelJets.clear();
     mvSelJetsCleaned.clear();
     mvAllJets.clear();
+    
+    std::vector<edm::Ptr<pat::Electron>> electronsForCleaning;
+    electronsForCleaning = vSelElectrons;
 
     event.getByLabel( jet_collection, mhJets );
     for (std::vector<pat::Jet>::const_iterator _ijet = mhJets->begin();_ijet != mhJets->end(); ++_ijet){
@@ -901,6 +816,127 @@ bool DileptonEventSelector::MuonSelection(edm::Event const & event, pat::strbits
     return true;
 
 
+}
+
+bool DileptonEventSelector::ElectronSelection(edm::Event const & event, pat::strbitset & ret)
+{
+
+	//packed pf candidates and rho source needed miniIso
+	edm::Handle<pat::PackedCandidateCollection> packedPFCandsHandle;
+	event.getByToken(PFCandToken, packedPFCandsHandle);
+
+	//rho isolation from susy recommendation
+	edm::Handle<double> rhoJetsNC_Handle;
+	event.getByToken(rhoJetsNC_Token, rhoJetsNC_Handle);
+	double myRhoJetsNC = *rhoJetsNC_Handle;
+
+
+    //
+    //_____ Electron cuts __________________________________
+    //
+    // loop over electrons
+
+    int _n_electrons  = 0;
+    int nSelElectrons = 0;
+    int nSelLooseElectrons = 0; //--> collection of electrons for lepton-jet cleaning. MISLEADING NAME. ITS NOT REALLY LOOSE ELECTRONS. ITS ACTUALLY TIGHTER THAN vSelElectrons. Check Below!!!! Need to tidy up and rename things at some point -- May 31, 2019. 
+
+    //get electrons
+    event.getByToken(electronsToken, electronsHandle );
+
+    vSelElectrons.clear();
+    vSelLooseElectrons.clear();
+
+    if ( electron_cuts ) {
+
+      if(debug)std::cout << "\t" <<"Applying ElectronSelection"<< std::endl;
+
+      for ( std::vector<pat::Electron>::const_iterator _iel = electronsHandle->begin(); _iel != electronsHandle->end(); _iel++){
+
+        bool pass = false;
+        bool passForLepJetCleaning=false;
+
+		if (debug) std::cout << "\t\t" << "pt                                          = " << _iel->pt() << std::endl; //DEBUG - rizki
+		if (debug) std::cout << "\t\t" << "|eta| ( ->superCluster()->eta(), ->eta() )  = " << fabs(_iel->superCluster()->eta()) << ", " << fabs(_iel->eta()) << std::endl; //DEBUG - rizki
+		if (debug) std::cout << "\t\t" << "phi ( ->superCluster()->phi(), ->phi() )    = " << _iel->superCluster()->phi() << ", " << _iel->phi() << std::endl; //DEBUG - rizki
+
+        while(1){
+          if (not _iel->gsfTrack().isNonnull() or not _iel->gsfTrack().isAvailable()) break;
+          //skip if in barrel-endcap gap; doing it here means I never have to worry about it downstream since both electrons for analysis and those for cleaning are made here --> this is probably a comment made by Clint Richardson.
+          if( fabs(_iel->ecalDrivenMomentum().eta())>1.442 && fabs(_iel->ecalDrivenMomentum().eta())<1.556) break;
+          //if (_iel->isEBEEGap()) break;
+
+          //mva loose for cleaning
+          pat::Electron* elptr = new pat::Electron(*_iel);
+          float miniIso = getPFMiniIsolation_EffectiveArea(packedPFCandsHandle, dynamic_cast<const reco::Candidate* > (elptr), 0.05, 0.2, 10., false, false,myRhoJetsNC);
+          
+          //at some point all these hardcoded things needs to be configurable. this is all very messy. -- May 31, 2019.
+          if(_iel->pt() > 10) { 
+            passForLepJetCleaning = _iel->electronID("mvaEleID-Fall17-noIso-V2-wpLoose");
+            if (miniIso > 0.4) passForLepJetCleaning = false;
+          }
+
+          delete elptr;
+
+          // electron Et cut
+          if (_iel->pt()>electron_minpt){ if(debug)std::cout<< "\t\t\t" << "pass_electron_minpt"<< std::endl;}
+          else break;
+
+          // electron eta cut
+          if ( fabs(_iel->eta())<electron_maxeta ){ if(debug)std::cout<< "\t\t\t" << "pass_electron_maxeta"<< std::endl;}
+          else break;
+
+          pass = true;
+          break;
+        }
+        //store electron for lepton-jet cleaning
+        if(passForLepJetCleaning){
+          if(debug)std::cout<< "\t\t\t" << "pass_electron_mvaLoose_miniIso_forLepJetCleaning"<< std::endl;
+          vSelLooseElectrons.push_back( edm::Ptr<pat::Electron>( electronsHandle, _n_electrons) );
+          ++nSelLooseElectrons;
+        }
+
+        if ( pass ){
+          // save every good electron
+          vSelElectrons.push_back( edm::Ptr<pat::Electron>( electronsHandle, _n_electrons) );
+          ++nSelElectrons;
+        }
+        _n_electrons++;
+      } // end of the electron loop
+
+      if( nSelElectrons >= cut("Min electron", int()) || ignoreCut("Min electron") ){
+          passCut(ret, "Min electron");
+          FillHist("Min electron", 1);
+      }
+      else return false;
+
+      if( nSelElectrons <= cut("Max electron", int()) || ignoreCut("Max electron") ){
+          passCut(ret, "Max electron");
+          FillHist("Max electron", 1);
+      }
+      else return false;
+
+    } // end of electron cuts
+    else{ 
+        if(debug)std::cout << "\t" <<"NOT applying ElectronSelection"<< std::endl; 
+        
+        for ( std::vector<pat::Electron>::const_iterator _iel = electronsHandle->begin(); _iel != electronsHandle->end(); _iel++){
+
+          // save ALL electrons if muon_cuts is false
+          vSelElectrons.push_back( edm::Ptr<pat::Electron>( electronsHandle, _n_electrons) );
+          ++nSelElectrons;
+          vSelLooseElectrons.push_back( edm::Ptr<pat::Electron>( electronsHandle, _n_electrons) );
+          ++nSelLooseElectrons;
+          _n_electrons++;
+      	}
+
+    }
+
+	if (debug)std::cout<< "\t\t"<< "++++++++++++++++++++++++++++++++++++++++++++++++ " <<std::endl; // DEBUG - rizki
+	if (debug)std::cout<< "\t\t"<< "nSelElectrons                         = " << nSelElectrons << " out of " << electronsHandle->size() <<std::endl; // DEBUG - rizki
+	if (debug)std::cout<< "\t\t"<< "Electrons (for lepton-jet cleaning)   = " << nSelLooseElectrons << " out of " << electronsHandle->size() <<std::endl; // DEBUG - rizki
+	if (debug)std::cout<< "\t\t"<< "++++++++++++++++++++++++++++++++++++++++++++++++ " <<std::endl; // DEBUG - rizki
+
+    return true;
 }
 
 void DileptonEventSelector::AnalyzeEvent( edm::EventBase const & event,

@@ -112,6 +112,14 @@ private:
     int max_muon;
     double muon_minpt;
     double muon_maxeta;
+    
+    //Electron
+    bool electron_cuts;
+    int min_electron;
+    int max_electron;
+    double electron_minpt;
+    double electron_maxeta;
+    bool UseElMVA;
 
     // bool jet_cuts;
     // bool jet_minpt;
@@ -120,11 +128,6 @@ private:
     // int max_jet;
     // JetMETCorrHelper JetMETCorr;
 
-    // bool electron_cuts;
-    // int min_electron;
-    // int max_electron;
-    // double electron_minpt;
-    // double electron_maxeta;
 
     // int min_lepton;
 
@@ -141,14 +144,12 @@ private:
     // bool doNewJEC;
     // bool doLepJetCleaning;
 
-    // //mva value
-    // bool UseElMVA;
 
 
     edm::Handle<edm::TriggerResults >           TriggerHandle;
     edm::Handle<std::vector<pat::Muon> >        muonsHandle;
+    edm::Handle<std::vector<pat::Electron> >    electronsHandle;
     // edm::Handle<std::vector<pat::Jet> >         mhJets;
-    // edm::Handle<std::vector<pat::Electron> >    mhElectrons;
     // edm::Handle<std::vector<pat::MET> >         mhMet;
     // edm::Handle<double>                         h_rho;
     // edm::Handle<std::vector<reco::Vertex> >     h_primVtx;
@@ -161,20 +162,20 @@ private:
     edm::EDGetTokenT<edm::TriggerResults>            METfilterToken;
     edm::EDGetTokenT<bool>                           METfilterToken_extra;
     edm::EDGetTokenT<pat::MuonCollection>            muonsToken;
+    edm::EDGetTokenT<pat::ElectronCollection>        electronsToken;
     // edm::EDGetTokenT<pat::JetCollection>             jetsToken;
-    // edm::EDGetTokenT<pat::ElectronCollection>        electronsToken;
     // edm::EDGetTokenT<std::vector<pat::MET> >         METtoken;
     // edm::EDGetTokenT<double>                         rhoJetsToken;
-    // edm::EDGetTokenT<double>                         rhoJetsNC_Token;
     // edm::EDGetTokenT<edm::TriggerResults>            METfilterToken;
-    // edm::EDGetTokenT<pat::PackedCandidateCollection> PFCandToken;
+    edm::EDGetTokenT<pat::PackedCandidateCollection> PFCandToken;
+    edm::EDGetTokenT<double>                         rhoJetsNC_Token;
 
     // //Separate methods for each selction for organization
     bool TriggerSelection  (edm::Event const & event);
     bool PVSelection       (edm::Event const & event);
     bool METfilter         (edm::Event const & event);
     bool MuonSelection     (edm::Event const & event, pat::strbitset & ret);
-    // void ElectronSelection (edm::Event const & event);
+    bool ElectronSelection (edm::Event const & event, pat::strbitset & ret);
     // bool LeptonsSelection  (edm::Event const & event, pat::strbitset & ret);
     // bool JetSelection      (edm::Event const & event, pat::strbitset & ret);
     // bool METSelection      (edm::Event const & event);
