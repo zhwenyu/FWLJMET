@@ -1,187 +1,4 @@
-// -*- C++ -*-
-//
-// FWLite PAT analyzer-selector for dilepton analyses
-//
-// Adapted from StopEventSelector
-// Aram Avetisyan, September 2012
-// Updated
-// Rizki Syarif, March 2019
-//
-#ifndef FWLJMET_LJMet_interface_DileptonEventSelector_h
-#define FWLJMET_LJMet_interface_DileptonEventSelector_h
-
-
-
-#include <cmath>
-#include <iostream>
-
-#include "FWLJMET/LJMet/interface/BaseEventSelector.h"
-#include "FWLJMET/LJMet/interface/LjmetFactory.h"
-
-
-#include "TCanvas.h"
-#include "TFile.h"
-#include "TH1.h"
-#include "TH2.h"
-#include "TLegend.h"
-#include "TLorentzVector.h"
-#include "TROOT.h"
-#include "TSystem.h"
-#include "TTree.h"
-#include "TVector3.h"
-
-#include "DataFormats/Common/interface/TriggerResults.h"
-#include "DataFormats/Math/interface/deltaR.h"
-#include "DataFormats/PatCandidates/interface/Jet.h"
-#include "DataFormats/PatCandidates/interface/MET.h"
-#include "DataFormats/PatCandidates/interface/TriggerObject.h"
-#include "FWCore/Common/interface/TriggerNames.h"
-
-#include "FWLJMET/LJMet/interface/MiniIsolation.h"
-
-#include "PhysicsTools/SelectorUtils/interface/PFJetIDSelectionFunctor.h"
-#include "PhysicsTools/SelectorUtils/interface/PFMuonSelector.h"
-#include "PhysicsTools/SelectorUtils/interface/PVSelector.h"
-#include "DataFormats/METReco/interface/HcalNoiseSummary.h"
-
-#include "FWLJMET/LJMet/interface/JetMETCorrHelper.h"
-
-using trigger::TriggerObject;
-
-
-class DileptonEventSelector : public BaseEventSelector {
-
-public:
-
-
-    DileptonEventSelector();
-    ~DileptonEventSelector();
-
-
-    // executes before loop over events
-    virtual void BeginJob(const edm::ParameterSet& iConfig, edm::ConsumesCollector && iC);
-
-    // main method where the cuts are applied
-    virtual bool operator()( edm::Event const & event, pat::strbitset & ret);
-
-    // executes after loop over events
-    virtual void EndJob(){}
-
-
-    virtual void AnalyzeEvent( edm::EventBase const & event, LjmetEventContent & ec );
-
-
-    boost::shared_ptr<PFJetIDSelectionFunctor> const & jetSel()        const { return jetSel_;}
-    boost::shared_ptr<PVSelector>              const & pvSel()         const { return pvSel_;}
-
-
-protected:
-
-    std::string legend;
-    bool bFirstEntry;
-
-
-    boost::shared_ptr<PFJetIDSelectionFunctor> jetSel_;
-
-
-private:
-
-    void initialize(std::map<std::string, edm::ParameterSet const> par);
-
-
-    bool debug;
-    bool isMc;
-
-    //Triggers
-    bool trigger_cut;
-    bool dump_trigger;
-    std::vector<std::string> trigger_path_ee;
-    std::vector<std::string> trigger_path_em;
-    std::vector<std::string> trigger_path_mm;
-
-    //PV
-    bool pv_cut;
-    boost::shared_ptr<PVSelector>              pvSel_;
-
-    //MET Filter
-    bool   metfilters;
-
-    // bool jet_cuts;
-    // bool jet_minpt;
-    // double jet_maxeta;
-    // int min_jet;
-    // int max_jet;
-    // JetMETCorrHelper JetMETCorr;
-
-    // bool muon_cuts;
-    // int min_muon;
-    // int max_muon;
-    // double muon_minpt;
-    // double muon_maxeta;
-
-    // bool electron_cuts;
-    // int min_electron;
-    // int max_electron;
-    // double electron_minpt;
-    // double electron_maxeta;
-
-    // int min_lepton;
-
-    // bool met_cuts;
-
-    // flag_tag;
-    // trigger_collection;
-    // pv_collection;
-    // jet_collection;
-    // muon_collection;
-    // electron_collection;
-    // met_collection;
-
-    // bool doNewJEC;
-    // bool doLepJetCleaning;
-
-    // //mva value
-    // bool UseElMVA;
-
-
-    edm::Handle<edm::TriggerResults >           TriggerHandle;
-    // edm::Handle<std::vector<pat::Jet> >         mhJets;
-    // edm::Handle<std::vector<pat::Muon> >        mhMuons;
-    // edm::Handle<std::vector<pat::Electron> >    mhElectrons;
-    // edm::Handle<std::vector<pat::MET> >         mhMet;
-    // edm::Handle<double>                         h_rho;
-    // edm::Handle<std::vector<reco::Vertex> >     h_primVtx;
-
-    // std::vector<edm::Ptr<reco::Vertex> >  good_pvs_;
-
-    // //Tokens
-    edm::EDGetTokenT<edm::TriggerResults>            triggersToken;
-    edm::EDGetTokenT<reco::VertexCollection>         PVToken;
-    edm::EDGetTokenT<edm::TriggerResults>            METfilterToken;
-    edm::EDGetTokenT<bool>                           METfilterToken_extra;
-    // edm::EDGetTokenT<pat::JetCollection>             jetsToken;
-    // edm::EDGetTokenT<pat::MuonCollection>            muonsToken;
-    // edm::EDGetTokenT<pat::ElectronCollection>        electronsToken;
-    // edm::EDGetTokenT<std::vector<pat::MET> >         METtoken;
-    // edm::EDGetTokenT<double>                         rhoJetsToken;
-    // edm::EDGetTokenT<double>                         rhoJetsNC_Token;
-    // edm::EDGetTokenT<edm::TriggerResults>            METfilterToken;
-    // edm::EDGetTokenT<pat::PackedCandidateCollection> PFCandToken;
-
-    // //Separate methods for each selction for organization
-    bool TriggerSelection  (edm::Event const & event);
-    bool PVSelection       (edm::Event const & event);
-    bool METfilter         (edm::Event const & event);
-    // void MuonSelection     (edm::Event const & event);
-    // void ElectronSelection (edm::Event const & event);
-    // bool LeptonsSelection  (edm::Event const & event, pat::strbitset & ret);
-    // bool JetSelection      (edm::Event const & event, pat::strbitset & ret);
-    // bool METSelection      (edm::Event const & event);
-
-};
-
-
-static int reg = LjmetFactory::GetInstance()->Register(new DileptonEventSelector(), "DileptonSelector");
+#include "FWLJMET/LJMet/interface/DileptonEventSelector.h"
 
 
 DileptonEventSelector::DileptonEventSelector(){
@@ -209,10 +26,10 @@ void DileptonEventSelector::BeginJob( const edm::ParameterSet& iConfig, edm::Con
 
     debug               = selectorConfig.getParameter<bool>         ("debug");
     isMc                = selectorConfig.getParameter<bool>("isMc");
-    bFirstEntry = true; //in case anything needs a first entry bool.
+    bFirstEntry         = true; //in case anything needs a first entry bool.
 
     //Triggers
-    triggersToken = iC.consumes<edm::TriggerResults>(selectorConfig.getParameter<edm::InputTag>("HLTcollection"));
+    triggersToken            = iC.consumes<edm::TriggerResults>(selectorConfig.getParameter<edm::InputTag>("HLTcollection"));
     trigger_cut              = selectorConfig.getParameter<bool>         ("trigger_cut");
     dump_trigger             = selectorConfig.getParameter<bool>         ("dump_trigger");
     trigger_path_ee          = selectorConfig.getParameter<std::vector<std::string> >  ("trigger_path_ee");
@@ -224,12 +41,20 @@ void DileptonEventSelector::BeginJob( const edm::ParameterSet& iConfig, edm::Con
     const edm::ParameterSet& PVconfig = selectorConfig.getParameterSet("pvSelector") ;
     PVToken                  = iC.consumes<reco::VertexCollection>(PVconfig.getParameter<edm::InputTag>("pvSrc"));
     pv_cut                   = selectorConfig.getParameter<bool>         ("pv_cut");
-    pvSel_ = boost::shared_ptr<PVSelector>( new PVSelector(PVconfig) );
+    pvSel_                   = boost::shared_ptr<PVSelector>( new PVSelector(PVconfig) );
 
     //MET filter
     METfilterToken       = iC.consumes<edm::TriggerResults>(selectorConfig.getParameter<edm::InputTag>("flag_tag"));
     METfilterToken_extra = iC.consumes<bool>(selectorConfig.getParameter<edm::InputTag>("METfilter_extra"));
     metfilters           = selectorConfig.getParameter<bool>("metfilters");
+
+    //Muon
+    muonsToken               = iC.consumes<pat::MuonCollection>(selectorConfig.getParameter<edm::InputTag>("muonsCollection"));
+    muon_cuts                = selectorConfig.getParameter<bool>         ("muon_cuts");
+    min_muon                 = selectorConfig.getParameter<int>          ("min_muon");
+    max_muon                 = selectorConfig.getParameter<int>          ("max_muon");
+    muon_minpt               = selectorConfig.getParameter<double>       ("muon_minpt");
+    muon_maxeta              = selectorConfig.getParameter<double>       ("muon_maxeta");
 
 
     // hbhe_cut                 = selectorConfig.getParameter<bool>         ("hbhe_cut");
@@ -250,12 +75,6 @@ void DileptonEventSelector::BeginJob( const edm::ParameterSet& iConfig, edm::Con
     // jet_maxeta               = selectorConfig.getParameter<double>       ("jet_maxeta");
     // min_jet                  = selectorConfig.getParameter<int>          ("min_jet");
     // max_jet                  = selectorConfig.getParameter<int>          ("max_jet");
-
-    // muon_cuts                = selectorConfig.getParameter<bool>         ("muon_cuts");
-    // min_muon                 = selectorConfig.getParameter<int>          ("min_muon");
-    // max_muon                 = selectorConfig.getParameter<int>          ("max_muon");
-    // muon_minpt               = selectorConfig.getParameter<double>       ("muon_minpt");
-    // muon_maxeta              = selectorConfig.getParameter<double>       ("muon_maxeta");
 
     // electron_cuts            = selectorConfig.getParameter<bool>         ("electron_cuts");
     // min_electron             = selectorConfig.getParameter<int>          ("min_electron");
@@ -285,8 +104,8 @@ void DileptonEventSelector::BeginJob( const edm::ParameterSet& iConfig, edm::Con
     push_back("Trigger");
     push_back("Primary Vertex");
     push_back("MET filters");
-    // push_back("Min muon");
-    // push_back("Max muon");
+    push_back("Min muon");
+    push_back("Max muon");
     // push_back("Min electron");
     // push_back("Max electron");
     // push_back("Min lepton");
@@ -303,15 +122,14 @@ void DileptonEventSelector::BeginJob( const edm::ParameterSet& iConfig, edm::Con
     set("Trigger", trigger_cut);
     set("Primary Vertex", pv_cut);
     set("MET filters", metfilters);
-
-    // if (muon_cuts){
-    //     set("Min muon", min_muon"]);
-    //     set("Max muon", max_muon"]);
-    // }
-    // else{
-    //     set("Min muon", false);
-    //     set("Max muon", false);
-    // }
+    if (muon_cuts){
+        set("Min muon", min_muon);
+        set("Max muon", max_muon);
+    }
+    else{
+        set("Min muon", false);
+        set("Max muon", false);
+    }
 
     // if (electron_cuts){
     //     set("Min electron", min_electron"]);
@@ -349,6 +167,8 @@ void DileptonEventSelector::BeginJob( const edm::ParameterSet& iConfig, edm::Con
     SetHistogram( "Trigger", 2, 0,2);
     SetHistogram("Primary Vertex", 2, 0,2);
     SetHistogram("MET filters", 2, 0,2);
+    SetHistogram("Min muon", 2, 0,2);
+    SetHistogram("Max muon", 2, 0,2);
     // SetHistogram("Lepton Selection", 2, 0,2); // keeping it simple for now
     // if(jet_cuts){
     //     SetHistogram("Jet Selection", 2, 0,2); // keeping it simple for now
@@ -366,7 +186,7 @@ bool DileptonEventSelector::operator()( edm::Event const & event, pat::strbitset
 {
 
 
-  if(debug)std::cout << "Processing Event in MultiLepEventSelector::operator()" << std::endl;
+  if(debug)std::cout << "Processing Event in DileptonEventSelector::operator()" << std::endl;
   if(debug)std::cout << "=====================================" <<std::endl;
   if(debug)std::cout << "Event = " << event.id().event() << ", Lumi Block = " << event.id().luminosityBlock() << std::endl;
   if(debug)std::cout << "=====================================" <<std::endl;
@@ -401,60 +221,8 @@ bool DileptonEventSelector::operator()( edm::Event const & event, pat::strbitset
     passCut(ret, "MET filters");
     FillHist("MET filters", 1);
 
+	if (! MuonSelection(event, ret)) break; //FillHist and passCut for this are in the method.
 
-/*
-    //
-    //_____ Muon cuts ________________________________
-    //
-    // loop over muons
-
-    int _n_muons  = 0;
-    int nSelMuons = 0;
-
-    if ( muon_cuts ) {
-
-      //get muons
-      event.getByLabel( muon_collection, mhMuons );
-
-      mvSelMuons.clear();
-
-      for (std::vector<pat::Muon>::const_iterator _imu = mhMuons->begin(); _imu != mhMuons->end(); _imu++){
-
-        bool pass = false;
-
-        //muon cuts
-        while(1){
-          if ( (*_imu).passed(reco::Muon::CutBasedIdLoose) ){ }
-          else break; // fail
-
-          if (_imu->pt()>muon_minpt){ }
-          else break;
-
-          if ( fabs(_imu->eta())<muon_maxeta ){ }
-          else break;
-
-          pass = true; // success
-          break;
-        }
-
-        if ( pass ){
-          ++nSelMuons;
-
-          // save every good muon
-          mvSelMuons.push_back( edm::Ptr<pat::Muon>( mhMuons, _n_muons) );
-        }
-        _n_muons++;
-      } // end of the muon loop
-
-      if( nSelMuons >= cut("Min muon", int()) || ignoreCut("Min muon") ) passCut(ret, "Min muon");
-      else break;
-
-      if( nSelMuons <= cut("Max muon", int()) || ignoreCut("Max muon") ) passCut(ret, "Max muon");
-      else break;
-
-    } // end of muon cuts
-
-*/
 
 
 /*
@@ -1045,6 +813,96 @@ bool DileptonEventSelector::METfilter(edm::Event const & event)
     return pass;
 }
 
+bool DileptonEventSelector::MuonSelection(edm::Event const & event, pat::strbitset & ret)
+{
+
+    //
+    //_____ Muon cuts ________________________________
+    //
+    // loop over muons
+
+    int _n_muons  = 0;
+    int nSelMuons = 0;
+
+    //get muons
+    event.getByToken(muonsToken, muonsHandle);
+
+    vSelMuons.clear();
+
+    if ( muon_cuts ) { 
+    
+      if(debug)std::cout << "\t" <<"Applying MuonSelection"<< std::endl;
+
+      for (std::vector<pat::Muon>::const_iterator _imu = muonsHandle->begin(); _imu != muonsHandle->end(); _imu++){
+
+        bool pass = false;
+
+		if (debug) std::cout<< "\t\t" << "pt    = " << _imu->pt() << std::endl; //DEBUG - rizki
+		if (debug) std::cout<< "\t\t" << "|eta| = " << fabs(_imu->eta()) << std::endl; //DEBUG - rizki
+		if (debug) std::cout<< "\t\t" << "phi = " << _imu->phi() << std::endl; //DEBUG - rizki
+
+        //muon cuts
+        while(1){
+          if (_imu->pt()>muon_minpt){ if(debug)std::cout<< "\t\t\t" << "pass_muon_minpt"<< std::endl;}
+          else break;
+
+          if ( fabs(_imu->eta())<muon_maxeta ){ if(debug)std::cout<< "\t\t\t" << "pass_muon_maxeta"<< std::endl;}
+          else break;
+
+          if ( (*_imu).passed(reco::Muon::CutBasedIdLoose) ){ if(debug)std::cout<< "\t\t\t" << "pass_muon_CutBasedIdLoose"<< std::endl;}
+          else break; // fail
+
+          pass = true; // success
+          break;
+        }
+
+        if ( pass ){
+          ++nSelMuons;
+
+          // save every good muon
+          vSelMuons.push_back( edm::Ptr<pat::Muon>( muonsHandle, _n_muons) );
+        }
+
+
+        _n_muons++;
+      } // end of the muon loop
+
+      if( nSelMuons >= cut("Min muon", int()) || ignoreCut("Min muon") ){ 
+          passCut(ret, "Min muon");
+          FillHist("Min muon", 1);
+      }
+      else return false;
+
+      if( nSelMuons <= cut("Max muon", int()) || ignoreCut("Max muon") ){
+          passCut(ret, "Max muon");
+          FillHist("Max muon", 1);
+      }
+      else return false;
+      
+
+    } // end of muon cuts
+    else{ 
+        if(debug)std::cout << "\t" <<"NOT applying MuonSelection"<< std::endl; 
+      
+      	for (std::vector<pat::Muon>::const_iterator _imu = muonsHandle->begin(); _imu != muonsHandle->end(); _imu++){
+
+          // save ALL muons if muon_cuts is false
+          vSelMuons.push_back( edm::Ptr<pat::Muon>( muonsHandle, _n_muons) );
+          ++nSelMuons;
+          _n_muons++;
+      	}
+                
+    }
+
+    if (debug) std::cout<< "\t\t"<< "+++++++++++++++++++++++++++++++++++++++++ " <<std::endl; // DEBUG - rizki
+    if (debug) std::cout<< "\t\t"<< "nSelMuons               = " << nSelMuons << " out of "<< muonsHandle->size() << std::endl; // DEBUG - rizki
+    if (debug) std::cout<< "\t\t"<< "+++++++++++++++++++++++++++++++++++++++++ " <<std::endl; // DEBUG - rizki
+    
+    return true;
+
+
+}
+
 void DileptonEventSelector::AnalyzeEvent( edm::EventBase const & event,
                                          LjmetEventContent & ec ){
     //
@@ -1058,5 +916,3 @@ void DileptonEventSelector::AnalyzeEvent( edm::EventBase const & event,
     return;
 }
 
-
-#endif
