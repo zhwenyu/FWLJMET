@@ -710,7 +710,192 @@ process.ljmet = cms.EDAnalyzer(
         # HOTTaggerCalc = cms.PSet(HOTTaggerCalc_cfg),
         # BestCalc      = cms.PSet(BestCalc_cfg),
 
-)
+        )
+
+
+## JECup - reset bools for all calcs/selectors that use JEC
+DileptonSelector_cfg.JECup = cms.bool(True)
+DileptonCalc_cfg.JECup     = cms.bool(True)
+JetSubCalc_cfg.JECup       = cms.bool(True)
+process.ljmet_JECup = cms.EDAnalyzer(
+        'LJMet',
+
+        debug         = cms.bool(False),
+        ttree_name    = cms.string('ljmet_JECup'),
+        verbosity     = cms.int32(0),
+        selector      = cms.string('DileptonSelector'),
+        include_calcs = cms.vstring(
+                        'DileptonCalc',
+                        'TpTpCalc',
+                        'CommonCalc',
+                        'JetSubCalc',
+                        # 'TTbarMassCalc',
+                        # 'DeepAK8Calc',
+                        # 'HOTTaggerCalc',
+                        #'BestCalc',
+        ),
+        exclude_calcs = cms.vstring(
+                        'TestCalc',
+                        'DummyCalc',
+        ),
+
+        # name has to match the name as registered in BeginJob of  EventSelector.cc
+        DileptonSelector = cms.PSet(DileptonSelector_cfg),
+
+        # Calc cfg name has to match the name as registered in Calc.cc
+        DileptonCalc  = cms.PSet(DileptonCalc_cfg),
+        TpTpCalc      = cms.PSet(TpTpCalc_cfg),
+        CommonCalc    = cms.PSet(), #current ljmet wants all calc to send a PSet, event if its empty.
+        JetSubCalc    = cms.PSet(JetSubCalc_cfg),
+        TTbarMassCalc = cms.PSet(TTbarMassCalc_cfg),
+        DeepAK8Calc    = cms.PSet(), #current ljmet wants all calc to send a PSet, event if its empty.
+        HOTTaggerCalc = cms.PSet(HOTTaggerCalc_cfg),
+        BestCalc      = cms.PSet(BestCalc_cfg),
+
+        )
+
+
+##JECdown - reset bools for all calcs/selectors that use JEC
+DileptonSelector_cfg.JECup   = cms.bool(False)
+DileptonCalc_cfg.JECup       = cms.bool(False)
+JetSubCalc_cfg.JECup         = cms.bool(False)
+DileptonSelector_cfg.JECdown = cms.bool(True)
+DileptonCalc_cfg.JECdown     = cms.bool(True)
+JetSubCalc_cfg.JECdown       = cms.bool(True)
+process.ljmet_JECdown = cms.EDAnalyzer(
+        'LJMet',
+
+        debug         = cms.bool(False),
+        ttree_name    = cms.string('ljmet_JECdown'),
+        verbosity     = cms.int32(0),
+        selector      = cms.string('DileptonSelector'),
+        include_calcs = cms.vstring(
+                        'DileptonCalc',
+                        'TpTpCalc',
+                        'CommonCalc',
+                        'JetSubCalc',
+                        # 'TTbarMassCalc',
+                        # 'DeepAK8Calc',
+                        # 'HOTTaggerCalc',
+                        #'BestCalc',
+        ),
+        exclude_calcs = cms.vstring(
+                        'TestCalc',
+                        'DummyCalc',
+        ),
+
+        # name has to match the name as registered in BeginJob of  EventSelector.cc
+        DileptonSelector = cms.PSet(DileptonSelector_cfg),
+
+        # Calc cfg name has to match the name as registered in Calc.cc
+        DileptonCalc  = cms.PSet(DileptonCalc_cfg),
+        TpTpCalc      = cms.PSet(TpTpCalc_cfg),
+        CommonCalc    = cms.PSet(), #current ljmet wants all calc to send a PSet, event if its empty.
+        JetSubCalc    = cms.PSet(JetSubCalc_cfg),
+        TTbarMassCalc = cms.PSet(TTbarMassCalc_cfg),
+        DeepAK8Calc    = cms.PSet(), #current ljmet wants all calc to send a PSet, event if its empty.
+        HOTTaggerCalc = cms.PSet(HOTTaggerCalc_cfg),
+        BestCalc      = cms.PSet(BestCalc_cfg),
+
+        )
+
+##JERup - reset bools for all calcs/selectors that use JEC
+DileptonSelector_cfg.JECup   = cms.bool(False)
+DileptonCalc_cfg.JECup       = cms.bool(False)
+JetSubCalc_cfg.JECup         = cms.bool(False)
+DileptonSelector_cfg.JECdown = cms.bool(False)
+DileptonCalc_cfg.JECdown     = cms.bool(False)
+JetSubCalc_cfg.JECdown       = cms.bool(False)
+DileptonSelector_cfg.JERup   = cms.bool(True)
+DileptonCalc_cfg.JERup       = cms.bool(True)
+JetSubCalc_cfg.JERup         = cms.bool(True)
+process.ljmet_JERup = cms.EDAnalyzer(
+        'LJMet',
+
+        debug         = cms.bool(False),
+        ttree_name    = cms.string('ljmet_JERup'),
+        verbosity     = cms.int32(0),
+        selector      = cms.string('DileptonSelector'),
+        include_calcs = cms.vstring(
+                        'DileptonCalc',
+                        'TpTpCalc',
+                        'CommonCalc',
+                        'JetSubCalc',
+                        # 'TTbarMassCalc',
+                        # 'DeepAK8Calc',
+                        # 'HOTTaggerCalc',
+                        #'BestCalc',
+        ),
+        exclude_calcs = cms.vstring(
+                        'TestCalc',
+                        'DummyCalc',
+        ),
+
+        # name has to match the name as registered in BeginJob of  EventSelector.cc
+        DileptonSelector = cms.PSet(DileptonSelector_cfg),
+
+        # Calc cfg name has to match the name as registered in Calc.cc
+        DileptonCalc  = cms.PSet(DileptonCalc_cfg),
+        TpTpCalc      = cms.PSet(TpTpCalc_cfg),
+        CommonCalc    = cms.PSet(), #current ljmet wants all calc to send a PSet, event if its empty.
+        JetSubCalc    = cms.PSet(JetSubCalc_cfg),
+        TTbarMassCalc = cms.PSet(TTbarMassCalc_cfg),
+        DeepAK8Calc    = cms.PSet(), #current ljmet wants all calc to send a PSet, event if its empty.
+        HOTTaggerCalc = cms.PSet(HOTTaggerCalc_cfg),
+        BestCalc      = cms.PSet(BestCalc_cfg),
+
+        )
+
+##JERup - reset bools for all calcs/selectors that use JEC
+DileptonSelector_cfg.JECup   = cms.bool(False)
+DileptonCalc_cfg.JECup       = cms.bool(False)
+JetSubCalc_cfg.JECup         = cms.bool(False)
+DileptonSelector_cfg.JECdown = cms.bool(False)
+DileptonCalc_cfg.JECdown     = cms.bool(False)
+JetSubCalc_cfg.JECdown       = cms.bool(False)
+DileptonSelector_cfg.JERup   = cms.bool(False)
+DileptonCalc_cfg.JERup       = cms.bool(False)
+JetSubCalc_cfg.JERup         = cms.bool(False)
+DileptonSelector_cfg.JERdown = cms.bool(True)
+DileptonCalc_cfg.JERdown     = cms.bool(True)
+JetSubCalc_cfg.JERdown       = cms.bool(True)
+process.ljmet_JERdown = cms.EDAnalyzer(
+        'LJMet',
+
+        debug         = cms.bool(False),
+        ttree_name    = cms.string('ljmet_JERdown'),
+        verbosity     = cms.int32(0),
+        selector      = cms.string('DileptonSelector'),
+        include_calcs = cms.vstring(
+                        'DileptonCalc',
+                        'TpTpCalc',
+                        'CommonCalc',
+                        'JetSubCalc',
+                        # 'TTbarMassCalc',
+                        # 'DeepAK8Calc',
+                        # 'HOTTaggerCalc',
+                        #'BestCalc',
+        ),
+        exclude_calcs = cms.vstring(
+                        'TestCalc',
+                        'DummyCalc',
+        ),
+
+        # name has to match the name as registered in BeginJob of  EventSelector.cc
+        DileptonSelector = cms.PSet(DileptonSelector_cfg),
+
+        # Calc cfg name has to match the name as registered in Calc.cc
+        DileptonCalc  = cms.PSet(DileptonCalc_cfg),
+        TpTpCalc      = cms.PSet(TpTpCalc_cfg),
+        CommonCalc    = cms.PSet(), #current ljmet wants all calc to send a PSet, event if its empty.
+        JetSubCalc    = cms.PSet(JetSubCalc_cfg),
+        TTbarMassCalc = cms.PSet(TTbarMassCalc_cfg),
+        DeepAK8Calc    = cms.PSet(), #current ljmet wants all calc to send a PSet, event if its empty.
+        HOTTaggerCalc = cms.PSet(HOTTaggerCalc_cfg),
+        BestCalc      = cms.PSet(BestCalc_cfg),
+
+        )
+
 
 ################################################
 ### PROCESS PATH
@@ -760,7 +945,11 @@ if (isTTbar):
                          #process.QGTagger *
                          process.ecalBadCalibReducedMINIAODFilter *
                          process.ttbarcat *
-                         process.ljmet #(ntuplizer) 
+                         process.ljmet *#(ntuplizer) 
+                         process.ljmet_JECup *#(ntuplizer) 
+                         process.ljmet_JECdown * #(ntuplizer) 
+                         process.ljmet_JERup *#(ntuplizer) 
+                         process.ljmet_JERdown #(ntuplizer) 
                          )
 
 elif(isMC):
@@ -774,7 +963,11 @@ elif(isMC):
        #process.packedJetsAK8Puppi *
        #process.QGTagger *
        process.ecalBadCalibReducedMINIAODFilter *
-       process.ljmet #(ntuplizer) 
+       process.ljmet #*#(ntuplizer) 
+#        process.ljmet_JECup *#(ntuplizer) 
+#        process.ljmet_JECdown *#(ntuplizer) 
+#        process.ljmet_JERup *#(ntuplizer) 
+#        process.ljmet_JERdown #(ntuplizer) 
     )
 else: #Data 
     process.p = cms.Path(
