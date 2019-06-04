@@ -120,6 +120,9 @@ private:
     double electron_minpt;
     double electron_maxeta;
     bool UseElMVA;
+    
+    //nLepton
+    int min_lepton;
 
     // bool jet_cuts;
     // bool jet_minpt;
@@ -127,9 +130,6 @@ private:
     // int min_jet;
     // int max_jet;
     // JetMETCorrHelper JetMETCorr;
-
-
-    // int min_lepton;
 
     // bool met_cuts;
 
@@ -176,7 +176,7 @@ private:
     bool METfilter         (edm::Event const & event);
     bool MuonSelection     (edm::Event const & event, pat::strbitset & ret);
     bool ElectronSelection (edm::Event const & event, pat::strbitset & ret);
-    // bool LeptonsSelection  (edm::Event const & event, pat::strbitset & ret);
+    bool LeptonsSelection  (edm::Event const & event, pat::strbitset & ret);
     // bool JetSelection      (edm::Event const & event, pat::strbitset & ret);
     // bool METSelection      (edm::Event const & event);
 

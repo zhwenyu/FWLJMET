@@ -414,17 +414,6 @@ DileptonSelector_cfg = cms.PSet(
             max_muon                 = cms.int32(10), 
             muon_minpt               = cms.double(10.0),
             muon_maxeta              = cms.double(2.4),
-#             muon_useMiniIso          = cms.bool(True),
-#             loose_muon_minpt         = cms.double(20.0),
-#             loose_muon_maxeta        = cms.double(2.4),
-#             muon_dxy                 = cms.double(0.2),
-#             muon_dz                  = cms.double(0.5),
-#             loose_muon_dxy           = cms.double(999999.),
-#             loose_muon_dz            = cms.double(999999.),
-
-            # Muon -- Unused parameters but could be use again
-#             muon_relIso              = cms.double(0.2),
-#             loose_muon_relIso        = cms.double(0.4),
 
 			#Misc
             PFparticlesCollection  = cms.InputTag("packedPFCandidates"),
@@ -438,23 +427,9 @@ DileptonSelector_cfg = cms.PSet(
             electron_maxeta          = cms.double(2.4),
             max_electron             = cms.int32(10), 
             UseElMVA                 = cms.bool(True),
-#             electron_useMiniIso      = cms.bool(True),
-#             electron_miniIso         = cms.double(0.1),
-#             loose_electron_miniIso   = cms.double(0.4),
-#             loose_electron_minpt     = cms.double(20.0),
-#             loose_electron_maxeta    = cms.double(2.4),
-#             UseElIDV1                = cms.bool(UseElIDV1_), #False means using ElIDV2
-#             # UseElIDV1                = cms.bool(False), #False means using ElIDV2
 
             #nLeptons
-#             minLooseLeptons_cut = cms.bool(True), #inclusive Loose.
-#             minLooseLeptons     = cms.int32(3),
-#             maxLooseLeptons_cut = cms.bool(False),
-#             maxLooseLeptons     = cms.int32(9999),
-#             minLeptons_cut      = cms.bool(False),
-#             minLeptons          = cms.int32(3),
-#             maxLeptons_cut      = cms.bool(False),
-#             maxLeptons          = cms.int32(9999),
+            min_lepton          = cms.int32(2),
 
             # Jets
 #             jet_collection           = cms.InputTag('slimmedJets'),

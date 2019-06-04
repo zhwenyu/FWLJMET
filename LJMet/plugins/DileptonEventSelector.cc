@@ -64,6 +64,10 @@ void DileptonEventSelector::BeginJob( const edm::ParameterSet& iConfig, edm::Con
     electron_minpt           = selectorConfig.getParameter<double>       ("electron_minpt");
     electron_maxeta          = selectorConfig.getParameter<double>       ("electron_maxeta");
     UseElMVA                 = selectorConfig.getParameter<bool>         ("UseElMVA");
+    
+    //nLepton
+    min_lepton               = selectorConfig.getParameter<int>          ("min_lepton");
+
 
     // hbhe_cut                 = selectorConfig.getParameter<bool>         ("hbhe_cut");
     // metfilters                   = selectorConfig.getParameter<bool>         ("metfilters");
@@ -85,8 +89,6 @@ void DileptonEventSelector::BeginJob( const edm::ParameterSet& iConfig, edm::Con
     // max_jet                  = selectorConfig.getParameter<int>          ("max_jet");
 
 
-    // min_lepton               = selectorConfig.getParameter<int>          ("min_lepton");
-
     // met_cuts                 = selectorConfig.getParameter<bool>         ("met_cuts");
 
     // jet_collection           = selectorConfig.getParameter<edm::InputTag>("jet_collection");
@@ -105,7 +107,7 @@ void DileptonEventSelector::BeginJob( const edm::ParameterSet& iConfig, edm::Con
     push_back("Max muon");
     push_back("Min electron");
     push_back("Max electron");
-    // push_back("Min lepton");
+    push_back("Min lepton");
     // push_back("One jet or more");
     // push_back("Two jets or more");
     // push_back("Three jets or more");
@@ -135,8 +137,7 @@ void DileptonEventSelector::BeginJob( const edm::ParameterSet& iConfig, edm::Con
         set("Min electron", false);
         set("Max electron", false);
     }
-
-    // set("Min lepton", min_lepton);
+    set("Min lepton", min_lepton);
 
     // if (jet_cuts){
     //     set("One jet or more", true);
@@ -167,7 +168,7 @@ void DileptonEventSelector::BeginJob( const edm::ParameterSet& iConfig, edm::Con
     SetHistogram("Max muon", 2, 0,2);
     SetHistogram("Min electron", 2, 0,2);
     SetHistogram("Max electron", 2, 0,2);
-    // SetHistogram("Lepton Selection", 2, 0,2); // keeping it simple for now
+    SetHistogram("Min lepton", 2, 0,2); 
     // if(jet_cuts){
     //     SetHistogram("Jet Selection", 2, 0,2); // keeping it simple for now
     // }
@@ -223,17 +224,7 @@ bool DileptonEventSelector::operator()( edm::Event const & event, pat::strbitset
 
 	if (! ElectronSelection(event, ret)) break; //FillHist and passCut for this are in the method.
 
-/*
-
-    int nSelLeptons = nSelElectrons + nSelMuons;
-
-    if( nSelLeptons >= cut("Min lepton", int()) || ignoreCut("Min lepton") ) passCut(ret, "Min lepton");
-    else break;
-
-    //     if (nSelLeptons < 2) std::cout<<"Too few leptons!"<<std::endl;
-
-
-*/
+	if (! LeptonsSelection(event, ret)) break; //FillHist and passCut for this are in the method.
 
 
 /*
@@ -937,6 +928,35 @@ bool DileptonEventSelector::ElectronSelection(edm::Event const & event, pat::str
 	if (debug)std::cout<< "\t\t"<< "++++++++++++++++++++++++++++++++++++++++++++++++ " <<std::endl; // DEBUG - rizki
 
     return true;
+}
+
+bool DileptonEventSelector::LeptonsSelection(edm::Event const & event, pat::strbitset & ret)
+{
+
+    if(debug)std::cout << "\t" <<"Applying LeptonsSelection"<< std::endl;
+
+	// Count the leptons collected in MuonSelection and ElectronSelection
+    int nSelLeptons = vSelElectrons.size() + vSelMuons.size(); 
+
+    if( nSelLeptons >= cut("Min lepton", int()) || ignoreCut("Min lepton") ){
+        passCut(ret, "Min lepton");
+        FillHist("Min lepton", 1);
+
+    }
+    else{
+    	if (nSelLeptons < 2){
+    	    if(debug)std::cout<< "\t\t"<<"Too few leptons!"<<std::endl;  
+    	}
+
+        return false;
+    }    
+
+	if (debug)std::cout<< "\t\t"<< "++++++++++++++++++++++++++++++++++++++++++++++++ " <<std::endl; // DEBUG - rizki
+	if (debug)std::cout<< "\t\t"<< "nSelLeptons                         = " << nSelLeptons <<std::endl; // DEBUG - rizki
+	if (debug)std::cout<< "\t\t"<< "++++++++++++++++++++++++++++++++++++++++++++++++ " <<std::endl; // DEBUG - rizki
+    
+    return true;
+
 }
 
 void DileptonEventSelector::AnalyzeEvent( edm::EventBase const & event,
