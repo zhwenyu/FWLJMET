@@ -21,7 +21,7 @@ install:
 	git clone git@github.com:susy2015/TopTagger
 
 	## EGamma post-reco for MVA values (NOTE: won't work in 10_2_9)
-        git cms-merge-topic cms-egamma:EgammaPostRecoTools
+	git cms-merge-topic cms-egamma:EgammaPostRecoTools
 
 	### -- FWLJMET/LJMet/plugins/BestCalc.cc is now functional for JH with new commit from May 11 --
 	### BestCalc: copy lwtnn so that BestCalc.cc will compile.
@@ -41,6 +41,8 @@ install:
 	scram b
 
 	## HOT tagger part2
+	cd ${CMSSW_BASE}/src
+	cmsenv
 	mkdir -p ${CMSSW_BASE}/src/TopTagger/TopTagger/data
 	getTaggerCfg.sh -o -n -t DeepResolved_DeepCSV_GR_noDisc_Release_v1.0.0 -d $CMSSW_BASE/src/TopTagger/TopTagger/data
 
