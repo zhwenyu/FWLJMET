@@ -37,8 +37,8 @@ CRABCONFIG_TEMPLATE = 'crab_FWLJMET_cfg_template.py'
 REQNAME             = option.finalState+option.year
 
 #eos out folder
-OUTFOLDER           = 'FWLJMET_crab_test'
-#OUTFOLDER           = 'FWLJMET102X_1lep2017_052219'  #JH: single lepton 2017
+#OUTFOLDER           = 'FWLJMET_crab_test'
+OUTFOLDER           = 'FWLJMET102X_1lep2017_052219'  #JH: single lepton 2017
 
 #log folder
 LOGFOLDER           = 'FWLJMET_crab_test' ## JH: this is not actually used in the sed commands below, dummy variable
@@ -86,33 +86,60 @@ if __name__=='__main__':
 	os.system('mkdir -vp '+CRABCONFIG_DIR)
 
 	#### Bkg MC - no ttbar
-	create_crab_config_files_from_template(
-		sample.bkgdict,
-		ISMC='True',
-		ISVLQSIGNAL='False',
-		ISTTBAR='False',
-		)
+#	create_crab_config_files_from_template(
+#		sample.bkgdict,
+#		ISMC='True',
+#		ISVLQSIGNAL='False',
+#		ISTTBAR='False',
+#		)
 
 	#### Bkg MC - ttbar
- 	create_crab_config_files_from_template(
+#        create_crab_config_files_from_template(
+#                sample.4topssigdict,
+#                ISMC='True',
+#                ISVLQSIGNAL='False',
+#                ISTTBAR='False',
+#                )
+
+       ## 4tops MC
+	create_crab_config_files_from_template(
  		sample.ttbarbkgdict,
  		ISMC='True',
  		ISVLQSIGNAL='False',
  		ISTTBAR='True',
  		)
 
-	#### VLQ signal MC
-	create_crab_config_files_from_template(
-		sample.signaldict,
-		ISMC='True',
-		ISVLQSIGNAL='True',
-		ISTTBAR='False',
-		)
+        create_crab_config_files_from_template(
+                sample.4topssigdict,
+                ISMC='True',
+                ISVLQSIGNAL='False',
+                ISTTBAR='False',
+                )
+        create_crab_config_files_from_template(
+                sample.4topsttdict,
+                ISMC='True',
+                ISVLQSIGNAL='False',
+                ISTTBAR='True',
+                )
+        create_crab_config_files_from_template(
+                sample.4topsbkgdict,
+                ISMC='True',
+                ISVLQSIGNAL='False',
+                ISTTBAR='False',
+                )
 
-	#### Data
-	create_crab_config_files_from_template(
-		sample.datadict,
-		ISMC='False',
-		ISVLQSIGNAL='False',
-		ISTTBAR='False',
-		)
+	#### VLQ signal MC
+#	create_crab_config_files_from_template(
+#		sample.signaldict,
+#		ISMC='True',
+#		ISVLQSIGNAL='True',
+#		ISTTBAR='False',
+#		)
+#
+#	#### Data
+#	create_crab_config_files_from_template(
+#		sample.datadict,
+#		ISMC='False',
+#		ISVLQSIGNAL='False',
+#		ISTTBAR='False',
+#		)
