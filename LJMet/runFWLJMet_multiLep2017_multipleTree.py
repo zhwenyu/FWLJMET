@@ -453,8 +453,8 @@ MultiLepSelector_cfg = cms.PSet(
             maxLeptons          = cms.int32(9999),
 
             # Jets
-            # jet_collection           = cms.InputTag('slimmedJets'),
-            jet_collection           = cms.InputTag('updatedPatJets::LJMET'), #if using updated jets
+            jet_collection           = cms.InputTag('slimmedJets'),
+            # jet_collection           = cms.InputTag('updatedPatJets::LJMET'), #if using updated jets
             AK8jet_collection        = cms.InputTag('slimmedJetsAK8'),
             JECup                    = cms.bool(JECup),
             JECdown                  = cms.bool(JECdown),
@@ -972,7 +972,7 @@ elif(isMC):
        process.ljmet_JERup *#(ntuplizer) 
        process.ljmet_JERdown #(ntuplizer) 
     )
-else:
+else: #Data
     process.p = cms.Path(
        process.filter_any_explicit *
        #process.fullPatMetSequenceModifiedMET *
@@ -982,11 +982,7 @@ else:
        #process.packedJetsAK8Puppi *
        #process.QGTagger *
        process.ecalBadCalibReducedMINIAODFilter *
-       process.ljmet *#(ntuplizer) 
-       process.ljmet_JECup *#(ntuplizer) 
-       process.ljmet_JECdown *#(ntuplizer) 
-       process.ljmet_JERup *#(ntuplizer) 
-       process.ljmet_JERdown #(ntuplizer) 
+       process.ljmet #(ntuplizer) 
     )
 
 process.p.associate(patAlgosToolsTask)
