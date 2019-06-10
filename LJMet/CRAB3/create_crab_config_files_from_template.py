@@ -94,12 +94,31 @@ if __name__=='__main__':
 		)
 
 	#### Bkg MC - ttbar
- 	create_crab_config_files_from_template(
+	create_crab_config_files_from_template(
  		sample.ttbarbkgdict,
  		ISMC='True',
  		ISVLQSIGNAL='False',
  		ISTTBAR='True',
  		)
+     #### fourtops MC
+        create_crab_config_files_from_template(
+                sample.fourtopssigdict,
+                ISMC='True',
+                ISVLQSIGNAL='False',
+                ISTTBAR='False',
+                )
+        create_crab_config_files_from_template(
+                sample.fourtopsttdict,
+                ISMC='True',
+                ISVLQSIGNAL='False',
+                ISTTBAR='True',
+                )
+        create_crab_config_files_from_template(
+                sample.fourtopsbkgdict,
+                ISMC='True',
+                ISVLQSIGNAL='False',
+                ISTTBAR='False',
+                )
 
 	#### VLQ signal MC
 	create_crab_config_files_from_template(
