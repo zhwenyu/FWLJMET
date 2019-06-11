@@ -87,6 +87,8 @@ int MultiLepCalc::AnalyzeEvent(edm::Event const & event, BaseEventSelector * sel
 
 	AnalyzeTriggers(event, selector);
 
+	AnalyzePV(event, selector);
+
 	AnalyzePU(event, selector);
 
 	AnalyzeBadDupMu(event, selector);
