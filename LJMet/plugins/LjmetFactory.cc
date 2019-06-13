@@ -1,6 +1,7 @@
 #include "FWLJMET/LJMet/interface/LjmetFactory.h"
 
 #include "FWLJMET/LJMet/interface/MultiLepEventSelector.h"
+#include "FWLJMET/LJMet/interface/DileptonEventSelector.h"
 
 #include "FWLJMET/LJMet/interface/CommonCalc.h"
 #include "FWLJMET/LJMet/interface/MultiLepCalc.h"
@@ -10,6 +11,8 @@
 #include "FWLJMET/LJMet/interface/DeepAK8Calc.h"
 #include "FWLJMET/LJMet/interface/HOTTaggerCalc.h"
 #include "FWLJMET/LJMet/interface/BestCalc.h"
+
+#include "FWLJMET/LJMet/interface/DileptonCalc.h"
 
 #include "FWLJMET/LJMet/interface/DummyCalc.h"
 #include "FWLJMET/LJMet/interface/DummyEventSelector.h"
@@ -22,6 +25,7 @@ LjmetFactory::LjmetFactory(): theSelector(0)
     mLegend = "[LjmetFactory]: ";
 
     this->Register(new MultiLepEventSelector(), "MultiLepSelector");
+    this->Register(new DileptonEventSelector(), "DileptonSelector");
 
     this->Register(new CommonCalc(), "CommonCalc");
     this->Register(new MultiLepCalc(), "MultiLepCalc");
@@ -31,6 +35,8 @@ LjmetFactory::LjmetFactory(): theSelector(0)
     this->Register(new DeepAK8Calc(), "DeepAK8Calc");
     this->Register(new HOTTaggerCalc(), "HOTTaggerCalc");
     this->Register(new BestCalc(), "BestCalc");
+
+    this->Register(new DileptonCalc(), "DileptonCalc");
 
     this->Register(new DummyCalc(), "DummyCalc");
     this->Register(new DummyEventSelector(), "DummySelector");
