@@ -540,7 +540,7 @@ MultiLepCalc_cfg = cms.PSet(
             PFparticlesCollection  = cms.InputTag("packedPFCandidates"),
 
             rhoJetsInputTag            = cms.InputTag("fixedGridRhoFastjetAll"), #this is for electron. Why is it different compared to muon?
-            UseElMVA                 = cms.bool(False), #True means save MVA values, False means not saving.
+            UseElMVA                 = cms.bool(True), #True means save MVA values, False means not saving.
             UseElIDV1                = cms.bool(UseElIDV1_), #False means using ElIDV2.
 
             # Jet corrections needs to be passed here again if Calc uses jet correction
