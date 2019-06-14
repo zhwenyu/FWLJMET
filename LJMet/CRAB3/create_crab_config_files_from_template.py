@@ -11,6 +11,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--finalState",action="store")
 parser.add_argument("--year",action="store")
 parser.add_argument("--nominalTreeOnly",action="store_true")
+parser.add_argument("--outfolder",action="store",default="FWLJMET_crab_output")
 option = parser.parse_args()
 
 #Sample list file
@@ -37,11 +38,8 @@ CRABCONFIG_TEMPLATE = 'crab_FWLJMET_cfg_template.py'
 REQNAME             = option.finalState+option.year
 
 #eos out folder
-OUTFOLDER           = 'FWLJMET_crab_test'
+OUTFOLDER           = option.outfolder
 #OUTFOLDER           = 'FWLJMET102X_1lep2017_052219'  #JH: single lepton 2017
-
-#log folder
-LOGFOLDER           = 'FWLJMET_crab_test' ## JH: this is not actually used in the sed commands below, dummy variable
 
 #JSON for Data
 JSONFORDATA         = 'https://cms-service-dqm.web.cern.ch/cms-service-dqm/CAF/certification/Collisions17/13TeV/Final/Cert_294927-306462_13TeV_PromptReco_Collisions17_JSON.txt' #https://twiki.cern.ch/twiki/bin/view/CMS/PdmV2017Analysis#DATA
