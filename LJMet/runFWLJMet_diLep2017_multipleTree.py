@@ -492,7 +492,7 @@ DileptonSelector_cfg.trigger_path_mm = hlt_path_mm
 
 DileptonCalc_cfg = cms.PSet(
 
-            debug                  = cms.bool(True),
+            debug                  = cms.bool(False),
             isMc                   = cms.bool(isMC),
             dataType               = cms.string('None'), #Choose between EE/EM/MM/ALL/ElEl/ElMu/MuMu/All. Need to automate this. But what is this for??? -- June 11, 2019.
             
