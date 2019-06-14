@@ -43,22 +43,22 @@ ttbarbkgdict = {}
 
 datadict = {}
 
-datadict['DoubleEGRun2018B']  = '/DoubleEG/Run2017B-31Mar2018-v1/MINIAOD'
-datadict['DoubleEGRun2018C']  = '/DoubleEG/Run2017C-31Mar2018-v1/MINIAOD'
-datadict['DoubleEGRun2018D']  = '/DoubleEG/Run2017D-31Mar2018-v1/MINIAOD'
-datadict['DoubleEGRun2018E']  = '/DoubleEG/Run2017E-31Mar2018-v1/MINIAOD'
-datadict['DoubleEGRun2018F']  = '/DoubleEG/Run2017F-31Mar2018-v1/MINIAOD'
+datadict['DoubleEGRun2017B']  = '/DoubleEG/Run2017B-31Mar2018-v1/MINIAOD'
+datadict['DoubleEGRun2017C']  = '/DoubleEG/Run2017C-31Mar2018-v1/MINIAOD'
+datadict['DoubleEGRun2017D']  = '/DoubleEG/Run2017D-31Mar2018-v1/MINIAOD'
+datadict['DoubleEGRun2017E']  = '/DoubleEG/Run2017E-31Mar2018-v1/MINIAOD'
+datadict['DoubleEGRun2017F']  = '/DoubleEG/Run2017F-31Mar2018-v1/MINIAOD'
 
-datadict['DoubleMuonRun2018B']  = '/DoubleMuon/Run2017B-31Mar2018-v1/MINIAOD'
-datadict['DoubleMuonRun2018C']  = '/DoubleMuon/Run2017C-31Mar2018-v1/MINIAOD'
-datadict['DoubleMuonRun2018D']  = '/DoubleMuon/Run2017D-31Mar2018-v1/MINIAOD'
-datadict['DoubleMuonRun2018E']  = '/DoubleMuon/Run2017E-31Mar2018-v1/MINIAOD'
-datadict['DoubleMuonRun2018F']  = '/DoubleMuon/Run2017F-31Mar2018-v1/MINIAOD'
+datadict['DoubleMuonRun2017B']  = '/DoubleMuon/Run2017B-31Mar2018-v1/MINIAOD'
+datadict['DoubleMuonRun2017C']  = '/DoubleMuon/Run2017C-31Mar2018-v1/MINIAOD'
+datadict['DoubleMuonRun2017D']  = '/DoubleMuon/Run2017D-31Mar2018-v1/MINIAOD'
+datadict['DoubleMuonRun2017E']  = '/DoubleMuon/Run2017E-31Mar2018-v1/MINIAOD'
+datadict['DoubleMuonRun2017F']  = '/DoubleMuon/Run2017F-31Mar2018-v1/MINIAOD'
 
-datadict['MuonEGRun2018B']  = '/MuonEG/Run2017B-31Mar2018-v1/MINIAOD'
-datadict['MuonEGRun2018C']  = '/MuonEG/Run2017C-31Mar2018-v1/MINIAOD'
-datadict['MuonEGRun2018D']  = '/MuonEG/Run2017D-31Mar2018-v1/MINIAOD'
-datadict['MuonEGRun2018E']  = '/MuonEG/Run2017E-31Mar2018-v1/MINIAOD'
-datadict['MuonEGRun2018F']  = '/MuonEG/Run2017F-31Mar2018-v1/MINIAOD'
+datadict['MuonEGRun2017B']  = '/MuonEG/Run2017B-31Mar2018-v1/MINIAOD'
+datadict['MuonEGRun2017C']  = '/MuonEG/Run2017C-31Mar2018-v1/MINIAOD'
+datadict['MuonEGRun2017D']  = '/MuonEG/Run2017D-31Mar2018-v1/MINIAOD'
+datadict['MuonEGRun2017E']  = '/MuonEG/Run2017E-31Mar2018-v1/MINIAOD'
+datadict['MuonEGRun2017F']  = '/MuonEG/Run2017F-31Mar2018-v1/MINIAOD'
 
 
