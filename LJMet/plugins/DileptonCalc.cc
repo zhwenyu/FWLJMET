@@ -1602,12 +1602,12 @@ void DileptonCalc::AnalyzeGenInfo(edm::Event const & event, BaseEventSelector * 
           bool promptMotherHasB = false;
           bool promptMotherHasC = false;
 
-          reco::GenParticle* mother = 0;
+          std::unique_ptr<reco::GenParticle> mother;
           if(p.status()==1){
-            mother = (reco::GenParticle*) p.mother();
+            mother = std::unique_ptr<reco::GenParticle>((reco::GenParticle*)p.mother());
             while(mother){
                 if(mother->isPromptDecayed()) break;
-                else{ mother = (reco::GenParticle*) mother->mother();}
+                else{ mother = std::unique_ptr<reco::GenParticle>((reco::GenParticle*) mother->mother());}
             }
           }
 
