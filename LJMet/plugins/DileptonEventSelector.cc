@@ -609,16 +609,14 @@ bool DileptonEventSelector::ElectronSelection(edm::Event const & event, pat::str
           //if (_iel->isEBEEGap()) break;
 
           //mva loose for cleaning
-          pat::Electron* elptr = new pat::Electron(*_iel);
-          float miniIso = getPFMiniIsolation_EffectiveArea(packedPFCandsHandle, dynamic_cast<const reco::Candidate* > (elptr), 0.05, 0.2, 10., false, false,myRhoJetsNC);
+          std::unique_ptr<pat::Electron> elptr (new pat::Electron(*_iel));
+          float miniIso = getPFMiniIsolation_EffectiveArea(packedPFCandsHandle, dynamic_cast<const reco::Candidate* > (elptr.get()), 0.05, 0.2, 10., false, false,myRhoJetsNC);
           
           //at some point all these hardcoded things needs to be configurable. this is all very messy. -- May 31, 2019.
           if(_iel->pt() > 10) { 
             passForLepJetCleaning = _iel->electronID("mvaEleID-Fall17-noIso-V2-wpLoose");
             if (miniIso > 0.4) passForLepJetCleaning = false;
           }
-
-          delete elptr;
 
           // electron Et cut
           if (_iel->pt()>electron_minpt){ if(debug)std::cout<< "\t\t\t" << "pass_electron_minpt"<< std::endl;}
@@ -793,8 +791,8 @@ bool DileptonEventSelector::JetSelection(edm::Event const & event, pat::strbitse
         for(unsigned int ilep=0; ilep < vSelMuons.size(); ilep++){
           bool looseMuon; //bool to loop over only loose muons can easily do here since loose muon id so easy to implement
           //get miniIso
-          pat::Muon* muptr = new pat::Muon(vSelMuons[ilep]);
-          float miniIso = getPFMiniIsolation_EffectiveArea(packedPFCandsHandle, dynamic_cast<const reco::Candidate* > (muptr), 0.05, 0.2, 10., false, false,myRhoJetsNC);
+          std::unique_ptr<pat::Muon> muptr(new pat::Muon(vSelMuons[ilep]));
+          float miniIso = getPFMiniIsolation_EffectiveArea(packedPFCandsHandle, dynamic_cast<const reco::Candidate* > (muptr.get()), 0.05, 0.2, 10., false, false,myRhoJetsNC);
 
           if(miniIso > 0.4) looseMuon=false;
           else if(!(vSelMuons[ilep]->isPFMuon())) looseMuon=false;
@@ -830,7 +828,6 @@ bool DileptonEventSelector::JetSelection(edm::Event const & event, pat::strbitse
             }//end loop over jet constituents
           }//end check of muons being inside jet
 
-          delete muptr;
         }// end loop over muons for cleaning
 
 
