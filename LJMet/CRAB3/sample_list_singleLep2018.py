@@ -105,15 +105,15 @@ ttbarbkgdict['TT_Mtt700'] = '/TT_Mtt-700to1000_TuneCP5_PSweights_13TeV-powheg-py
 
 datadict = {}
 
-datadict['EGammaRun2018A']  = '/EGamma/Run2018A-17Sep2018-v2/MINIAOD'
-datadict['EGammaRun2018B']  = '/EGamma/Run2018B-17Sep2018-v1/MINIAOD'
-datadict['EGammaRun2018C']  = '/EGamma/Run2018C-17Sep2018-v1/MINIAOD'
-datadict['EGammaRun2018D']  = '/EGamma/Run2018D-PromptReco-v2/MINIAOD'
+datadict['SingleElectronRun2018A']  = '/EGamma/Run2018A-17Sep2018-v2/MINIAOD'
+datadict['SingleElectronRun2018B']  = '/EGamma/Run2018B-17Sep2018-v1/MINIAOD'
+datadict['SingleElectronRun2018C']  = '/EGamma/Run2018C-17Sep2018-v1/MINIAOD'
+datadict['SingleElectronRun2018D']  = '/EGamma/Run2018D-PromptReco-v2/MINIAOD'
 
-datadict['SingleMuonRun2018A']  = '/DoubleMuon/Run2018A-17Sep2018-v2/MINIAOD'
-datadict['SingleMuonRun2018B']  = '/DoubleMuon/Run2018B-17Sep2018-v1/MINIAOD'
-datadict['SingleMuonRun2018C']  = '/DoubleMuon/Run2018C-17Sep2018-v1/MINIAOD'
-datadict['SingleMuonRun2018D']  = '/DoubleMuon/Run2018D-PromptReco-v2/MINIAOD'
+datadict['SingleMuonRun2018A']  = '/SingleMuon/Run2018A-17Sep2018-v2/MINIAOD'
+datadict['SingleMuonRun2018B']  = '/SingleMuon/Run2018B-17Sep2018-v1/MINIAOD'
+datadict['SingleMuonRun2018C']  = '/SingleMuon/Run2018C-17Sep2018-v1/MINIAOD'
+datadict['SingleMuonRun2018D']  = '/SingleMuon/Run2018D-PromptReco-v2/MINIAOD'
 
 fourtopssigdict = {}
 fourtopsttdict = {}
@@ -131,7 +131,7 @@ fourtopsttdict['TTTo2L2Nu_TuneCP5up'] = '/TTTo2L2Nu_TuneCP5up_13TeV-powheg-pythi
 
 fourtopsttdict['TTWH'] = '/TTWH_TuneCP5_13TeV-madgraph-pythia8/RunIIAutumn18MiniAOD-102X_upgrade2018_realistic_v15_ext1-v2/MINIAODSIM'
 fourtopsttdict['TTWWext1'] = '/TTWW_TuneCP5_13TeV-madgraph-pythia8/RunIIAutumn18MiniAOD-102X_upgrade2018_realistic_v15_ext1-v2/MINIAODSIM'
-fourtopsttdict['TTWWext2'] = '/TTWW_TuneCP5_13TeV-madgraph-pythia8/RunIIAutumn18MiniAOD-102X_upgrade2018_realistic_v15_ext2-v1/MINIAODSIM' 
+fourtopsttdict['TTWWext2'] = '/TTWW_TuneCP5_13TeV-madgraph-pythia8/RunIIAutumn18MiniAOD-102X_upgrade2018_realistic_v15_ext2-v1/MINIAODSIM'
 fourtopsttdict['TTWZ'] = '/TTWZ_TuneCP5_13TeV-madgraph-pythia8/RunIIAutumn18MiniAOD-102X_upgrade2018_realistic_v15_ext1-v2/MINIAODSIM'
 fourtopsttdict['TTZZ'] = '/TTZZ_TuneCP5_13TeV-madgraph-pythia8/RunIIAutumn18MiniAOD-102X_upgrade2018_realistic_v15_ext1-v2/MINIAODSIM'
 fourtopsttdict['TTZH'] = '/TTZH_TuneCP5_13TeV-madgraph-pythia8/RunIIAutumn18MiniAOD-102X_upgrade2018_realistic_v15_ext1-v2/MINIAODSIM'
