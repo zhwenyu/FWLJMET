@@ -105,6 +105,7 @@ int DileptonCalc::AnalyzeEvent(edm::Event const & event, BaseEventSelector * sel
 
 void DileptonCalc::AnalyzeDataType(edm::Event const & event, BaseEventSelector * selector)
 {
+    if(debug)std::cout << "Processing Event in DileptonCalc::AnalyzeDataType" << std::endl;    
 
 	//What is this for?? -- June 12, 2019
 
@@ -131,6 +132,7 @@ void DileptonCalc::AnalyzeDataType(edm::Event const & event, BaseEventSelector *
 
 void DileptonCalc::AnalyzeTriggers(edm::Event const & event, BaseEventSelector * selector)
 {
+    if(debug)std::cout << "Processing Event in DileptonCalc::AnalyzeTriggers" << std::endl;    
 
     //
     // _____ Get objects from the selector _____________________
@@ -384,6 +386,7 @@ void DileptonCalc::AnalyzeTriggers(edm::Event const & event, BaseEventSelector *
 
 void DileptonCalc::AnalyzePV(edm::Event const & event, BaseEventSelector * selector)
 {
+    if(debug)std::cout << "Processing Event in DileptonCalc::AnalyzePV" << std::endl;    
 
     //This currently not the same as calculated by MultiLepCalc ! Should this be modified? -- June 12, 2019 
 
@@ -398,6 +401,7 @@ void DileptonCalc::AnalyzePV(edm::Event const & event, BaseEventSelector * selec
 
 void DileptonCalc::AnalyzeElectron(edm::Event const & event, BaseEventSelector * selector)
 {
+    if(debug)std::cout << "Processing Event in DileptonCalc::AnalyzeElectron" << std::endl;    
 
     //
     // _____ Get objects from the selector _____________________
@@ -813,6 +817,7 @@ void DileptonCalc::AnalyzeElectron(edm::Event const & event, BaseEventSelector *
 
 void DileptonCalc::AnalyzeMuon(edm::Event const & event, BaseEventSelector * selector)
 {
+    if(debug)std::cout << "Processing Event in DileptonCalc::AnalyzeMuon" << std::endl;    
 
     //
     // _____ Get objects from the selector _____________________
@@ -1110,6 +1115,7 @@ void DileptonCalc::AnalyzeMuon(edm::Event const & event, BaseEventSelector * sel
 
 void DileptonCalc::AnalyzeGenJets(edm::Event const & event, BaseEventSelector * selector)
 {
+    if(debug)std::cout << "Processing Event in DileptonCalc::AnalyzeGenJets" << std::endl;    
 
     //
     //_____GenJets_____________________________
@@ -1148,6 +1154,7 @@ void DileptonCalc::AnalyzeGenJets(edm::Event const & event, BaseEventSelector * 
 
 void DileptonCalc::AnalyzeJets(edm::Event const & event, BaseEventSelector * selector)
 {
+    if(debug)std::cout << "Processing Event in DileptonCalc::AnalyzeJets" << std::endl;    
 
     //
     // _____ Get objects from the selector _____________________
@@ -1259,6 +1266,7 @@ void DileptonCalc::AnalyzeJets(edm::Event const & event, BaseEventSelector * sel
 
 void DileptonCalc::AnalyzeAK8Jets(edm::Event const & event, BaseEventSelector * selector)
 {
+    if(debug)std::cout << "Processing Event in DileptonCalc::AnalyzeAK8Jets" << std::endl;    
 
 
     //
@@ -1369,6 +1377,7 @@ void DileptonCalc::AnalyzeAK8Jets(edm::Event const & event, BaseEventSelector * 
 
 void DileptonCalc::AnalyzeMET(edm::Event const & event, BaseEventSelector * selector)
 {
+    if(debug)std::cout << "Processing Event in DileptonCalc::AnalyzeMET" << std::endl;    
 
     //
     // _____ Get objects from the selector _____________________
@@ -1471,6 +1480,7 @@ void DileptonCalc::AnalyzeMET(edm::Event const & event, BaseEventSelector * sele
 
 void DileptonCalc::AnalyzeGenInfo(edm::Event const & event, BaseEventSelector * selector)
 {
+    if(debug)std::cout << "Processing Event in DileptonCalc::AnalyzeGenInfo" << std::endl;    
 
     //
     //_____ Gen Info ______________________________
@@ -1602,12 +1612,12 @@ void DileptonCalc::AnalyzeGenInfo(edm::Event const & event, BaseEventSelector * 
           bool promptMotherHasB = false;
           bool promptMotherHasC = false;
 
-          std::unique_ptr<reco::GenParticle> mother;
+          reco::GenParticle* mother = 0;
           if(p.status()==1){
-            mother = std::unique_ptr<reco::GenParticle>((reco::GenParticle*)p.mother());
+            mother = (reco::GenParticle*) p.mother();
             while(mother){
                 if(mother->isPromptDecayed()) break;
-                else{ mother = std::unique_ptr<reco::GenParticle>((reco::GenParticle*) mother->mother());}
+                else{ mother = (reco::GenParticle*) mother->mother();}
             }
           }
 
