@@ -343,33 +343,33 @@ UseElIDV1_ = False #False means using ElIDV2
 
 ## TriggerPaths (for ljmet): 
 hlt_path_ee  = cms.vstring(
-    'HLT_Ele8_CaloIdL_TrackIdL_IsoVL_PFJet30_v*',
-    'HLT_Ele12_CaloIdL_TrackIdL_IsoVL_PFJet30_v*',
-    'HLT_Ele23_CaloIdL_TrackIdL_IsoVL_PFJet30_v*',
+    'HLT_Ele8_CaloIdL_TrackIdL_IsoVL_PFJet30_v',
+    'HLT_Ele12_CaloIdL_TrackIdL_IsoVL_PFJet30_v',
+    'HLT_Ele23_CaloIdL_TrackIdL_IsoVL_PFJet30_v',
 
-    'HLT_Ele8_CaloIdM_TrackIdM_PFJet30_v*',
-    'HLT_Ele17_CaloIdM_TrackIdM_PFJet30_v*',
-    'HLT_Ele23_CaloIdM_TrackIdM_PFJet30_v*',
+    'HLT_Ele8_CaloIdM_TrackIdM_PFJet30_v',
+    'HLT_Ele17_CaloIdM_TrackIdM_PFJet30_v',
+    'HLT_Ele23_CaloIdM_TrackIdM_PFJet30_v',
     )
 hlt_path_em = cms.vstring(
-    'HLT_Mu8_v*',
-    'HLT_Mu17_v*',
-    'HLT_Mu19_v*',
-    'HLT_Mu3_PFJet40_v*',
-    'HLT_Ele8_CaloIdL_TrackIdL_IsoVL_PFJet30_v*',
-    'HLT_Ele12_CaloIdL_TrackIdL_IsoVL_PFJet30_v*',
-    'HLT_Ele23_CaloIdL_TrackIdL_IsoVL_PFJet30_v*',
+    'HLT_Mu8_v',
+    'HLT_Mu17_v',
+    'HLT_Mu19_v',
+    'HLT_Mu3_PFJet40_v',
+    'HLT_Ele8_CaloIdL_TrackIdL_IsoVL_PFJet30_v',
+    'HLT_Ele12_CaloIdL_TrackIdL_IsoVL_PFJet30_v',
+    'HLT_Ele23_CaloIdL_TrackIdL_IsoVL_PFJet30_v',
     )
 hlt_path_mm = cms.vstring(
-    'HLT_Mu8_v*',
-    'HLT_Mu17_v*',
-    'HLT_Mu19_v*',
-    'HLT_Mu20_v*',
-    'HLT_Mu27_v*',
-    'HLT_Mu8_TrkIsoVVL_v*',
-    'HLT_Mu17_TrkIsoVVL_v*',
-    'HLT_Mu19_TrkIsoVVL_v*',
-    'HLT_Mu3_PFJet40_v*',
+    'HLT_Mu8_v',
+    'HLT_Mu17_v',
+    'HLT_Mu19_v',
+    'HLT_Mu20_v',
+    'HLT_Mu27_v',
+    'HLT_Mu8_TrkIsoVVL_v',
+    'HLT_Mu17_TrkIsoVVL_v',
+    'HLT_Mu19_TrkIsoVVL_v',
+    'HLT_Mu3_PFJet40_v',
     )
 
 #Selector/Calc config
@@ -488,7 +488,7 @@ DileptonSelector_cfg.trigger_path_mm = hlt_path_mm
 
 DileptonCalc_cfg = cms.PSet(
 
-            debug                  = cms.bool(True),
+            debug                  = cms.bool(False),
             isMc                   = cms.bool(isMC),
             dataType               = cms.string('None'), #Choose between EE/EM/MM/ALL/ElEl/ElMu/MuMu/All. Need to automate this. But what is this for??? -- June 11, 2019.
             
