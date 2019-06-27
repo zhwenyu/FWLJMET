@@ -569,7 +569,13 @@ void DileptonCalc::AnalyzeElectron(edm::Event const & event, BaseEventSelector *
           elRhoIso . push_back(rhoIso);
         
           elRelIso . push_back(relIso);
-        
+          
+          //add miniIso
+          elMiniIsoEA.push_back(getPFMiniIsolation_EffectiveArea(packedPFCands, dynamic_cast<const reco::Candidate *>(iel->get()),0.05, 0.2, 10., false, false,myRhoJetsNC));
+          elMiniIsoDB.push_back(getPFMiniIsolation_DeltaBeta(packedPFCands, dynamic_cast<const reco::Candidate *>(iel->get()), 0.05, 0.2, 10., false));
+          elMiniIsoSUSY.push_back(getPFMiniIsolation_SUSY(packedPFCands, dynamic_cast<const reco::Candidate *>(iel->get()),0.05, 0.2, 10., false, false,myRhoJetsNC));
+
+
           //Conversion rejection
           int nLostHits = (*iel)->gsfTrack()->hitPattern().numberOfAllHits(reco::HitPattern::MISSING_INNER_HITS);
           double dist   = (*iel)->convDist();
@@ -750,9 +756,9 @@ void DileptonCalc::AnalyzeElectron(edm::Event const & event, BaseEventSelector *
     SetValue("elIsEBEE", elIsEBEE);
 
 //     SetValue("elQuality", elQuality); // Not used -- June 12, 2019.
-//     SetValue("elMiniIsoEA",elMiniIsoEA); // Not used -- June 12, 2019.
-//     SetValue("elMiniIsoDB",elMiniIsoDB); // Not used -- June 12, 2019.
-//     SetValue("elMiniIsoSUSY",elMiniIsoSUSY); // Not used -- June 12, 2019.
+    SetValue("elMiniIsoEA",elMiniIsoEA); 
+    SetValue("elMiniIsoDB",elMiniIsoDB); 
+    SetValue("elMiniIsoSUSY",elMiniIsoSUSY); 
 
     //this value not specific to electrons but we set it here
     SetValue("rhoNC",_rhoNC);
@@ -859,9 +865,21 @@ void DileptonCalc::AnalyzeMuon(edm::Event const & event, BaseEventSelector * sel
     std::vector <double> muGIso;
     std::vector <double> muPuIso;
 
-    //ID info
-    std::vector <int> muIsTight;
-    std::vector<int> muIsLoose;
+	//ID info
+	std::vector <int> muIsTight;
+	std::vector <int> muIsMedium;
+	std::vector<int> muIsLoose;
+	std::vector<int> muIsMediumPrompt;
+	std::vector<int> muIsGlobalHighPt;
+	std::vector<int> muIsTrkHighPt;
+	std::vector<int> muIsMvaLoose;
+	std::vector<int> muIsMvaMedium;
+	std::vector<int> muIsMvaTight;
+	std::vector<int> muIsMiniIsoLoose;
+	std::vector<int> muIsMiniIsoMedium;
+	std::vector<int> muIsMiniIsoTight;
+	std::vector<int> muIsMiniIsoVeryTight;
+
     
     //Generator level information -- MC matching
     std::vector<double> muGen_Reco_dr;
@@ -887,6 +905,15 @@ void DileptonCalc::AnalyzeMuon(edm::Event const & event, BaseEventSelector * sel
     std::vector<double> TriggerMuonPhis;
     std::vector<double> TriggerMuonEnergies;
     
+    //rho isolation from susy recommendation
+    edm::Handle<double> rhoJetsNC;
+    event.getByToken(rhoJetsNCToken , rhoJetsNC);
+    double myRhoJetsNC = *rhoJetsNC;
+
+    //pfcandidates for mini iso    
+    edm::Handle<pat::PackedCandidateCollection> packedPFCands;
+    event.getByToken(PFCandToken, packedPFCands);
+
 
     //make index for muons
     int MuIndex = 0;
@@ -907,7 +934,18 @@ void DileptonCalc::AnalyzeMuon(edm::Event const & event, BaseEventSelector * sel
             muEnergy . push_back((*imu)->energy());
             
             muIsTight.push_back((*imu)->passed(reco::Muon::CutBasedIdTight));
+            muIsMedium.push_back((*imu)->passed(reco::Muon::CutBasedIdMedium));
+            muIsMediumPrompt.push_back((*imu)->passed(reco::Muon::CutBasedIdMediumPrompt));
             muIsLoose.push_back((*imu)->passed(reco::Muon::CutBasedIdLoose));
+            muIsGlobalHighPt.push_back((*imu)->passed(reco::Muon::CutBasedIdGlobalHighPt));
+            muIsTrkHighPt.push_back((*imu)->passed(reco::Muon::CutBasedIdTrkHighPt));
+            muIsMvaLoose.push_back((*imu)->passed(reco::Muon::MvaLoose));
+            muIsMvaMedium.push_back((*imu)->passed(reco::Muon::MvaMedium));
+            muIsMvaTight.push_back((*imu)->passed(reco::Muon::MvaTight));
+            muIsMiniIsoLoose.push_back((*imu)->passed(reco::Muon::MiniIsoLoose));
+            muIsMiniIsoMedium.push_back((*imu)->passed(reco::Muon::MiniIsoMedium));
+            muIsMiniIsoTight.push_back((*imu)->passed(reco::Muon::MiniIsoTight));
+            muIsMiniIsoVeryTight.push_back((*imu)->passed(reco::Muon::MiniIsoVeryTight));
 
             muGlobal.push_back((*imu)->isGlobalMuon());
             muTracker.push_back((*imu)->isTrackerMuon());
@@ -929,6 +967,11 @@ void DileptonCalc::AnalyzeMuon(edm::Event const & event, BaseEventSelector * sel
             muNhIso . push_back(nhIso);
             muGIso  . push_back(gIso);
             muPuIso . push_back(puIso);
+
+            //get miniIso
+            muMiniIsoEA.push_back(getPFMiniIsolation_EffectiveArea(packedPFCands, dynamic_cast<const reco::Candidate *>(imu->get()),0.05, 0.2, 10., false, false,myRhoJetsNC));
+            muMiniIsoDB.push_back(getPFMiniIsolation_DeltaBeta(packedPFCands, dynamic_cast<const reco::Candidate *>(imu->get()), 0.05, 0.2, 10., false));            
+            muMiniIsoSUSY.push_back(getPFMiniIsolation_SUSY(packedPFCands, dynamic_cast<const reco::Candidate *>(imu->get()),0.05, 0.2, 10., false, false,myRhoJetsNC));
 
             float musip3d;
             pat::Muon::IpType muIP3d = (pat::Muon::IpType) 1;
@@ -1067,9 +1110,20 @@ void DileptonCalc::AnalyzeMuon(edm::Event const & event, BaseEventSelector * sel
     SetValue("muEnergy" , muEnergy);
   
     //muon ids
-    SetValue("muIsTight", muIsTight);
-    SetValue("muIsLoose",muIsLoose);
-  
+	SetValue("muIsTight", muIsTight);
+	SetValue("muIsMedium", muIsMedium);
+	SetValue("muIsMediumPrompt",muIsMediumPrompt);
+	SetValue("muIsLoose",muIsLoose);
+	SetValue("muIsGlobalHighPt",muIsGlobalHighPt);
+	SetValue("muIsTrkHighPt",muIsTrkHighPt);
+	SetValue("muIsMvaLoose",muIsMvaLoose);
+	SetValue("muIsMvaMedium",muIsMvaMedium);
+	SetValue("muIsMvaTight",muIsMvaTight);
+	SetValue("muIsMiniIsoLoose",muIsMiniIsoLoose);
+	SetValue("muIsMiniIsoMedium",muIsMiniIsoMedium);
+	SetValue("muIsMiniIsoTight",muIsMiniIsoTight);
+	SetValue("muIsMiniIsoVeryTight",muIsMiniIsoVeryTight);  
+
     //Quality criteria
     SetValue("muChi2"   , muChi2);
     SetValue("muDxy"    , muDxy);
@@ -1077,9 +1131,9 @@ void DileptonCalc::AnalyzeMuon(edm::Event const & event, BaseEventSelector * sel
     SetValue("muSIP3D", muSIP3D);
     SetValue("muRelIso" , muRelIso);
 
-//     SetValue("muMiniIsoEA", muMiniIsoEA); // Not used -- June 12, 2019.
-//     SetValue("muMiniIsoDB", muMiniIsoDB); // Not used -- June 12, 2019.
-//     SetValue("muMiniIsoSUSY", muMiniIsoSUSY); // Not used -- June 12, 2019.
+    SetValue("muMiniIsoEA", muMiniIsoEA); 
+    SetValue("muMiniIsoDB", muMiniIsoDB); 
+    SetValue("muMiniIsoSUSY", muMiniIsoSUSY); 
 
     SetValue("muNValMuHits"       , muNValMuHits);
     SetValue("muNMatchedStations" , muNMatchedStations);
