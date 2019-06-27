@@ -502,7 +502,7 @@ DileptonCalc_cfg = cms.PSet(
             pvSrc   = cms.InputTag('offlineSlimmedPrimaryVertices'),
             
             # Electon
-            UseElMVA                 = cms.bool(False), #True means save MVA values, False means not saving.
+            UseElMVA                 = cms.bool(True), #True means save MVA values, False means not saving.
 
             # Misc
             keepFullMChistory      = cms.bool(isMC),
