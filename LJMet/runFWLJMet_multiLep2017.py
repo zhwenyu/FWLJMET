@@ -133,6 +133,7 @@ process.filter_any_explicit = hlt.hltHighLevel.clone(
                         'HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_v*',    #exists in 2017  (PreScaled!)
                         'HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_v*',  #exists in 2017 (PreScaled!)
                         'HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_Mass3p8_v*',
+                        'HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_Mass8_v*',
                         'HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_v*',
                         'HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ_v*',
 
@@ -361,6 +362,7 @@ hlt_path_mu = cms.vstring(
         'HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_v',    #exists in 2017  (PreScaled!)
         'HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_v',  #exists in 2017 (PreScaled!)
         'HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_Mass3p8_v',
+        'HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_Mass8_v',
         'HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_v',
         'HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ_v',
 
