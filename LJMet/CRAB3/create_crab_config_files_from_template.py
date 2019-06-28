@@ -38,7 +38,7 @@ REQNAME             = option.finalState+option.year
 
 #eos out folder
 OUTFOLDER           = 'FWLJMET_crab_test'
-#OUTFOLDER           = 'FWLJMET102X_1lep2017_052219'  #JH: single lepton 2017
+#OUTFOLDER           = 'FWLJMET102X_1lep2018_052219'  #JH: single lepton 2017
 
 #log folder
 LOGFOLDER           = 'FWLJMET_crab_test' ## JH: this is not actually used in the sed commands below, dummy variable
@@ -74,6 +74,9 @@ def create_crab_config_files_from_template(sample_dict,**kwargs):
 		#replace strings in new cmsRun file
 		if 'EGamma' in dataset or 'Single' in dataset:
 			os.system("sed -i 's|DATASET|"+dataset+"|g' "+CRABCONFIG_DIR+"/"+cmsRunname)
+		elif 'ext' in dataset:
+			extcode = dataset[dataset.find('ext'):]
+			os.system("sed -i 's|DATASET|"+sample_dict[dataset].split('/')[1]+'-'+extcode+"|g' "+CRABCONFIG_DIR+"/"+cmsRunname)
 		else:
 			os.system("sed -i 's|DATASET|"+sample_dict[dataset].split('/')[1]+"|g' "+CRABCONFIG_DIR+"/"+cmsRunname)
 		os.system("sed -i 's|ISMC|"+kwargs['ISMC']+"|g' "+CRABCONFIG_DIR+"/"+cmsRunname)
@@ -100,7 +103,8 @@ if __name__=='__main__':
  		ISVLQSIGNAL='False',
  		ISTTBAR='True',
  		)
-     #### fourtops MC
+
+        #### fourtops MC
         create_crab_config_files_from_template(
                 sample.fourtopssigdict,
                 ISMC='True',
