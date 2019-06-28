@@ -532,7 +532,7 @@ MultiLepCalc_cfg = cms.PSet(
             PFparticlesCollection  = cms.InputTag("packedPFCandidates"),
 
             rhoJetsInputTag            = cms.InputTag("fixedGridRhoFastjetAll"), #this is for electron. Why is it different compared to muon?
-            UseElMVA                 = cms.bool(False), #True means save MVA values, False means not saving.
+            UseElMVA                 = cms.bool(True), #True means save MVA values, False means not saving.
             UseElIDV1                = cms.bool(UseElIDV1_), #False means using ElIDV2.
 
             # Jet corrections needs to be passed here again if Calc uses jet correction
@@ -716,7 +716,7 @@ process.ljmet = cms.EDAnalyzer(
         JetSubCalc    = cms.PSet(JetSubCalc_cfg),
         # TTbarMassCalc = cms.PSet(TTbarMassCalc_cfg),
         # DeepAK8Calc    = cms.PSet(), #current ljmet wants all calc to send a PSet, event if its empty.
-        # HOTTaggerCalc = cms.PSet(HOTTaggerCalc_cfg)
+        # HOTTaggerCalc = cms.PSet(HOTTaggerCalc_cfg),
         # BestCalc      = cms.PSet(BestCalc_cfg),
 
         )
