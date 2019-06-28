@@ -110,10 +110,10 @@ datadict['EGammaRun2018B']  = '/EGamma/Run2018B-17Sep2018-v1/MINIAOD'
 datadict['EGammaRun2018C']  = '/EGamma/Run2018C-17Sep2018-v1/MINIAOD'
 datadict['EGammaRun2018D']  = '/EGamma/Run2018D-PromptReco-v2/MINIAOD'
 
-datadict['SingleMuonRun2018A']  = '/DoubleMuon/Run2018A-17Sep2018-v2/MINIAOD'
-datadict['SingleMuonRun2018B']  = '/DoubleMuon/Run2018B-17Sep2018-v1/MINIAOD'
-datadict['SingleMuonRun2018C']  = '/DoubleMuon/Run2018C-17Sep2018-v1/MINIAOD'
-datadict['SingleMuonRun2018D']  = '/DoubleMuon/Run2018D-PromptReco-v2/MINIAOD'
+datadict['SingleMuonRun2018A']  = '/SingleMuon/Run2018A-17Sep2018-v2/MINIAOD'
+datadict['SingleMuonRun2018B']  = '/SingleMuon/Run2018B-17Sep2018-v1/MINIAOD'
+datadict['SingleMuonRun2018C']  = '/SingleMuon/Run2018C-17Sep2018-v1/MINIAOD'
+datadict['SingleMuonRun2018D']  = '/SingleMuon/Run2018D-PromptReco-v2/MINIAOD'
 
 fourtopssigdict = {}
 fourtopsttdict = {}
