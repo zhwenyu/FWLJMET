@@ -1227,6 +1227,11 @@ void MultiLepCalc::AnalyzeGenInfo(edm::Event const & event, BaseEventSelector * 
     std::vector <double> genJetPhi;
     std::vector <double> genJetEnergy;
 
+    std::vector <double> genJetPtNoClean;
+    std::vector <double> genJetEtaNoClean;
+    std::vector <double> genJetPhiNoClean;
+    std::vector <double> genJetEnergyNoClean;
+
     //Tau Decay Lepton
     double genTDLPt = -9999.;
     double genTDLEta = -9999.;
@@ -1470,8 +1475,10 @@ void MultiLepCalc::AnalyzeGenInfo(edm::Event const & event, BaseEventSelector * 
         TLorentzVector tmpLep;
         TLorentzVector tmpCand;
         std::vector<TLorentzVector> tmpVec;
+        std::vector<TLorentzVector> tmpVecNoClean;  
         for(const reco::GenJet &j : *genJets){
             tmpJet.SetPtEtaPhiE(j.pt(),j.eta(),j.phi(),j.energy());
+            tmpVecNoClean.push_back(tmpJet);
             if (cleanGenJets) {
 	            for(size_t k = 0; k < vGenLep.size(); k++){
                     tmpLep = vGenLep[k];
@@ -1492,6 +1499,13 @@ void MultiLepCalc::AnalyzeGenInfo(edm::Event const & event, BaseEventSelector * 
                 }
             }
             tmpVec.push_back(tmpJet);
+        }
+        std::sort(tmpVecNoClean.begin(), tmpVecNoClean.end(), SortLVByPt);
+        for (unsigned int i = 0; i < tmpVecNoClean.size(); i++) {
+            genJetPtNoClean     . push_back(tmpVecNoClean.at(i).Pt());
+            genJetEtaNoClean    . push_back(tmpVecNoClean.at(i).Eta());
+            genJetPhiNoClean    . push_back(tmpVecNoClean.at(i).Phi());
+            genJetEnergyNoClean . push_back(tmpVecNoClean.at(i).Energy());
         }
         std::sort(tmpVec.begin(), tmpVec.end(), SortLVByPt);
         for (unsigned int i = 0; i < tmpVec.size(); i++) {
@@ -1521,6 +1535,12 @@ void MultiLepCalc::AnalyzeGenInfo(edm::Event const & event, BaseEventSelector * 
     SetValue("genJetEta"   , genJetEta);
     SetValue("genJetPhi"   , genJetPhi);
     SetValue("genJetEnergy", genJetEnergy);
+
+    SetValue("genJetPtNoClean"    , genJetPtNoClean);
+    SetValue("genJetEtaNoClean"   , genJetEtaNoClean);
+    SetValue("genJetPhiNoClean"   , genJetPhiNoClean);
+    SetValue("genJetEnergyNoClean", genJetEnergyNoClean);
+
 
     SetValue("genBSLPt"    , genBSLPt);
     SetValue("genBSLEta"   , genBSLEta);
