@@ -1,3 +1,4 @@
+from CRABClient.UserUtilities import getUsernameFromSiteDB
 from WMCore.Configuration import Configuration
 config = Configuration()
 
@@ -86,6 +87,7 @@ config.Data.publication = False
 # This string is used to construct the output dataset name : /store/user/lpcljm/<outputFolder>/<inpuDataset>/<requestName>/<someCRABgeneratedNumber>/<someCRABgeneratedNumber>/
 config.Data.outputDatasetTag = requestName
 config.Data.outLFNDirBase = '/store/group/lpcljm/'+outputFolder
+#config.Data.outLFNDirBase = '/store/user/%s/ljmet/FWLJMET102X_1lep2017_052219/' % (getUsernameFromSiteDB())
 
 config.section_("Site")
 config.Site.storageSite = 'T3_US_FNALLPC'

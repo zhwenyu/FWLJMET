@@ -14,15 +14,18 @@ options.register('isVLQsignal', '', VarParsing.multiplicity.singleton, VarParsin
 
 ## SET DEFAULT VALUES
 ## ATTENTION: THESE DEFAULT VALUES ARE SET FOR VLQ SIGNAL ! isMC=True, isTTbar=False, isVLQsignal=True 
+ISMC = True
+ISTTBAR = True
+ISVLQSIGNAL = False
 options.isMC = ISMC
 options.isTTbar = ISTTBAR
 options.isVLQsignal = ISVLQSIGNAL
 options.inputFiles = [
-    #'root://cmsxrootd.fnal.gov//store/mc/RunIIFall17MiniAODv2/TTTT_TuneCP5_PSweights_13TeV-amcatnlo-pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14-v1/70000/0ED34A55-DD52-E811-91CC-E0071B73B6B0.root'
-    #'root://cmsxrootd.fnal.gov//store/mc/RunIIFall17MiniAODv2/TprimeTprime_M-1400_TuneCP5_13TeV-madgraph-pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14-v2/50000/F82DC089-5591-E811-9210-6C3BE5B58198.root'
-    'root://cmsxrootd-site.fnal.gov//store/mc/RunIIFall17MiniAODv2/WJetsToLNu_HT-200To400_TuneCP5_13TeV-madgraphMLM-pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14-v1/10000/001187B6-E554-E811-89C7-24BE05C63721.root'
+#   'root://cmsxrootd.fnal.gov//store/mc/RunIIFall17MiniAODv2/TTTT_TuneCP5_13TeV-amcatnlo-pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14-v2/70000/8C017130-8B5F-E911-ACA8-0025905C96EA.root',
+   'root://cmsxrootd.fnal.gov//store/mc/RunIIFall17MiniAODv2/TTToSemiLeptonic_TuneCP5_PSweights_13TeV-powheg-pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14-v2/00000/0037F121-7BB9-E811-A732-0242AC130002.root'
+#   'root://cmsxrootd-site.fnal.gov//store/mc/RunIIFall17MiniAODv2/TTToHadronic_TuneCP5_PSweights_13TeV-powheg-pythia8/MINIAODSIM/PU2017_12Apr2018_new_pmx_94X_mc2017_realistic_v14-v1/60000/FE921261-48B9-E811-8221-001EC9ADF941.root'
     ]
-options.maxEvents = 100
+options.maxEvents = 15000
 options.parseArguments()
 
 isMC= options.isMC
@@ -77,7 +80,7 @@ process.source = cms.Source("PoolSource",
     )
 )
 
-OUTFILENAME = "DATASET"
+OUTFILENAME = "TTToSemilep"
 process.TFileService = cms.Service("TFileService", fileName = cms.string(OUTFILENAME+'.root'))
 
 #OUTFILENAME = "cmsRun" #This could be better !
@@ -422,7 +425,7 @@ MultiLepSelector_cfg = cms.PSet(
             min_muon                 = cms.int32(0), #not implemented in src code
             muon_minpt               = cms.double(25.0),
             muon_maxeta              = cms.double(2.4),
-            muon_useMiniIso          = cms.bool(True),
+            muon_useMiniIso          = cms.bool(False),
             loose_muon_minpt         = cms.double(10.0),
             loose_muon_maxeta        = cms.double(2.4),
             muon_dxy                 = cms.double(0.2),
@@ -431,7 +434,7 @@ MultiLepSelector_cfg = cms.PSet(
             loose_muon_dz            = cms.double(999999.),
 
             # Muon -- Unused parameters but could be use again
-            muon_relIso              = cms.double(0.2),
+            muon_relIso              = cms.double(999999),
             loose_muon_relIso        = cms.double(0.4),
 
             # Electon
