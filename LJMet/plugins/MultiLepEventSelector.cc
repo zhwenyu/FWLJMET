@@ -312,6 +312,7 @@ bool MultiLepEventSelector::TriggerSelection(edm::Event const & event)
 		int passTrigEl = 0;
 		if (debug) std::cout<< "\t" <<"	In MC El trig list: "<<std::endl;
 		for (unsigned int ipath = 0; ipath < mctrigger_path_el.size() && mctrigger_path_el.at(0)!="" ; ipath++){
+			mvSelMCTriggersEl[mctrigger_path_el.at(ipath)] = 0;
 			for(unsigned int i=0; i<_tSize; i++){
 				std::string trigName = trigNames.triggerName(i);
 				if (trigName.find(mctrigger_path_el.at(ipath)) == std::string::npos) continue;
@@ -320,7 +321,6 @@ bool MultiLepEventSelector::TriggerSelection(edm::Event const & event)
 					mvSelMCTriggersEl[mctrigger_path_el.at(ipath)] = 1;
 					if (debug) std::cout << "		" << trigNames.triggerName(i)  << std::endl;
 				}
-				else mvSelMCTriggersEl[mctrigger_path_el.at(ipath)] = 0;
 			}
 		}
 		if (passTrigEl>0) passTrigElMC = true;
@@ -328,6 +328,7 @@ bool MultiLepEventSelector::TriggerSelection(edm::Event const & event)
 		int passTrigMu = 0;
 		if (debug) std::cout<< "\t" <<"	In MC Mu trig list: "<<std::endl;
 		for (unsigned int ipath = 0; ipath < mctrigger_path_mu.size() && mctrigger_path_mu.at(0)!="" ; ipath++){
+			mvSelMCTriggersMu[mctrigger_path_mu.at(ipath)] = 0;
 			for(unsigned int i=0; i<_tSize; i++){
 				std::string trigName = trigNames.triggerName(i);
 				if ( trigName.find(mctrigger_path_mu.at(ipath)) == std::string::npos) continue;
@@ -336,7 +337,6 @@ bool MultiLepEventSelector::TriggerSelection(edm::Event const & event)
 					mvSelMCTriggersMu[mctrigger_path_mu.at(ipath)] = 1;
 					if (debug) std::cout << "		" << trigNames.triggerName(i)  << std::endl;
 				}
-				else mvSelMCTriggersMu[mctrigger_path_mu.at(ipath)] = 0;
 			}
 		}
 		if (passTrigMu>0) passTrigMuMC = true;
@@ -345,6 +345,7 @@ bool MultiLepEventSelector::TriggerSelection(edm::Event const & event)
 		passTrigEl = 0;
 		if (debug) std::cout<< "\t" <<"	In Data El trig list: "<<std::endl;
 		for (unsigned int ipath = 0; ipath < trigger_path_el.size() && trigger_path_el.at(0)!="" ; ipath++){
+			mvSelTriggersEl[trigger_path_el.at(ipath)] = 0;
 			for(unsigned int i=0; i<_tSize; i++){
 				std::string trigName = trigNames.triggerName(i);
 				if ( trigName.find(trigger_path_el.at(ipath)) == std::string::npos) continue;
@@ -353,7 +354,6 @@ bool MultiLepEventSelector::TriggerSelection(edm::Event const & event)
 					mvSelTriggersEl[trigger_path_el.at(ipath)] = 1;
 					if (debug) std::cout << "		" << trigNames.triggerName(i)  << std::endl;
 				}
-				else mvSelTriggersEl[trigger_path_el.at(ipath)] = 0;
 			}
 		}
 		if (passTrigEl>0) passTrigElData = true;
@@ -361,6 +361,7 @@ bool MultiLepEventSelector::TriggerSelection(edm::Event const & event)
 		passTrigMu = 0;
 		if (debug) std::cout<< "\t" <<"	In Data Mu trig list: "<<std::endl;
 		for (unsigned int ipath = 0; ipath < trigger_path_mu.size() && trigger_path_mu.at(0)!="" ; ipath++){
+			mvSelTriggersMu[trigger_path_mu.at(ipath)] = 0;
 			for(unsigned int i=0; i<_tSize; i++){
 			std::string trigName = trigNames.triggerName(i);
 			if ( trigName.find(trigger_path_mu.at(ipath)) == std::string::npos) continue;
@@ -369,7 +370,6 @@ bool MultiLepEventSelector::TriggerSelection(edm::Event const & event)
 				mvSelTriggersMu[trigger_path_mu.at(ipath)] = 1;
 				if (debug) std::cout << "		" << trigNames.triggerName(i)  << std::endl;
 			}
-			else mvSelTriggersMu[trigger_path_mu.at(ipath)] = 0;
 			}
 		}
 		if (passTrigMu>0) passTrigMuData = true;

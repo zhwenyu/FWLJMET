@@ -67,6 +67,7 @@ public:
     std::vector<edm::Ptr<pat::Muon>>     const & GetSelLooseMuons()const { return vSelLooseMuons; }
     std::vector<edm::Ptr<pat::Electron>> const & GetSelElectrons()      const { return vSelElectrons; }
     std::vector<edm::Ptr<pat::Electron>> const & GetSelLooseElectrons() const { return vSelLooseElectrons; }
+    std::vector<pat::Electron>           const & GetSelElectronsForLepJetClean() const { return vSelElectronsForJetLepClean; } // Used by DileptonEventSelector and DilepCalc. Probably this can be rewritten renamed/removed. -- June 4, 2010.
 
     //Jets
     std::vector<edm::Ptr<pat::Jet>>      const & GetAllJets()      const { return vAllJets; }
@@ -75,6 +76,7 @@ public:
     std::vector<edm::Ptr<pat::Jet>>      const & GetSelBtagJets()  const { return vSelBtagJets; }
     std::vector<std::pair<TLorentzVector, bool>>         const & GetSelCorrJetsWithBTags() const { return vSelCorrJetsWithBTags; }
     std::vector<pat::Jet>                const & GetSelCorrJetsAK8()  const { return vSelCorrJets_AK8; }
+    std::vector<pat::Jet>                const & GetSelCleanedJets()      const { return vSelCleanedJets; } // Used by DileptonEventSelector and DilepCalc. Probably this can be rewritten renamed/removed. -- June 4, 2010.
 
     //MET
     edm::Ptr<pat::MET>                   const & GetMet()          const { return pMet; }
@@ -120,6 +122,7 @@ protected:
     std::vector<edm::Ptr<pat::Muon>>     vSelLooseMuons;
     std::vector<edm::Ptr<pat::Electron>> vSelElectrons;
     std::vector<edm::Ptr<pat::Electron>> vSelLooseElectrons;
+    std::vector<pat::Electron>           vSelElectronsForJetLepClean; // Used by DileptonEventSelector and DilepCalc. Probably this can be rewritten renamed/removed. -- June 4, 2010.
 
     //Jets
     std::vector<edm::Ptr<pat::Jet>>      vAllJets;
@@ -128,6 +131,7 @@ protected:
     std::vector<edm::Ptr<pat::Jet>>      vSelBtagJets;
     std::vector<std::pair<TLorentzVector, bool>> vSelCorrJetsWithBTags;
     std::vector<pat::Jet>                vSelCorrJets_AK8;
+    std::vector<pat::Jet>                vSelCleanedJets; // Used by DileptonEventSelector and DilepCalc. Probably this can be rewritten renamed/removed. -- June 4, 2010.
 
     //MET
     edm::Ptr<pat::MET>     pMet;

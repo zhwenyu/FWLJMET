@@ -11,6 +11,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--finalState",action="store")
 parser.add_argument("--year",action="store")
 parser.add_argument("--nominalTreeOnly",action="store_true")
+parser.add_argument("--outfolder",action="store",default="FWLJMET_crab_output")
 option = parser.parse_args()
 
 #Sample list file
@@ -24,11 +25,9 @@ sample = imp.load_source("Sample",sampleListPath,open(sampleListPath,"r"))
 runScript = option.finalState+option.year if option.nominalTreeOnly else option.finalState+option.year+'_multipleTree'
 
 CMSRUNCONFIG        = '../runFWLJMet_'+runScript+'.py'
-#CMSRUNCONFIG        = relBase+'/src/FWLJMET/LJMet/runFWLJMet_'+runScript+'.py'  #JH: crab stuff in nobackup
 
 #folder to save the created crab configs
 CRABCONFIG_DIR      = 'crabConfigs_'+option.finalState+option.year
-#CRABCONFIG_DIR      = home+'/nobackup/FWLJMET102X_crabConfigs_'+option.finalState+option.year  #JH: crab stuff in nobackup
 
 #the crab cfg template to copy from
 CRABCONFIG_TEMPLATE = 'crab_FWLJMET_cfg_template.py'
@@ -36,12 +35,7 @@ CRABCONFIG_TEMPLATE = 'crab_FWLJMET_cfg_template.py'
 #crab request name
 REQNAME             = option.finalState+option.year
 
-#eos out folder
-OUTFOLDER           = 'FWLJMET102X_1lep2018_070919'  # special 4tops
-#OUTFOLDER           = 'FWLJMET102X_1lep2017_052219'  #JH: single lepton 2017
-
-#log folder
-LOGFOLDER           = 'FWLJMET_crab_test' ## JH: this is not actually used in the sed commands below, dummy variable
+OUTFOLDER           = option.outfolder
 
 #JSON for Data
 JSONFORDATA         = 'https://cms-service-dqm.web.cern.ch/cms-service-dqm/CAF/certification/Collisions17/13TeV/Final/Cert_294927-306462_13TeV_PromptReco_Collisions17_JSON.txt' #https://twiki.cern.ch/twiki/bin/view/CMS/PdmV2017Analysis#DATA
@@ -72,19 +66,24 @@ def create_crab_config_files_from_template(sample_dict,**kwargs):
 		os.system("sed -i 's|ISVLQSIGNAL|"+kwargs['ISVLQSIGNAL']+"|g' "+CRABCONFIG_DIR+"/"+filename)
 
 		#replace strings in new cmsRun file
-		if 'EGamma' in dataset or 'Single' in dataset:
+		if 'EGamma' in dataset or 'Single' in dataset or 'JetHT' in dataset:
 			os.system("sed -i 's|DATASET|"+dataset+"|g' "+CRABCONFIG_DIR+"/"+cmsRunname)
+		elif 'ext' in dataset:
+			extcode = dataset[dataset.find('ext'):]
+			os.system("sed -i 's|DATASET|"+sample_dict[dataset].split('/')[1]+'-'+extcode+"|g' "+CRABCONFIG_DIR+"/"+cmsRunname)
 		else:
 			os.system("sed -i 's|DATASET|"+sample_dict[dataset].split('/')[1]+"|g' "+CRABCONFIG_DIR+"/"+cmsRunname)
 		os.system("sed -i 's|ISMC|"+kwargs['ISMC']+"|g' "+CRABCONFIG_DIR+"/"+cmsRunname)
 		os.system("sed -i 's|ISVLQSIGNAL|"+kwargs['ISVLQSIGNAL']+"|g' "+CRABCONFIG_DIR+"/"+cmsRunname)		
 		os.system("sed -i 's|ISTTBAR|"+kwargs['ISTTBAR']+"|g' "+CRABCONFIG_DIR+"/"+cmsRunname)
+		os.system("sed -i 's|DOGENHT|"+kwargs['DOGENHT']+"|g' "+CRABCONFIG_DIR+"/"+cmsRunname)
 
 
 if __name__=='__main__':
 
 	os.system('mkdir -vp '+CRABCONFIG_DIR)
 
+<<<<<<< HEAD
 	#### Bkg MC - no ttbar
 #	create_crab_config_files_from_template(
 #		sample.bkgdict,
@@ -94,12 +93,35 @@ if __name__=='__main__':
 #		)
 #
 #	#### Bkg MC - ttbar
+=======
+	#### Bkg MC - no ttbar - yes MLM
+	create_crab_config_files_from_template(
+		sample.bkghtdict,
+		ISMC='True',
+		ISVLQSIGNAL='False',
+		ISTTBAR='False',
+ 		DOGENHT='True',
+		)
+
+	#### Bkg MC - no ttbar - no MLM
+	create_crab_config_files_from_template(
+		sample.bkgdict,
+		ISMC='True',
+		ISVLQSIGNAL='False',
+		ISTTBAR='False',
+ 		DOGENHT='False',
+		)
+
+	#### Bkg MC - ttbar
+>>>>>>> 014a44f4660201f91804a16fc3a098c175867bc5
 	create_crab_config_files_from_template(
  		sample.ttbarbkgdict,
  		ISMC='True',
  		ISVLQSIGNAL='False',
  		ISTTBAR='True',
+ 		DOGENHT='False',
  		)
+<<<<<<< HEAD
 #     #### fourtops MC
 #        create_crab_config_files_from_template(
 #                sample.fourtopssigdict,
@@ -107,12 +129,25 @@ if __name__=='__main__':
 #                ISVLQSIGNAL='False',
 #                ISTTBAR='False',
 #                )
+=======
+
+        #### fourtops MC
+        create_crab_config_files_from_template(
+                sample.fourtopssigdict,
+                ISMC='True',
+                ISVLQSIGNAL='False',
+                ISTTBAR='False',
+ 		  DOGENHT='False',
+                )
+>>>>>>> 014a44f4660201f91804a16fc3a098c175867bc5
         create_crab_config_files_from_template(
                 sample.fourtopsttdict,
                 ISMC='True',
                 ISVLQSIGNAL='False',
                 ISTTBAR='True',
+ 		  DOGENHT='False',
                 )
+<<<<<<< HEAD
 #        create_crab_config_files_from_template(
 #                sample.fourtopsbkgdict,
 #                ISMC='True',
@@ -135,3 +170,30 @@ if __name__=='__main__':
 #		ISVLQSIGNAL='False',
 #		ISTTBAR='False',
 #		)
+=======
+        create_crab_config_files_from_template(
+                sample.fourtopsbkgdict,
+                ISMC='True',
+                ISVLQSIGNAL='False',
+                ISTTBAR='False',
+ 		  DOGENHT='False',
+                )
+
+	#### VLQ signal MC
+	create_crab_config_files_from_template(
+		sample.signaldict,
+		ISMC='True',
+		ISVLQSIGNAL='True',
+		ISTTBAR='False',
+		DOGENHT='False',
+		)
+
+	#### Data
+	create_crab_config_files_from_template(
+	 	sample.datadict,
+	 	ISMC='False',
+	 	ISVLQSIGNAL='False',
+	 	ISTTBAR='False',
+	 	DOGENHT='False',
+	 	)
+>>>>>>> 014a44f4660201f91804a16fc3a098c175867bc5

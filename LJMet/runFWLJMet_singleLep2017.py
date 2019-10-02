@@ -11,6 +11,7 @@ options = VarParsing('analysis')
 options.register('isMC', '', VarParsing.multiplicity.singleton, VarParsing.varType.bool, 'Is MC')
 options.register('isTTbar', '', VarParsing.multiplicity.singleton, VarParsing.varType.bool, 'Is TTbar')
 options.register('isVLQsignal', '', VarParsing.multiplicity.singleton, VarParsing.varType.bool, 'Is VLQ Signal')
+options.register('doGenHT', '', VarParsing.multiplicity.singleton, VarParsing.varType.bool, 'Do Gen HT')
 
 ## SET DEFAULT VALUES
 ## ATTENTION: THESE DEFAULT VALUES ARE SET FOR VLQ SIGNAL ! isMC=True, isTTbar=False, isVLQsignal=True 
@@ -20,6 +21,7 @@ ISVLQSIGNAL = False
 options.isMC = ISMC
 options.isTTbar = ISTTBAR
 options.isVLQsignal = ISVLQSIGNAL
+options.doGenHT = DOGENHT
 options.inputFiles = [
 #   'root://cmsxrootd.fnal.gov//store/mc/RunIIFall17MiniAODv2/TTTT_TuneCP5_13TeV-amcatnlo-pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14-v2/70000/8C017130-8B5F-E911-ACA8-0025905C96EA.root',
    'root://cmsxrootd.fnal.gov//store/mc/RunIIFall17MiniAODv2/TTToSemiLeptonic_TuneCP5_PSweights_13TeV-powheg-pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14-v2/00000/0037F121-7BB9-E811-A732-0242AC130002.root'
@@ -31,6 +33,7 @@ options.parseArguments()
 isMC= options.isMC
 isTTbar = options.isTTbar
 isVLQsignal = options.isVLQsignal
+doGenHT = options.doGenHT
 
 #Check arguments
 print options
@@ -543,7 +546,7 @@ MultiLepCalc_cfg = cms.PSet(
             PFparticlesCollection  = cms.InputTag("packedPFCandidates"),
 
             rhoJetsInputTag            = cms.InputTag("fixedGridRhoFastjetAll"), #this is for electron. Why is it different compared to muon?
-            UseElMVA                 = cms.bool(False), #True means save MVA values, False means not saving.
+            UseElMVA                 = cms.bool(True), #True means save MVA values, False means not saving.
             UseElIDV1                = cms.bool(UseElIDV1_), #False means using ElIDV2.
 
             # Jet corrections needs to be passed here again if Calc uses jet correction
@@ -577,7 +580,7 @@ MultiLepCalc_cfg = cms.PSet(
             metmod_collection = cms.InputTag('slimmedMETsModifiedMET'),
 
             #Gen stuff
-            saveGenHT          = cms.bool(False),
+            saveGenHT          = cms.bool(doGenHT),
             genJetsCollection  = cms.InputTag("slimmedGenJets"),
             OverrideLHEWeights = cms.bool(isVLQsignal), #TRUE FOR SIGNALS, False otherwise
             basePDFname        = cms.string('NNPDF31_nnlo_as_0118_nf_4'),

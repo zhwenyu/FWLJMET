@@ -156,10 +156,18 @@ double getPFMiniIsolation_EffectiveArea(edm::Handle<pat::PackedCandidateCollecti
   if(ptcl->isMuon())
     em = 1;
   
-  double Aeff[2][5] = {{ 0.1013, 0.0988, 0.0572, 0.0842, 0.1530 },{ 0.0913, 0.0765, 0.0546, 0.0728, 0.1177 }};
+  //double Aeff[2][5] = {{ 0.1013, 0.0988, 0.0572, 0.0842, 0.1530 },{ 0.0913, 0.0765, 0.0546, 0.0728, 0.1177 }}; // ancient SUSY
   
+  // used for 2016 analyses based on SUSY group recommendations on SUSLeptonSF TWiki
   double Aeff_Fall15Anal[2][7] = {{ 0.1752, 0.1862, 0.1411, 0.1534, 0.1903 , 0.2243, 0.2687 },{ 0.0735, 0.0619, 0.0465, 0.0433, 0.0577 , 0.0,0.0}};
-  double Aeff_Fall17Anal[2][7] = {{ 0.1566, 0.1626, 0.1073, 0.0854, 0.1051, 0.1204, 0.1524 },{ 0.0735, 0.0619, 0.0465, 0.0433, 0.0577 , 0.0,0.0}};
+  // Possible values that we might want when rerunning 2016....SUSY keeps the 2015 versions
+  //https://github.com/cms-sw/cmssw/blob/CMSSW_10_2_X/RecoEgamma/ElectronIdentification/data/Summer16/effAreaElectrons_cone03_pfNeuHadronsAndPhotons_80X.txt
+  double Aeff_Summer16Anal[2][7] = {{ 0.1703, 0.1715, 0.1213, 0.1230, 0.1635, 0.1937, 0.2393 },{ 0.0735, 0.0619, 0.0465, 0.0433, 0.0577 , 0.0,0.0}};
+	
+  // JH 8/22/19, updating to 94X values from 92X values for electrons, a very small change (2-3rd decimal place)
+  // https://github.com/cms-sw/cmssw/blob/CMSSW_10_2_X/RecoEgamma/ElectronIdentification/data/Fall17/effAreaElectrons_cone03_pfNeuHadronsAndPhotons_94X.txt
+  // Muon values might be old but also are no longer used, in favor of the built-in flag 
+  double Aeff_Fall17Anal[2][7] = {{ 0.1440, 0.1562, 0.1032, 0.0859, 0.1116, 0.1321, 0.1654 },{ 0.0735, 0.0619, 0.0465, 0.0433, 0.0577 , 0.0,0.0}};
   
   double CorrectedTerm=0.0;
   double riso2 = r_iso*r_iso;
