@@ -68,8 +68,10 @@ protected:
     bool dump_trigger;
     std::vector<std::string> mctrigger_path_el;
     std::vector<std::string> mctrigger_path_mu;
+    std::vector<std::string> mctrigger_path_hadronic;
     std::vector<std::string> trigger_path_el;
     std::vector<std::string> trigger_path_mu;
+    std::vector<std::string> trigger_path_hadronic;
 
     //PV
     bool pv_cut;

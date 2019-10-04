@@ -31,8 +31,10 @@ void MultiLepEventSelector::BeginJob( const edm::ParameterSet& iConfig, edm::Con
     dump_trigger        = selectorConfig.getParameter<bool>("dump_trigger");
     mctrigger_path_el   = selectorConfig.getParameter<std::vector<std::string>>("mctrigger_path_el");
     mctrigger_path_mu   = selectorConfig.getParameter<std::vector<std::string>>("mctrigger_path_mu");
+    mctrigger_path_hadronic   = selectorConfig.getParameter<std::vector<std::string>>("mctrigger_path_hadronic");
     trigger_path_el     = selectorConfig.getParameter<std::vector<std::string>>("trigger_path_el");;
     trigger_path_mu     = selectorConfig.getParameter<std::vector<std::string>>("trigger_path_mu");;
+    trigger_path_hadronic     = selectorConfig.getParameter<std::vector<std::string>>("trigger_path_hadronic");;
 
     //PV
     const edm::ParameterSet& PVconfig = selectorConfig.getParameterSet("pvSelector") ;
@@ -291,8 +293,10 @@ bool MultiLepEventSelector::TriggerSelection(edm::Event const & event)
 
 		bool passTrigElMC = false;
 		bool passTrigMuMC = false;
+		bool passTrigHadMC = false;
 		bool passTrigElData = false;
 		bool passTrigMuData = false;
+                bool passTrigHadData = false;
 
 		// dump trigger names
 		if (bFirstEntry && dump_trigger){
@@ -308,6 +312,9 @@ bool MultiLepEventSelector::TriggerSelection(edm::Event const & event)
 		mvSelMCTriggersEl.clear();
 		mvSelTriggersMu.clear();
 		mvSelMCTriggersMu.clear();
+                mvSelTriggersHad.clear();
+                mvSelMCTriggersHad.clear();
+
 
 		int passTrigEl = 0;
 		if (debug) std::cout<< "\t" <<"	In MC El trig list: "<<std::endl;
@@ -340,6 +347,23 @@ bool MultiLepEventSelector::TriggerSelection(edm::Event const & event)
 			}
 		}
 		if (passTrigMu>0) passTrigMuMC = true;
+
+                int passTrigHad = 0;
+                if (debug) std::cout<< "\t" <<" In MC Hadronic trig list: "<<std::endl;
+                for (unsigned int ipath = 0; ipath < mctrigger_path_hadronic.size() && mctrigger_path_hadronic.at(0)!="" ; ipath++){
+                        mvSelMCTriggersHad[mctrigger_path_hadronic.at(ipath)] = 0;
+                        for(unsigned int i=0; i<_tSize; i++){
+                                std::string trigName = trigNames.triggerName(i);
+                                if (trigName.find(mctrigger_path_hadronic.at(ipath)) == std::string::npos) continue;
+                                if (triggersHandle->accept(trigNames.triggerIndex(trigName))) {
+                                        passTrigHad = 1;
+                                        mvSelMCTriggersHad[mctrigger_path_hadronic.at(ipath)] = 1;
+                                        if (debug) std::cout << "               " << trigNames.triggerName(i)  << std::endl;
+                                }
+                        }
+                }
+                if (passTrigHad>0) passTrigHadMC = true;
+
 
 		//Loop over each data channel separately
 		passTrigEl = 0;
@@ -374,8 +398,24 @@ bool MultiLepEventSelector::TriggerSelection(edm::Event const & event)
 		}
 		if (passTrigMu>0) passTrigMuData = true;
 
-		if (isMc && (passTrigMuMC||passTrigElMC) ) passTrig = true;
-		if (!isMc && (passTrigMuData||passTrigElData) ) passTrig = true;
+                passTrigHad = 0;
+                if (debug) std::cout<< "\t" <<" In Data Hadronic trig list: "<<std::endl;
+                for (unsigned int ipath = 0; ipath < trigger_path_hadronic.size() && trigger_path_hadronic.at(0)!="" ; ipath++){
+                        mvSelTriggersHad[trigger_path_hadronic.at(ipath)] = 0;
+                        for(unsigned int i=0; i<_tSize; i++){
+                        std::string trigName = trigNames.triggerName(i);
+                        if ( trigName.find(trigger_path_hadronic.at(ipath)) == std::string::npos) continue;
+                        if (triggersHandle->accept(trigNames.triggerIndex(trigName))){
+                                passTrigHad = 1;
+                                mvSelTriggersHad[trigger_path_hadronic.at(ipath)] = 1;
+                                if (debug) std::cout << "               " << trigNames.triggerName(i)  << std::endl;
+                        }
+                        }
+                }
+                if (passTrigHad>0) passTrigHadData = true;
+
+		if (isMc && (passTrigMuMC||passTrigElMC||passTrigHadMC) ) passTrig = true;
+		if (!isMc && (passTrigMuData||passTrigElData||passTrigHadData) ) passTrig = true;
 
 
 	}

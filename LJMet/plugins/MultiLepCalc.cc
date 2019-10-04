@@ -116,12 +116,15 @@ void MultiLepCalc::AnalyzeTriggers(edm::Event const & event, BaseEventSelector *
 	std::map<std::string, unsigned int>         const & mSelTriggersEl   = selector->GetSelectedTriggersEl();
 	std::map<std::string, unsigned int>         const & mSelMCTriggersMu = selector->GetSelectedMCTriggersMu();
 	std::map<std::string, unsigned int>         const & mSelTriggersMu   = selector->GetSelectedTriggersMu();
+        std::map<std::string, unsigned int>         const & mSelMCTriggersHad = selector->GetSelectedMCTriggersHad();
+        std::map<std::string, unsigned int>         const & mSelTriggersHad   = selector->GetSelectedTriggersHad();
+
 
 	//
 	//_____Triggers______
 	//
-	std::vector<std::string> vsSelMCTriggersEl, vsSelTriggersEl, vsSelMCTriggersMu, vsSelTriggersMu;
-	std::vector<int> viSelMCTriggersEl, viSelTriggersEl, viSelMCTriggersMu, viSelTriggersMu;
+	std::vector<std::string> vsSelMCTriggersEl, vsSelTriggersEl, vsSelMCTriggersMu, vsSelTriggersMu, vsSelMCTriggersHad, vsSelTriggersHad;
+	std::vector<int> viSelMCTriggersEl, viSelTriggersEl, viSelMCTriggersMu, viSelTriggersMu, viSelMCTriggersHad, viSelTriggersHad;
 	for(std::map<std::string, unsigned int>::const_iterator j = mSelMCTriggersEl.begin(); j != mSelMCTriggersEl.end();j++) {
 	  vsSelMCTriggersEl.push_back(j->first);
 	  viSelMCTriggersEl.push_back((int)(j->second));
@@ -138,6 +141,15 @@ void MultiLepCalc::AnalyzeTriggers(edm::Event const & event, BaseEventSelector *
 	  vsSelTriggersMu.push_back(j->first);
 	  viSelTriggersMu.push_back((int)(j->second));
 	}
+        for(std::map<std::string, unsigned int>::const_iterator j = mSelMCTriggersHad.begin(); j != mSelMCTriggersHad.end();j++) {
+          vsSelMCTriggersHad.push_back(j->first);
+          viSelMCTriggersHad.push_back((int)(j->second));
+        }
+        for(std::map<std::string, unsigned int>::const_iterator j = mSelTriggersHad.begin(); j != mSelTriggersHad.end();j++) {
+          vsSelTriggersHad.push_back(j->first);
+          viSelTriggersHad.push_back((int)(j->second));
+        }
+
 	SetValue("vsSelMCTriggersEl", vsSelMCTriggersEl);
 	SetValue("vsSelTriggersEl", vsSelTriggersEl);
 	SetValue("vsSelMCTriggersMu", vsSelMCTriggersMu);
@@ -146,7 +158,10 @@ void MultiLepCalc::AnalyzeTriggers(edm::Event const & event, BaseEventSelector *
 	SetValue("viSelTriggersEl", viSelTriggersEl);
 	SetValue("viSelMCTriggersMu", viSelMCTriggersMu);
 	SetValue("viSelTriggersMu", viSelTriggersMu);
-
+        SetValue("vsSelMCTriggersHad", vsSelMCTriggersHad);
+        SetValue("vsSelTriggersHad", vsSelTriggersHad);
+        SetValue("viSelMCTriggersHad", viSelMCTriggersHad);
+        SetValue("viSelTriggersHad", viSelTriggersHad);
 
 }
 

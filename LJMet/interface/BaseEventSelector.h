@@ -59,8 +59,10 @@ public:
     std::vector<unsigned int>           const & GetSelTriggers()  const { return vSelTriggers; }
     std::map<std::string, unsigned int> const & GetSelectedTriggersEl()   const { return mvSelTriggersEl; }
     std::map<std::string, unsigned int> const & GetSelectedTriggersMu()   const { return mvSelTriggersMu; }
+    std::map<std::string, unsigned int> const & GetSelectedTriggersHad()   const { return mvSelTriggersHad; }
     std::map<std::string, unsigned int> const & GetSelectedMCTriggersEl() const { return mvSelMCTriggersEl; }
     std::map<std::string, unsigned int> const & GetSelectedMCTriggersMu() const { return mvSelMCTriggersMu; }
+    std::map<std::string, unsigned int> const & GetSelectedMCTriggersHad() const { return mvSelMCTriggersHad; }
 
     //Leptons
     std::vector<edm::Ptr<pat::Muon>>     const & GetSelMuons()     const { return vSelMuons; }
@@ -114,8 +116,10 @@ protected:
     std::vector<unsigned int>            vSelTriggers;
     std::map<std::string, unsigned int> mvSelTriggersEl;
     std::map<std::string, unsigned int> mvSelTriggersMu;
+    std::map<std::string, unsigned int> mvSelTriggersHad;
     std::map<std::string, unsigned int> mvSelMCTriggersEl;
     std::map<std::string, unsigned int> mvSelMCTriggersMu;
+    std::map<std::string, unsigned int> mvSelMCTriggersHad;
 
     //Leptons
     std::vector<edm::Ptr<pat::Muon>>     vSelMuons;
