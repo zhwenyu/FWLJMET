@@ -15,9 +15,10 @@ options.register('doGenHT', '', VarParsing.multiplicity.singleton, VarParsing.va
 
 ## SET DEFAULT VALUES
 ## ATTENTION: THESE DEFAULT VALUES ARE SET FOR VLQ SIGNAL ! isMC=True, isTTbar=False, isVLQsignal=True 
-ISMC = True
+ISMC = True  #check
 ISTTBAR = True
 ISVLQSIGNAL = False
+DOGENHT = False 
 options.isMC = ISMC
 options.isTTbar = ISTTBAR
 options.isVLQsignal = ISVLQSIGNAL
@@ -26,8 +27,10 @@ options.inputFiles = [
    'root://cmsxrootd.fnal.gov//store/mc/RunIIFall17MiniAODv2/TTTT_TuneCP5_13TeV-amcatnlo-pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14-v2/70000/8C017130-8B5F-E911-ACA8-0025905C96EA.root',
 #   'root://cmsxrootd.fnal.gov//store/mc/RunIIFall17MiniAODv2/TTToSemiLeptonic_TuneCP5_PSweights_13TeV-powheg-pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14-v2/00000/0037F121-7BB9-E811-A732-0242AC130002.root'
 #   'root://cmsxrootd-site.fnal.gov//store/mc/RunIIFall17MiniAODv2/TTToHadronic_TuneCP5_PSweights_13TeV-powheg-pythia8/MINIAODSIM/PU2017_12Apr2018_new_pmx_94X_mc2017_realistic_v14-v1/60000/FE921261-48B9-E811-8221-001EC9ADF941.root'
+#   'root://cmsxrootd.fnal.gov//store/data/Run2017C/SingleMuon/MINIAOD/31Mar2018-v1/910000/BE068F10-3D38-E811-A58C-FA163E152BEF.root'
+#   'root://cmsxrootd.fnal.gov//store/data/Run2017C/SingleElectron/MINIAOD/31Mar2018-v1/90003/4C02D01B-CC37-E811-95C8-0025905A610A.root'
     ]
-options.maxEvents = 15000
+options.maxEvents = 1500
 options.parseArguments()
 
 isMC= options.isMC
@@ -83,7 +86,7 @@ process.source = cms.Source("PoolSource",
     )
 )
 
-OUTFILENAME = "ljmet_test"
+OUTFILENAME = "TTTT_Oct08"
 process.TFileService = cms.Service("TFileService", fileName = cms.string(OUTFILENAME+'.root'))
 
 #OUTFILENAME = "cmsRun" #This could be better !
@@ -124,13 +127,13 @@ process.filter_any_explicit = hlt.hltHighLevel.clone(
                         'HLT_Ele35_WPTight_Gsf_v*',
                         'HLT_Ele38_WPTight_Gsf_v*',
                         'HLT_Ele40_WPTight_Gsf_v*',
-                        'HLT_Ele28_eta2p1_WPTight_Gsf_HT150_v*',
+                        'HLT_Ele28_eta2p1_WPTight_Gsf_HT150_v*', # Elec + HT
                         'HLT_Ele15_IsoVVVL_PFHT450_PFMET50_v*',
                         'HLT_Ele15_IsoVVVL_PFHT450_v*',
                         'HLT_Ele50_IsoVVVL_PFHT450_v*',
                         'HLT_Ele15_IsoVVVL_PFHT600_v*',
                         'HLT_Ele50_CaloIdVT_GsfTrkIdT_PFJet165_v*',
-                        'HLT_Ele115_CaloIdVT_GsfTrkIdT_v*'
+                        'HLT_Ele115_CaloIdVT_GsfTrkIdT_v*',
 
                         'HLT_Ele32_WPTight_Gsf_v*',
                         'HLT_Ele32_WPTight_Gsf_L1DoubleEG_v*',
@@ -150,12 +153,12 @@ process.filter_any_explicit = hlt.hltHighLevel.clone(
 
                         'HLT_IsoTkMu24_v*',
                         'HLT_IsoMu24_2p1_v*',
-		        'HLT_Mu15_IsoVVVL_PFHT450_CaloBTagCSV_4p5_v*' # Muon+HT
+		        'HLT_Mu15_IsoVVVL_PFHT450_CaloBTagCSV_4p5_v*', # Muon+HT
 
-        		'PFHT380_SixJet32_DoubleBTagCSV_p075_v*' # only data
-        		'PFHT380_SixPFJet32_DoublePFBTagDeepCSV_2p2_v*' # only MC
-        		'HLT_PFHT380_SixPFJet32_DoublePFBTagCSV_2p2_v*'
-        		'HLT_PFHT380_SixPFJet32_DoublePFBTagDeepCSV_2p2_v*'
+        		'PFHT380_SixJet32_DoubleBTagCSV_p075_v*', # only data
+        		'PFHT380_SixPFJet32_DoublePFBTagDeepCSV_2p2_v*', # only MC
+        		'HLT_PFHT380_SixPFJet32_DoublePFBTagCSV_2p2_v*',
+        		'HLT_PFHT380_SixPFJet32_DoublePFBTagDeepCSV_2p2_v*',
 
     ],
     throw = False
@@ -367,7 +370,7 @@ hlt_path_el  = cms.vstring(
         'HLT_Ele50_IsoVVVL_PFHT450_v',
         'HLT_Ele15_IsoVVVL_PFHT600_v',
         'HLT_Ele50_CaloIdVT_GsfTrkIdT_PFJet165_v',
-        'HLT_Ele115_CaloIdVT_GsfTrkIdT_v'
+        'HLT_Ele115_CaloIdVT_GsfTrkIdT_v',
         
         'HLT_Ele32_WPTight_Gsf_v',
         'HLT_Ele32_WPTight_Gsf_L1DoubleEG_v',
@@ -389,14 +392,14 @@ hlt_path_mu = cms.vstring(
         
         'HLT_IsoTkMu24_v',
         'HLT_IsoMu24_2p1_v',
-	'HLT_Mu15_IsoVVVL_PFHT450_CaloBTagCSV_4p5_v' # Muon+HT
+	'HLT_Mu15_IsoVVVL_PFHT450_CaloBTagCSV_4p5_v', # Muon+HT
         )
 
 hlt_path_hadronic = cms.vstring(
-	'PFHT380_SixJet32_DoubleBTagCSV_p075_v' # only data
-	'PFHT380_SixPFJet32_DoublePFBTagDeepCSV_2p2_v' # only MC
-	'HLT_PFHT380_SixPFJet32_DoublePFBTagCSV_2p2_v'
-	'HLT_PFHT380_SixPFJet32_DoublePFBTagDeepCSV_2p2_v'
+	'PFHT380_SixJet32_DoubleBTagCSV_p075_v', # only data
+	'PFHT380_SixPFJet32_DoublePFBTagDeepCSV_2p2_v', # only MC
+	'HLT_PFHT380_SixPFJet32_DoublePFBTagCSV_2p2_v',
+	'HLT_PFHT380_SixPFJet32_DoublePFBTagDeepCSV_2p2_v',
 	)
 
 #Selector/Calc config
@@ -440,10 +443,10 @@ MultiLepSelector_cfg = cms.PSet(
             muon_cuts                = cms.bool(True),
             muonsCollection          = cms.InputTag("slimmedMuons"),
             min_muon                 = cms.int32(0), #not implemented in src code
-            muon_minpt               = cms.double(25.0),
+            muon_minpt               = cms.double(25.0),  # 25
             muon_maxeta              = cms.double(2.4),
             muon_useMiniIso          = cms.bool(False),
-            loose_muon_minpt         = cms.double(10.0),
+            loose_muon_minpt         = cms.double(10.0),  # 10
             loose_muon_maxeta        = cms.double(2.4),
             muon_dxy                 = cms.double(0.2),
             muon_dz                  = cms.double(0.5),
